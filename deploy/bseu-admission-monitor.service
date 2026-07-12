@@ -1,0 +1,33 @@
+[Unit]
+Description=BSEU Admission Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bseu-admission
+Group=bseu-admission
+WorkingDirectory=/opt/bseu-admission-monitor/backend
+EnvironmentFile=/etc/bseu-admission-monitor.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/bseu-admission-monitor/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8091 --workers 1 --proxy-headers --timeout-graceful-shutdown 30
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=40
+KillSignal=SIGTERM
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/bseu-admission-monitor
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LockPersonality=true
+MemoryDenyWriteExecute=true
+MemoryMax=512M
+TasksMax=128
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

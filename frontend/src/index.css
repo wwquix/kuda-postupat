@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #f6f4ed; color: #13291f; }
+* { box-sizing: border-box; }
+button, input, select { font: inherit; }
+@layer components {
+  .panel { @apply rounded-3xl border border-white/80 bg-white/90 shadow-card; }
+  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.18em] text-moss/65; }
+  .metric { @apply rounded-2xl border border-ink/10 bg-cream/60 p-4; }
+}
