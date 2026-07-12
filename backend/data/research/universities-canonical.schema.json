@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/universities-canonical-1.0.json",
+  "title": "Belarus university source research",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "country",
+    "admission_year",
+    "generated_at",
+    "primary_registry_sources",
+    "universities",
+    "review_items",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "country": { "const": "BY" },
+    "admission_year": { "const": 2026 },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "primary_registry_sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/sourceCheck" }
+    },
+    "universities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/university" }
+    },
+    "review_items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/reviewItem" }
+    },
+    "summary": { "$ref": "#/$defs/summary" }
+  },
+  "$defs": {
+    "nullableUri": {
+      "oneOf": [
+        { "type": "string", "format": "uri", "pattern": "^https?://" },
+        { "type": "null" }
+      ]
+    },
+    "sourceCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "title",
+        "url",
+        "publication_date",
+        "checked_at",
+        "http_status",
+        "final_url",
+        "result"
+      ],
+      "properties": {
+        "source_type": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "publication_date": {
+          "oneOf": [
+            { "type": "string", "format": "date" },
+            { "type": "null" }
+          ]
+        },
+        "checked_at": { "type": "string", "format": "date-time" },
+        "http_status": { "type": "integer", "minimum": 100, "maximum": 599 },
+        "final_url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "result": { "type": "string", "minLength": 1 }
+      }
+    },
+    "universitySourceCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "checked_at",
+        "http_status",
+        "final_url",
+        "source_type",
+        "result"
+      ],
+      "properties": {
+        "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "checked_at": { "type": "string", "format": "date-time" },
+        "http_status": {
+          "oneOf": [
+            { "type": "integer", "minimum": 100, "maximum": 599 },
+            { "type": "null" }
+          ]
+        },
+        "final_url": { "$ref": "#/$defs/nullableUri" },
+        "source_type": {
+          "enum": [
+            "official_registry",
+            "official_site",
+            "admissions",
+            "program_catalog",
+            "admission_plan",
+            "current_applications",
+            "score_distribution",
+            "historical_cutoffs",
+            "tuition",
+            "scholarships",
+            "dormitories",
+            "official_media",
+            "review"
+          ]
+        },
+        "result": { "type": "string", "minLength": 1 }
+      }
+    },
+    "dataAvailability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "program_catalog",
+        "admission_plan",
+        "current_applications",
+        "score_distribution",
+        "historical_cutoffs",
+        "tuition",
+        "scholarships",
+        "dormitories",
+        "official_media"
+      ],
+      "properties": {
+        "program_catalog": { "$ref": "#/$defs/availabilityValue" },
+        "admission_plan": { "$ref": "#/$defs/availabilityValue" },
+        "current_applications": { "$ref": "#/$defs/availabilityValue" },
+        "score_distribution": { "$ref": "#/$defs/availabilityValue" },
+        "historical_cutoffs": { "$ref": "#/$defs/availabilityValue" },
+        "tuition": { "$ref": "#/$defs/availabilityValue" },
+        "scholarships": { "$ref": "#/$defs/availabilityValue" },
+        "dormitories": { "$ref": "#/$defs/availabilityValue" },
+        "official_media": { "$ref": "#/$defs/availabilityValue" }
+      }
+    },
+    "availabilityValue": {
+      "enum": ["available", "partial", "not_found", "unknown"]
+    },
+    "automationAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "monitoring_candidate",
+        "source_format",
+        "authentication_required",
+        "captcha_detected",
+        "current_monitoring_status",
+        "assessment_note"
+      ],
+      "properties": {
+        "monitoring_candidate": { "type": "boolean" },
+        "source_format": {
+          "enum": ["html", "json", "xml", "xlsx", "csv", "pdf", "javascript", "unknown"]
+        },
+        "authentication_required": { "type": "boolean" },
+        "captcha_detected": { "type": "boolean" },
+        "current_monitoring_status": {
+          "enum": ["online", "candidate", "reference_only", "needs_research"]
+        },
+        "assessment_note": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "university": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "slug",
+        "short_name",
+        "full_name",
+        "legal_name",
+        "institution_kind",
+        "ownership_type",
+        "city",
+        "region",
+        "official_site_url",
+        "admissions_url",
+        "official_registry_url",
+        "categories",
+        "categories_source",
+        "active_status",
+        "source_checked_at",
+        "notes",
+        "source_checks",
+        "data_availability",
+        "data_sources",
+        "automation_assessment"
+      ],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "short_name": { "type": "string", "minLength": 1 },
+        "full_name": { "type": "string", "minLength": 1 },
+        "legal_name": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "institution_kind": {
+          "enum": ["university", "academy", "institute", "conservatory", "military_academy", "other"]
+        },
+        "ownership_type": { "enum": ["state", "private", "mixed", "unknown"] },
+        "city": { "type": "string", "minLength": 1 },
+        "region": { "type": "string", "minLength": 1 },
+        "official_site_url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "admissions_url": { "$ref": "#/$defs/nullableUri" },
+        "official_registry_url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "it",
+              "technical",
+              "economic",
+              "medical",
+              "pedagogical",
+              "agricultural",
+              "arts",
+              "sports",
+              "military",
+              "humanities",
+              "law",
+              "transport",
+              "emergency_services",
+              "general",
+              "private",
+              "other"
+            ]
+          }
+        },
+        "categories_source": { "const": "editorial" },
+        "active_status": {
+          "enum": ["confirmed", "uncertain", "inactive", "merged", "renamed", "needs_review"]
+        },
+        "source_checked_at": { "type": "string", "format": "date-time" },
+        "notes": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
+        "source_checks": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/universitySourceCheck" }
+        },
+        "data_availability": { "$ref": "#/$defs/dataAvailability" },
+        "data_sources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://"
+          }
+        },
+        "automation_assessment": { "$ref": "#/$defs/automationAssessment" }
+      }
+    },
+    "reviewItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "reason", "sources", "source_checks", "recommended_action", "status"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "format": "uri", "pattern": "^https?://" }
+        },
+        "source_checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/universitySourceCheck" }
+        },
+        "recommended_action": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["uncertain", "inactive", "merged", "renamed", "needs_review"] }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "confirmed_total",
+        "state_total",
+        "private_total",
+        "cities_total",
+        "with_admissions_url",
+        "monitoring_candidates",
+        "online_monitoring",
+        "needs_review"
+      ],
+      "properties": {
+        "confirmed_total": { "type": "integer", "minimum": 0 },
+        "state_total": { "type": "integer", "minimum": 0 },
+        "private_total": { "type": "integer", "minimum": 0 },
+        "cities_total": { "type": "integer", "minimum": 0 },
+        "with_admissions_url": { "type": "integer", "minimum": 0 },
+        "monitoring_candidates": { "type": "integer", "minimum": 0 },
+        "online_monitoring": { "type": "integer", "minimum": 0 },
+        "needs_review": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
