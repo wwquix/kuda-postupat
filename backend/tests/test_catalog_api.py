@@ -3,18 +3,24 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 from test_bseu_backfill import seed_core_database, sqlite_url
 
 from alembic import command
 from app.catalog_api import router
+from app.catalog_search import register_catalog_sqlite_functions
 from app.database import get_db
 from app.schema import make_alembic_config
 
 
 def client_for_database(path: Path) -> tuple[TestClient, object]:
     engine = create_engine(sqlite_url(path))
+
+    @event.listens_for(engine, "connect")
+    def register_search(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
+        register_catalog_sqlite_functions(dbapi_connection)
+
     session_factory = sessionmaker(bind=engine, expire_on_commit=False)
 
     def override_db() -> Iterator[Session]:
@@ -42,8 +48,8 @@ def test_catalog_api_reads_bseu_legacy_history_through_mapping(tmp_path: Path) -
 
     programs = client.get("/api/universities/bseu/programs")
     assert programs.status_code == 200
-    assert programs.json()[0]["code"] == "6-05-0311-05"
-    assert programs.json()[0]["offerings"][0]["id"] == offering_id
+    assert programs.json()["items"][0]["code"] == "6-05-0311-05"
+    assert programs.json()["items"][0]["offerings"][0]["id"] == offering_id
 
     offering = client.get(f"/api/program-offerings/{offering_id}")
     assert offering.status_code == 200

@@ -413,6 +413,12 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 
 ## API
 
+- `GET /api/universities` — каталог, поиск, фильтры, сортировка и пагинация
+- `GET /api/universities/{slug}` — карточка вуза и покрытие платформы
+- `GET /api/universities/{slug}/programs` — импортированные программы вуза
+- `GET /api/programs` и `GET /api/programs/{id}` — общий каталог программ
+- `GET /api/catalog/meta` — значения фильтров и database-derived счётчики
+- `GET /api/catalog/health` — локальная целостность каталога без внешних запросов
 - `GET /api/health`
 - `GET /api/config` — только публичная конфигурация, без secret values
 - `GET /api/status`
@@ -421,6 +427,8 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 - `GET /api/specialties/{id}/history`
 - `GET /api/specialties/{id}/score-distribution`
 - `POST /api/refresh` — `X-Refresh-Token` или `Authorization: Bearer ...`
+
+Полный контракт catalog/search API, включая обязательную пагинацию и семантику неполного покрытия, описан в `docs/catalog-search-api.md`.
 
 ## Docker как дополнительный вариант
 

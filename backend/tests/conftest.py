@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import Engine, create_engine, event
 
 from app import catalog_models  # noqa: F401 -- test metadata must include every mapped table
+from app.catalog_search import register_catalog_sqlite_functions
 from app.models import Base
 
 
@@ -22,6 +23,7 @@ def test_engine_factory() -> Callable[[str], Engine]:
 
         @event.listens_for(engine, "connect")
         def enable_foreign_keys(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
+            register_catalog_sqlite_functions(dbapi_connection)
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.close()
