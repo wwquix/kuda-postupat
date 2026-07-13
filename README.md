@@ -154,6 +154,72 @@ Baseline downgrade является no-op и не удаляет legacy history.
 
 > Downgrade production database выполняется только после backup и проверки на копии.
 
+## Импорт канонического каталога вузов
+
+Импорт 47 подтверждённых вузов выполняется явной CLI-командой после `alembic upgrade head`. FastAPI startup, scheduler и обычный refresh никогда не запускают seed автоматически. Источник по умолчанию — versioned-файл `backend/data/research/universities-canonical-2026.json`; сетевые запросы во время seed отсутствуют.
+
+Все catalog-команды запускаются из `backend`, чтобы package `app` разрешался одинаково на Windows и Linux:
+
+```powershell
+Push-Location backend
+
+# Проверить canonical research и показать план без записи в SQLite.
+..\.venv\Scripts\python.exe scripts\validate_university_research.py
+..\.venv\Scripts\python.exe -m app.cli seed-universities --dry-run
+
+# Выполнить одну транзакционную загрузку и проверить результат.
+..\.venv\Scripts\python.exe -m app.cli seed-universities
+..\.venv\Scripts\python.exe -m app.cli audit-catalog
+
+Pop-Location
+```
+
+Повторный `seed-universities` идемпотентен. `University.code` является основным business key, slug проверяется на конфликт. Импорт не удаляет отсутствующие записи, не стирает непустые значения входным `null`, не меняет более свежие `data_verified_at` значения и не делает новые вузы `online`. Категории и официальные registry/site/admissions sources добавляются без удаления вручную созданных связей. Research `review_items`, notes, availability/automation assessment и HTTP-наблюдения остаются в research JSON.
+
+### Аудит каталога
+
+```powershell
+Push-Location backend
+..\.venv\Scripts\python.exe -m app.cli audit-catalog
+Pop-Location
+```
+
+Exit code 0 означает отсутствие ошибок целостности. Отсутствующие admissions URL, программы или adapters выводятся как warnings и не заменяются выдуманными значениями.
+
+### Экспорт одного вуза
+
+```powershell
+Push-Location backend
+..\.venv\Scripts\python.exe -m app.cli export-university bseu
+Pop-Location
+```
+
+Команда выводит стабильный JSON, который проходит `backend/data/schemas/university-import.schema.json`. В export входят University, категории, безопасная provenance, DataSources и read-only Program/Offering; ETag, Last-Modified, runtime health errors, legacy snapshots, Telegram и secrets не экспортируются.
+
+### Импорт одного проверенного вуза
+
+```powershell
+Push-Location backend
+..\.venv\Scripts\python.exe -m app.cli import-university .\verified-university.json --dry-run
+..\.venv\Scripts\python.exe -m app.cli import-university .\verified-university.json
+Pop-Location
+```
+
+Файл обязан пройти single-university Schema. Команда применяет ту же merge policy и транзакцию, что canonical seed. Program/Offering в export являются read-only assertions: команда проверяет их совпадение с существующим каталогом, но не создаёт и не изменяет их из произвольного JSON.
+
+### Rollback/restore импорта
+
+Catalog seed не меняет Alembic revision и не удаляет legacy-данные. Для полного локального rollback восстановите проверенный pre-import SQLite backup только при остановленных процессах:
+
+```powershell
+.\stop-dev.ps1
+$backup = 'backups\admission-before-university-catalog-import-<timestamp>.db'
+Get-FileHash -Algorithm SHA256 $backup
+Copy-Item -LiteralPath $backup -Destination 'backend\data\admission.db' -Force
+```
+
+Перед запуском проверьте `PRAGMA integrity_check`, `PRAGMA foreign_key_check` и Alembic revision восстановленной копии. Restore откатывает также любые runtime snapshots/runs, появившиеся после backup, поэтому production restore требует отдельного согласованного окна и rehearsal на копии.
+
 ## Как изменить специальность
 
 Измените `.env` и перезапустите backend:
