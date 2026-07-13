@@ -22,6 +22,7 @@ try {
 
 Push-Location (Join-Path $Root 'frontend')
 try {
+    Invoke-Check 'Frontend tests' { & npm.cmd run test }
     Invoke-Check 'ESLint' { & npm.cmd run lint }
     Invoke-Check 'TypeScript' { & npm.cmd run typecheck }
     Invoke-Check 'Vite production build' { & npm.cmd run build }

@@ -1,4 +1,14 @@
 export interface Specialty { id: number; display_name: string; study_form: string; funding_type: string; source_url: string }
+export interface CatalogMeta {
+  counts: {
+    universities: number
+    programs: number
+    offerings: number
+    universities_with_programs: number
+    universities_with_admissions_url: number
+  }
+  coverage: { state: string; note: string }
+}
 export interface Snapshot {
   id: number; specialty_id: number; specialty: string; study_form: string; funding_type: string;
   source_url: string; fetched_at: string; source_updated_at: string | null; admission_plan: number;

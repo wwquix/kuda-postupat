@@ -16,7 +16,9 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 .\start-dev.ps1
 ```
 
-Dashboard: `http://127.0.0.1:5173`
+Главная страница: `http://127.0.0.1:5173/`
+
+Монитор поступления БГЭУ: `http://127.0.0.1:5173/monitor`
 
 Backend API: `http://127.0.0.1:8000`
 
@@ -78,7 +80,7 @@ Remove-Variable token
 .\check.ps1
 ```
 
-Последовательно выполняются обычные pytest-тесты, отдельный live test, Ruff, ESLint, TypeScript и Vite production build. Первая ошибка завершает скрипт с ненулевым кодом.
+Последовательно выполняются обычные pytest-тесты, отдельный live test, Ruff, изолированные frontend component tests, ESLint, TypeScript и Vite production build. Первая ошибка завершает скрипт с ненулевым кодом.
 
 Отдельные команды:
 
@@ -89,6 +91,7 @@ Set-Location backend
 ..\.venv\Scripts\python.exe -m ruff check .
 
 Set-Location ..\frontend
+npm run test
 npm run lint
 npm run typecheck
 npm run build

@@ -60,5 +60,6 @@ try { $response = Invoke-WebRequest -Uri 'http://127.0.0.1:5173/' -TimeoutSec 5 
 if ($health.status -ne 'ok' -or $response.StatusCode -ne 200) { throw 'Проект запущен, но проверка готовности не пройдена.' }
 
 Write-Host 'Backend:  http://127.0.0.1:8000'
-Write-Host 'Dashboard: http://127.0.0.1:5173'
+Write-Host 'Homepage: http://127.0.0.1:5173/'
+Write-Host 'Monitor:  http://127.0.0.1:5173/monitor'
 if ($backendRunning -and $frontendRunning) { Write-Host 'Проект уже был запущен; повторные процессы не созданы.' }

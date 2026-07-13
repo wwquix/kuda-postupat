@@ -3,11 +3,18 @@
 @tailwind components;
 @tailwind utilities;
 
-body { margin: 0; min-width: 320px; min-height: 100vh; background: #f6f4ed; color: #13291f; }
+html { background: #f6f4ed; }
+body { margin: 0; min-width: 320px; min-height: 100vh; overflow-x: hidden; background: #f6f4ed; color: #13291f; font-family: Inter, system-ui, sans-serif; }
+#root { min-height: 100vh; }
 * { box-sizing: border-box; }
 button, input, select { font: inherit; }
+a, button, input, select { -webkit-tap-highlight-color: transparent; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible { outline: 3px solid #d99b35; outline-offset: 3px; }
+#main-content:focus { outline: none; }
 @layer components {
   .panel { @apply rounded-3xl border border-white/80 bg-white/90 shadow-card; }
   .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.18em] text-moss/65; }
   .metric { @apply rounded-2xl border border-ink/10 bg-cream/60 p-4; }
+  .skip-link { @apply fixed left-4 top-4 z-50 -translate-y-24 rounded-xl bg-ink px-4 py-3 font-bold text-white shadow-card transition-transform; }
+  .skip-link:focus { @apply translate-y-0; }
 }
