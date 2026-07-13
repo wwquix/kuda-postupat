@@ -1,12 +1,20 @@
 from functools import lru_cache
+from pathlib import Path
 from urllib.parse import urljoin
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = BACKEND_DIR.parent
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file="../.env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=PROJECT_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     source_url: str = "https://bseu.by/abiturient/xml/1.xml"
     source_data_url: str | None = None
@@ -62,3 +70,12 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def resolve_database_url(database_url: str) -> str:
+    """Resolve the legacy relative SQLite URL against backend, independent of process CWD."""
+    prefix = "sqlite:///./"
+    if not database_url.startswith(prefix):
+        return database_url
+    database_path = (BACKEND_DIR / database_url.removeprefix(prefix)).resolve()
+    return f"sqlite:///{database_path.as_posix()}"

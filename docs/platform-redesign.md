@@ -2,7 +2,7 @@
 
 ## Статус документа
 
-Документ фиксирует архитектурную цель и безопасную границу преобразования работающего BSEU admission monitor. Это проектирование, а не разрешение на реализацию. Порядок реализации задаёт [roadmap](roadmap.md), схема данных и backfill — [план миграций](database-migration-plan.md), интеграционный интерфейс — [контракт адаптера](adapter-contract.md).
+Документ фиксирует архитектурную цель и безопасную границу преобразования работающего BSEU admission monitor. По состоянию на Migration B реализованы Alembic baseline и пустая core catalog schema; остальные разделы остаются целевой архитектурой и не разрешают перескакивать через [roadmap](roadmap.md). Схема данных и backfill описаны в [плане миграций](database-migration-plan.md), интеграционный интерфейс — в [контракте адаптера](adapter-contract.md).
 
 Ограничение первого релиза: один модульный FastAPI-монолит, SQLAlchemy, SQLite, APScheduler, один Uvicorn worker, статический React frontend, Nginx и systemd на Ubuntu 24.04. Redis, PostgreSQL, Elasticsearch, очереди, микросервисы и постоянный Playwright не входят в архитектуру.
 
@@ -16,8 +16,8 @@
 | Lifecycle | `backend/app/main.py`: `lifespan` | Вызывает `init_db()`, регистрирует interval job, запускает scheduler и фоновый initial refresh; при shutdown отменяет initial task и останавливает scheduler. |
 | Scheduler | `backend/app/main.py`: `scheduler`, `scheduled_refresh` | Глобальный `AsyncIOScheduler`; job `admission-refresh`, `max_instances=1`, `coalesce=True`, интервал из settings. |
 | Конфигурация | `backend/app/config.py`: `Settings`, `get_settings` | Читает `../.env`, валидирует Telegram и параметры источника, строит XML URL и CORS origins. |
-| SQLAlchemy | `backend/app/database.py`: `engine`, `SessionLocal`, `init_db`, `get_db` | Создаёт engine/session; для SQLite включает WAL, foreign keys и timeout. Пока применяет `Base.metadata.create_all`, Alembic ещё не подключён. |
-| Persisted schema | `backend/app/models.py` | `Specialty`, `AdmissionSnapshot`, `ScraperRun`, `NotificationLog`, `HttpCacheState`. |
+| SQLAlchemy | `backend/app/database.py`: `engine`, `SessionLocal`, `init_db`, `get_db` | Создаёт engine/session; для SQLite включает WAL, foreign keys и timeout. `init_db()` только проверяет текущий Alembic head и никогда не создаёт/мигрирует production schema. |
+| Persisted schema | `backend/app/models.py`, `backend/app/catalog_models.py` | Пять сохранённых legacy-моделей плюс пустой core catalog: `University`, `UniversityCategory`, `UniversityCategoryLink`, `Program`, `ProgramOffering`, `DataSource`. |
 | HTTP и orchestration | `backend/app/scraper.py`: `AdmissionScraper._fetch`, `AdmissionScraper.refresh` | Делает retry/conditional GET, обрабатывает 304, создаёт scraper run, вызывает parser/calculations/repository, затем Telegram. `asyncio.Lock` и пятиминутный лимит защищают источник. |
 | Parser | `backend/app/parser.py`: `parse_document`, `_parse_xml`, `_parse_html`, `select_specialties` | Fail-closed распознаёт XML/HTML, требует конкурсную схему и диапазоны `G_*`, нормализует форму/основу и выбирает настроенные специальности. |
 | Расчёты | `backend/app/calculations.py`: `calculate_metrics` | Рассчитывает конкурс, диапазон предполагаемого порога, примерное место и статус без выдумывания точного балла внутри диапазона. |
@@ -146,7 +146,7 @@ The canonical levels are deliberately separate:
 
 Examples:
 
-1. One BSEU `Program("Экономическая информатика")` has two 2026 offerings: `full_time + state_funded` and `full_time + tuition_paid`. Each gets separate plan, monitoring status and snapshots.
+1. One BSEU `Program("Экономическая информатика")` may have two 2026 offerings: `full_time + budget` and `full_time + paid`. Each gets separate plan, monitoring status and snapshots.
 2. The same program in 2026 and 2027 has different `ProgramOffering` rows. 2026 snapshots never mutate into 2027 data.
 3. A paid offering may have tuition records of 4,200 BYN for course 1 and 3,900 BYN for course 2. Both refer to the same program/offering scope but differ by `course_number` and validity; neither price belongs on `Program`.
 
@@ -274,4 +274,4 @@ No frontend code changes in this milestone.
 
 ## Implementation sequence
 
-The next milestone is **Alembic bootstrap and catalog schema**, not adapter extraction or frontend work. It must begin from a clean tree, create a production SQLite backup procedure, stamp the existing schema safely, add catalog tables without moving snapshots, run `check.ps1`, and stop at its own Git checkpoint. See [roadmap.md](roadmap.md).
+Migration A+B implements **Alembic bootstrap and the empty core catalog schema** without moving BSEU snapshots. The next milestone is the separately reviewed BSEU canonical identity/backfill step from the [roadmap](roadmap.md); it must not be combined with adapter extraction, broad imports or frontend work.

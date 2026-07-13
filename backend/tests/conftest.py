@@ -1,8 +1,35 @@
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+from sqlalchemy import Engine, create_engine, event
+
+from app import catalog_models  # noqa: F401 -- test metadata must include every mapped table
+from app.models import Base
 
 
 @pytest.fixture
 def fixtures_dir() -> Path:
     return Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture
+def test_engine_factory() -> Callable[[str], Engine]:
+    engines: list[Engine] = []
+
+    def create(url: str = "sqlite:///:memory:") -> Engine:
+        engine = create_engine(url)
+
+        @event.listens_for(engine, "connect")
+        def enable_foreign_keys(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+        Base.metadata.create_all(engine)
+        engines.append(engine)
+        return engine
+
+    yield create
+    for engine in engines:
+        engine.dispose()

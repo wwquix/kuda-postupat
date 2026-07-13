@@ -133,7 +133,7 @@ Media type, official asset/page URL, optional thumbnail/alt/caption, rights/attr
 
 ### AdapterHealthDTO
 
-Source health (`healthy`, `degraded`, `unavailable`, `schema_changed`, `disabled`), checked time, latency, HTTP status nullable, conditional support, schema validation result and sanitised error code. Healthcheck не возвращает secrets или raw response bodies.
+Source health (`healthy`, `stale`, `degraded`, `unavailable`, `unknown`), checked time, latency, HTTP status nullable, conditional support, schema validation result and sanitised error code. Disabled scheduling is represented by the separate `enabled` flag; `schema_changed` remains an error category, not persisted health. Healthcheck не возвращает secrets или raw response bodies.
 
 ## Методы
 

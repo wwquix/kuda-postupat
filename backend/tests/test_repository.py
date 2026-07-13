@@ -1,17 +1,16 @@
+from collections.abc import Callable
 from datetime import datetime
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
 from app.calculations import calculate_metrics
-from app.models import Base
 from app.parser import ParsedSpecialty
 from app.repository import get_or_create_specialty, save_snapshot_if_changed
 
 
-def test_identical_snapshot_is_not_duplicated() -> None:
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+def test_identical_snapshot_is_not_duplicated(test_engine_factory: Callable[[str], Engine]) -> None:
+    engine = test_engine_factory()
     row = ParsedSpecialty("Экономическая информатика", "дневная", "платная", 3, 5, {"270-279": 5}, datetime.now())
     metrics = calculate_metrics(3, 5, row.distribution, 276)
     with Session(engine) as session:

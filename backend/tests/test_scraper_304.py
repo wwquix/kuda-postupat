@@ -5,23 +5,22 @@ from unittest.mock import AsyncMock
 import httpx
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, select
+from sqlalchemy import Engine, select
 from sqlalchemy.orm import sessionmaker
 
 import app.main as main_module
 import app.scraper as scraper_module
 from app.calculations import calculate_metrics
 from app.config import Settings
-from app.models import AdmissionSnapshot, Base, HttpCacheState, NotificationLog, ScraperRun
+from app.models import AdmissionSnapshot, HttpCacheState, NotificationLog, ScraperRun
 from app.parser import parse_document, select_specialties
 from app.repository import get_or_create_specialty, save_snapshot_if_changed
 from app.scraper import AdmissionScraper, NotModifiedWithoutSnapshotError
 
 
 @pytest.fixture
-def session_factory(tmp_path: Path, monkeypatch):
-    engine = create_engine(f"sqlite:///{tmp_path / 'test.db'}")
-    Base.metadata.create_all(engine)
+def session_factory(tmp_path: Path, monkeypatch, test_engine_factory):
+    engine: Engine = test_engine_factory(f"sqlite:///{tmp_path / 'test.db'}")
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     monkeypatch.setattr(scraper_module, "SessionLocal", factory)
     return factory

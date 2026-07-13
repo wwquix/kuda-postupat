@@ -1,12 +1,13 @@
+from collections.abc import Callable
 from datetime import UTC, datetime
 
 import httpx
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
 from app.config import Settings
-from app.models import Base, NotificationLog
+from app.models import NotificationLog
 from app.telegram import (
     TelegramDeliveryError,
     notification_fingerprint,
@@ -15,9 +16,8 @@ from app.telegram import (
 )
 
 
-def test_duplicate_telegram_notification_is_detected() -> None:
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+def test_duplicate_telegram_notification_is_detected(test_engine_factory: Callable[[str], Engine]) -> None:
+    engine = test_engine_factory()
     message = "Значимое изменение"
     with Session(engine) as session:
         assert notification_was_sent(session, message) is False
@@ -51,9 +51,10 @@ class FakeClient:
 
 
 @pytest.mark.asyncio
-async def test_send_once_uses_persistent_deduplication(monkeypatch) -> None:
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+async def test_send_once_uses_persistent_deduplication(
+    monkeypatch, test_engine_factory: Callable[[str], Engine]
+) -> None:
+    engine = test_engine_factory()
     FakeClient.calls = 0
     monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
     settings = Settings(telegram_enabled=True, telegram_bot_token="test-token", telegram_chat_id="123")
@@ -70,9 +71,10 @@ class FailingClient(FakeClient):
 
 
 @pytest.mark.asyncio
-async def test_telegram_failure_is_sanitized(monkeypatch) -> None:
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+async def test_telegram_failure_is_sanitized(
+    monkeypatch, test_engine_factory: Callable[[str], Engine]
+) -> None:
+    engine = test_engine_factory()
     monkeypatch.setattr(httpx, "AsyncClient", FailingClient)
     secret = "must-not-appear"
     settings = Settings(telegram_enabled=True, telegram_bot_token=secret, telegram_chat_id="123")

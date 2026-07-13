@@ -58,16 +58,27 @@ try {
 
 if (-not (Test-Path -LiteralPath $EnvFile)) {
     if (-not (Test-Path -LiteralPath $EnvExample)) { throw '.env.example не найден.' }
-    $bytes = [byte[]]::new(32)
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+    $bytes = New-Object byte[] 32
+    $random = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    try { $random.GetBytes($bytes) } finally { $random.Dispose() }
     $token = [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
     $content = Get-Content -Raw -LiteralPath $EnvExample
     $content = [regex]::Replace($content, '(?m)^MANUAL_REFRESH_TOKEN=.*$', "MANUAL_REFRESH_TOKEN=$token")
-    Set-Content -LiteralPath $EnvFile -Value $content -Encoding utf8NoBOM
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($EnvFile, $content, $utf8NoBom)
     Write-Host '.env создан; безопасный MANUAL_REFRESH_TOKEN сгенерирован (значение не выводится).'
 } else {
     Write-Host '.env уже существует и не был изменён.'
 }
+
+Write-Host 'Проверяю и применяю Alembic migrations...'
+Push-Location (Join-Path $Root 'backend')
+try {
+    & $VenvPython -m app.schema setup
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Не удалось подготовить схему БД. Для существующей unversioned legacy-базы сначала создайте backup и выполните documented verify/stamp procedure.'
+    }
+} finally { Pop-Location }
 
 New-Item -ItemType Directory -Force -Path (Join-Path $Root '.runtime') | Out-Null
 Write-Host 'Готово. Запуск: .\start-dev.ps1'

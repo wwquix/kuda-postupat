@@ -34,7 +34,11 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 .\start-dev.ps1
 ```
 
-Первый запуск backend автоматически создаёт таблицы SQLite и выполняет live refresh. Если БГЭУ временно недоступен, frontend показывает понятную ошибку и не подставляет фиктивные данные.
+`setup.ps1` явно применяет Alembic migrations к новой или уже versioned SQLite. FastAPI больше не создаёт таблицы через `create_all` и не запускает migrations при старте: при отстающей схеме backend завершается с понятной ошибкой до запуска scheduler и HTTP refresh.
+
+Для существующей unversioned legacy-базы setup намеренно отказывается автоматически ставить stamp. Сначала создайте и проверьте backup, затем выполните процедуру из раздела «Alembic migrations» ниже.
+
+После подготовки схемы первый запуск backend выполняет live refresh. Если БГЭУ временно недоступен, frontend показывает понятную ошибку и не подставляет фиктивные данные.
 
 ## Последующие запуски
 
@@ -105,6 +109,45 @@ Production:
 ```
 
 Файл БД, WAL/SHM, `.env`, `.venv`, `node_modules`, `.runtime`, логи и frontend build исключены из Git.
+
+## Alembic migrations
+
+Production-схема изменяется только явными Alembic-командами. Запускайте их из корня репозитория; `alembic.ini` и settings независимо от текущего каталога разрешают относительный SQLite URL в `backend/data/admission.db`.
+
+```powershell
+# текущая revision
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini current
+
+# история и единственный head
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini history
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini heads
+
+# применить migrations
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini upgrade head
+
+# откатить только пустую catalog revision на тестовой копии
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini downgrade 0001_legacy_baseline
+```
+
+Для первой регистрации существующей legacy-базы:
+
+```powershell
+# 1. Остановить процессы и создать проверенный SQLite backup.
+.\stop-dev.ps1
+
+# 2. Проверить точное соответствие legacy schema.
+Push-Location backend
+..\.venv\Scripts\python.exe -m app.schema verify-legacy
+Pop-Location
+
+# 3. Только после успешной проверки поставить baseline stamp и применить catalog revision.
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini stamp 0001_legacy_baseline
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini upgrade head
+```
+
+Baseline downgrade является no-op и не удаляет legacy history. Catalog downgrade удаляет только пустые catalog tables и проверяется исключительно на копии.
+
+> Downgrade production database выполняется только после backup и проверки на копии.
 
 ## Как изменить специальность
 
@@ -220,9 +263,11 @@ cd /tmp/bseu-admission-monitor-release
 BSEU_BACKEND_PORT=8091 BSEU_BASE_PATH='/' bash deploy/update-server.sh
 ```
 
-Перед копированием создаётся timestamped rollback-копия в `/opt/bseu-admission-monitor-rollbacks`. Environment и SQLite находятся вне каталога кода и не перезаписываются.
+Скрипт останавливает service, создаёт и проверяет отдельный SQLite backup в `/var/backups/bseu-admission-monitor`, затем устанавливает зависимости, проверяет/stamp legacy baseline при первом переходе, выполняет `alembic upgrade head`, запускает service и healthcheck. Перед копированием кода также создаётся timestamped rollback-копия в `/opt/bseu-admission-monitor-rollbacks`. Environment и SQLite находятся вне каталога кода и не перезаписываются.
 
 ## Rollback
+
+`rollback-server.sh` откатывает **только код и frontend build**. Он не восстанавливает SQLite и не выполняет Alembic downgrade. `update-server.sh` печатает отдельный paired backup вида `/var/backups/bseu-admission-monitor/admission-before-update-<timestamp>.db`; сохраните этот путь вместе с code checkpoint.
 
 Последняя копия:
 
@@ -235,6 +280,8 @@ sudo /opt/bseu-admission-monitor/deploy/rollback-server.sh
 ```bash
 sudo /opt/bseu-admission-monitor/deploy/rollback-server.sh /opt/bseu-admission-monitor-rollbacks/<timestamp>
 ```
+
+Если старая версия приложения несовместима с текущей revision, не запускайте её поверх более новой БД. Database restore/downgrade выполняется только при остановленном service, после `integrity_check`/`foreign_key_check` и репетиции на копии; обычный code rollback SQLite не трогает.
 
 ## Просмотр логов
 
@@ -311,5 +358,11 @@ Docker-файлы сохранены для других окружений, н�
 ```bash
 cp .env.example .env
 # обязательно замените MANUAL_REFRESH_TOKEN
+docker compose build backend
+docker compose run --rm backend python -m alembic -c alembic.ini upgrade head
 docker compose up --build
 ```
+
+Migration выполняется отдельной явной командой до запуска backend; FastAPI startup её не применяет.
+
+Команда выше рассчитана на новую пустую Docker volume или уже versioned database. Для существующей unversioned legacy volume сначала остановите backend, создайте и проверьте backup, затем выполните в одноразовом container `python -m app.schema verify-legacy`, `python -m alembic -c alembic.ini stamp 0001_legacy_baseline` и только после успешной проверки — `upgrade head`.

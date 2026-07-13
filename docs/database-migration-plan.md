@@ -2,7 +2,7 @@
 
 ## Scope and invariants
 
-This document designs future SQLAlchemy/Alembic work. No model, migration or database change is performed in the architecture milestone.
+This document is the durable migration contract. Migration A (`0001_legacy_baseline`) and Migration B (`0002_core_catalog_schema`) are implemented; later entities and all BSEU backfill steps remain future work.
 
 Hard invariants:
 
@@ -59,29 +59,28 @@ erDiagram
 
 - **PK:** `id` integer.
 - **Identity:** `code` and `slug` non-null; `UNIQUE(code)`, `UNIQUE(slug)`. `code` is stable integration identity (`bseu`); slug is stable public URL identity (`bseu`) and is not derived on every rename.
-- **Fields:** `short_name`, `full_name`, `institution_kind`, `ownership_type`, `city`, `region`, `official_site_url`, `admissions_url`, nullable `description`, `monitoring_status`, `active`.
-- **Provenance:** non-null `source_url`, `source_checked_at`; nullable `data_verified_at`; optional `data_source_id` FK after sources exist. The record remains usable if the source row is retired.
+- **Fields:** non-null `short_name`, `full_name`, `institution_kind`, `ownership_type`, `official_site_url`, `monitoring_status`, `active`; nullable `city`, `region`, `admissions_url`, `description`.
+- **Provenance:** non-null `source_url`, `source_checked_at`; nullable `data_verified_at`. A source FK is deliberately deferred.
 - **Timestamps:** `created_at`, `updated_at` non-null.
 - **Enums:** institution kind, ownership type, monitoring status.
-- **Indexes:** active/name, normalized short/full name, city, region, `(monitoring_status, active)`.
+- **Indexes:** `city`, `region`, `monitoring_status`, `active`; unique indexes enforce code and slug.
 - **Delete:** `RESTRICT` while programs/sources/facts exist; normal removal is `active=false`.
 - **Source:** Ministry registry plus official university site according to `docs/universities-source-audit.md`.
 
 ### `university_categories`
 
-- **PK:** `id`; non-null stable `code`, `slug`, `name`, normalized name; optional `description`.
-- **Unique:** code and slug separately.
-- **Timestamps:** created/updated.
-- **Indexes:** normalized name.
-- **Source:** curated taxonomy; `source_url`/checked time nullable only for explicitly editorial category definitions, with `verification_method=editorial_policy`.
+- **PK:** `id`; non-null stable machine `code` and Russian display `label_ru`.
+- **Unique:** `code`; blank/whitespace-only code is rejected.
+- **Timestamp:** `created_at`.
+- **Deferred:** category slug, description, provenance and update timestamp are not part of Migration B.
 
 ### `university_category_links`
 
-- **PK:** composite `(university_id, category_id)` or integer PK plus equivalent unique constraint; prefer composite because link has no public identity.
+- **PK:** composite `(university_id, category_id)` because the link has no public identity.
 - **FKs:** university/category non-null, both `ON DELETE CASCADE`.
-- **Fields:** `source_url`, `checked_at`, verification method, created time.
-- **Indexes:** reverse `(category_id, university_id)`.
-- **Source:** official description or documented editorial classification; provenance required.
+- **Fields:** no additional fields in Migration B; duplicate links are impossible through the composite PK.
+- **Indexes:** reverse `category_id` index.
+- **Deferred:** link-level provenance is added only with an approved taxonomy/import milestone.
 
 ### `university_aliases`
 
@@ -96,11 +95,11 @@ erDiagram
 
 - **PK:** `id` integer.
 - **FK:** `university_id` non-null → universities, `ON DELETE RESTRICT`.
-- **Fields:** nullable official `external_code`, non-null `name`, `normalized_name`, nullable qualification/description; `active`; optional normalized search text.
-- **Unique:** `(university_id, external_code)` where external code is not null; fallback dedup key `(university_id, normalized_name)` enforced by service and a unique constraint only after collision audit.
-- **Provenance:** `source_url`, `source_checked_at`, nullable `source_updated_at`, `data_verified_at`, `data_source_id`.
+- **Fields:** nullable official `code`; non-null per-university `slug`, `name`, `official_url`, `active`; nullable `qualification`, `faculty_name`, `education_level`, `duration_years`, `description`, `admission_subjects_json`, `career_fields_json`, `category_tags_json`.
+- **Unique:** `(university_id, slug)`. The optional official code is not made unique before collision audit; identical slugs in different universities are allowed.
+- **Provenance:** non-null `source_checked_at`; nullable `verified_at`.
 - **Timestamps:** created/updated.
-- **Indexes:** university/active/name, normalized name, external code.
+- **Indexes:** `university_id`, `name`, `active`.
 - **Delete:** restricted by offerings/facts; deactivate instead.
 - **Source:** official program catalog.
 
@@ -140,11 +139,11 @@ erDiagram
 
 - **PK:** `id` integer.
 - **FK:** `program_id` non-null → programs, `ON DELETE RESTRICT`.
-- **Dimensions:** `admission_year`, `study_form`, `funding_type`, optional official `external_offering_code`.
-- **Facts:** nullable `places`, `application_deadline_at`; non-null `monitoring_status`, `official_url`, availability state; optional source/data-source fields.
+- **Dimensions:** non-null `admission_year`, `study_form`, `funding_type`.
+- **Facts:** nullable non-negative `places` and `application_deadline`; non-null `monitoring_supported`, `monitoring_status`, `official_url`, `source_url`, `source_checked_at`; nullable `verified_at`.
 - **Unique:** `(program_id, admission_year, study_form, funding_type)`; if an official source contains distinguishable tracks with the same tuple, add audited `track_code` before import, never silently merge.
-- **Timestamps/provenance:** checked/source-updated/verified plus created/updated.
-- **Indexes:** `(admission_year, monitoring_status)`, `(program_id, admission_year)`, `(study_form, funding_type, admission_year)`.
+- **Timestamps:** created/updated; all system timestamps have UTC semantics.
+- **Indexes:** `program_id`, `admission_year`, `study_form`, `funding_type`, `monitoring_status`.
 - **Delete:** restricted by snapshots/cutoffs/watchlists; deactivate/close instead.
 - **Source:** official admission plan/current campaign source.
 
@@ -174,13 +173,13 @@ erDiagram
 
 ### `data_sources`
 
-- **PK:** `id`; optional FK `university_id` → universities `ON DELETE RESTRICT`.
-- **Identity:** non-null `code`, `url`, `source_type`, capability; `UNIQUE(code)`, optional unique `(university_id, capability, url)`.
-- **HTTP state:** nullable ETag/Last-Modified/content hash; `checked_at`, nullable `source_updated_at`, last success/error times, sanitised error code, consecutive errors.
-- **Status:** source health, active, schema/adapter version, verification method/confidence.
-- **Timestamps:** created/updated/verified.
-- **Indexes:** `(university_id, capability, active)`, `(health, checked_at)`.
-- **Source:** seeded only from audited official URLs. Existing `http_cache_state` maps to the BSEU admissions source; no secret-bearing URL is permitted.
+- **PK/FK:** `id`; non-null `university_id` → universities `ON DELETE RESTRICT`.
+- **Identity:** non-null `source_type` and `source_url`; unique `(university_id, source_type, source_url)`. Adapter name and refresh interval are nullable because reference-only sources may not have an adapter/job.
+- **HTTP state:** nullable ETag/Last-Modified and last attempt/success/error fields; non-null consecutive failure count.
+- **Status:** non-null source health and enabled flag; stable machine values only.
+- **Timestamps:** created/updated; source-specific published/verified fields can be added with the domain records that need them.
+- **Indexes:** university, health status and enabled.
+- **Source:** the table is created empty in Migration B. Existing `http_cache_state` is not copied until the BSEU migration milestone; no secret-bearing URL is permitted.
 
 ### `scraper_runs` (retained and extended)
 
@@ -307,12 +306,12 @@ Legacy `notification_logs` remains unchanged through migration E. Migration logi
 
 | Domain | Machine value → Russian UI label |
 |---|---|
-| Institution kind | `university` → «университет»; `academy` → «академия»; `institute` → «институт»; `military_academy` → «военная академия»; `branch` → «филиал»; `other` → «другое» |
+| Institution kind | `university` → «университет»; `academy` → «академия»; `institute` → «институт»; `conservatory` → «консерватория»; `military_academy` → «военная академия»; `other` → «другое» |
 | Ownership type | `state` → «государственный»; `private` → «частный»; `mixed` → «смешанная форма»; `unknown` → «уточняется» |
-| Monitoring status | `online` → «мониторинг работает»; `candidate` → «кандидат на подключение»; `reference_only` → «только справочные данные»; `needs_research` → «требует исследования»; `disabled` → «отключён» |
-| Study form | `full_time` → «дневная»; `part_time` → «заочная»; `part_time_shortened` → «заочная сокращённая»; `distance` → «дистанционная»; `evening` → «вечерняя»; `other` → «другая» |
-| Funding type | `state_funded` → «бюджет»; `tuition_paid` → «платная»; `targeted` → «целевое обучение»; `other` → «другое» |
-| Source health | `healthy` → «доступен»; `degraded` → «частично доступен»; `unavailable` → «недоступен»; `schema_changed` → «источник изменился»; `disabled` → «отключён»; `needs_review` → «нужна проверка» |
+| Monitoring status | `online` → «мониторинг работает»; `partial` → «частичный мониторинг»; `periodic` → «периодическое обновление»; `reference_only` → «только справочные данные»; `unsupported` → «мониторинг не поддерживается»; `broken` → «мониторинг нарушен»; `needs_review` → «нужна проверка» |
+| Study form | `full_time` → «дневная»; `part_time` → «заочная»; `distance` → «дистанционная»; `evening` → «вечерняя»; `other` → «другая» |
+| Funding type | `budget` → «бюджет»; `paid` → «платная»; `targeted` → «целевое обучение»; `separate_competition` → «отдельный конкурс»; `other` → «другое» |
+| Source health | `healthy` → «доступен»; `stale` → «данные устарели»; `degraded` → «частично доступен»; `unavailable` → «недоступен»; `unknown` → «состояние неизвестно» |
 | Media type | `logo` → «логотип»; `campus` → «кампус»; `building` → «корпус»; `dormitory` → «общежитие»; `gallery` → «фотография»; `video` → «видео» |
 | Scholarship type | `academic` → «учебная»; `social` → «социальная»; `presidential` → «президентская»; `named` → «именная»; `university` → «стипендия вуза»; `other` → «другая» |
 | Notification event | `applications_changed` → «изменилось число заявлений»; `competition_started` → «начался конкурс»; `cutoff_range_changed` → «изменился предполагаемый диапазон»; `source_outage` → «источник недоступен»; `source_recovered` → «источник восстановлен»; `deadline_soon` → «скоро срок подачи» |
@@ -333,7 +332,7 @@ No current table "becomes" `universities`: the legacy schema has no university e
 
 1. Insert `universities`: code/slug `bseu`, current official names from the audited canonical dataset, institution `university`, ownership `state`, city/region Minsk, `monitoring_status=online`, official/admissions URLs and audit provenance.
 2. Insert one `programs` record for «Экономическая информатика». Preserve current display/normalized strings as aliases/mapping evidence if encoding audit reveals legacy representation differences.
-3. Insert the configured offering for the applicable admission year, `full_time + tuition_paid`. Admission year is an explicit migration parameter verified against source/snapshot dates; it must not be guessed silently. Plan comes from current accepted source data.
+3. Insert the configured offering for the applicable admission year, `full_time + paid`. Admission year is an explicit migration parameter verified against source/snapshot dates; it must not be guessed silently. Plan comes from current accepted source data.
 4. Add `program_offering_id` to each legacy snapshot by joining through a mapping table, not by name at every read.
 
 ### Mapping tables and preserved IDs
@@ -373,7 +372,7 @@ Alembic revisions are small and reversible. Each production upgrade requires an 
 
 ### Migration B — catalog schema
 
-- **Upgrade:** create universities, aliases, categories/link, programs, subjects/professions, offerings and record-level provenance columns; `data_sources` is deferred to D. Do not move or alter snapshots beyond safe additive structures agreed in revision.
+- **Upgrade:** create only universities, university categories/link, programs, offerings and the empty data-source foundation. Do not create aliases/subjects/professions yet and do not move or alter snapshots.
 - **Downgrade:** drop only new empty catalog tables in reverse FK order. Refuse automatic downgrade if they contain non-seed/user data unless explicit export/confirmation exists.
 - **Verification:** tables/constraints/indexes, seed-free row counts, foreign-key check, fresh-database upgrade and legacy API parity.
 - **Risk:** SQLite enum/check/index incompatibility or accidental name collision with legacy `specialties`.
@@ -387,9 +386,9 @@ Alembic revisions are small and reversible. Each production upgrade requires an 
 - **Risk:** wrong admission year/form/funding mapping, encoding mismatch or timestamp conversion.
 - **Rollback condition:** any ambiguous specialty, differing payload/hash/time, orphan, duplicate offering or endpoint difference. Roll back transaction/restore backup.
 
-### Migration D — finance, dormitory, media and source provenance
+### Migration D — finance, dormitory, media and expanded source provenance
 
-- **Upgrade:** create tuition, scholarship, dormitory, media and full data-source structures/indexes; migrate BSEU cache/run linkage if not done in C. No speculative facts are seeded.
+- **Upgrade:** create tuition, scholarship, dormitory and media tables; extend source provenance only for fields proven necessary by those domains. BSEU cache/run linkage belongs to C. No speculative facts are seeded.
 - **Downgrade:** remove new empty tables and optional FKs only after exporting/confirming no accepted facts; retain legacy cache/run data.
 - **Verification:** constraints for nullable unknowns/money, exact BSEU cache validators, run linkage counts, provenance-required checks and FK check.
 - **Risk:** losing conditional validators or accidentally treating missing facts as negative/zero.
