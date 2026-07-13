@@ -66,10 +66,16 @@ def save_snapshot_if_changed(
     row: ParsedSpecialty,
     user_score: int,
     metrics: AdmissionMetrics,
+    program_offering_id: int | None = None,
 ) -> tuple[AdmissionSnapshot, AdmissionSnapshot | None, bool]:
     previous = latest_snapshot(session, specialty.id)
     data_hash = normalized_snapshot_hash(row, user_score, metrics)
     if previous and previous.raw_data_hash == data_hash:
+        if program_offering_id is not None:
+            if previous.program_offering_id not in (None, program_offering_id):
+                raise RuntimeError("Existing snapshot has a conflicting canonical offering")
+            previous.program_offering_id = program_offering_id
+            session.flush()
         return previous, previous, False
     snapshot = AdmissionSnapshot(
         specialty_id=specialty.id,
@@ -85,6 +91,7 @@ def save_snapshot_if_changed(
         user_status=metrics.status,
         distribution_json=json.dumps(row.distribution, ensure_ascii=False, sort_keys=True),
         raw_data_hash=data_hash,
+        program_offering_id=program_offering_id,
     )
     session.add(snapshot)
     session.flush()

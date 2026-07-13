@@ -11,6 +11,18 @@ from sqlalchemy.orm import sessionmaker
 import app.main as main_module
 import app.scraper as scraper_module
 from app.calculations import calculate_metrics
+from app.catalog_models import (
+    DataSource,
+    FundingType,
+    InstitutionKind,
+    LegacySpecialtyMapping,
+    MonitoringStatus,
+    OwnershipType,
+    Program,
+    ProgramOffering,
+    StudyForm,
+    University,
+)
 from app.config import Settings
 from app.models import AdmissionSnapshot, HttpCacheState, NotificationLog, ScraperRun
 from app.parser import parse_document, select_specialties
@@ -22,6 +34,50 @@ from app.scraper import AdmissionScraper, NotModifiedWithoutSnapshotError
 def session_factory(tmp_path: Path, monkeypatch, test_engine_factory):
     engine: Engine = test_engine_factory(f"sqlite:///{tmp_path / 'test.db'}")
     factory = sessionmaker(bind=engine, expire_on_commit=False)
+    with factory() as session:
+        university = University(
+            code="bseu",
+            slug="bseu",
+            short_name="БГЭУ",
+            full_name="Белорусский государственный экономический университет",
+            institution_kind=InstitutionKind.UNIVERSITY,
+            ownership_type=OwnershipType.STATE,
+            official_site_url="https://bseu.by/",
+            monitoring_status=MonitoringStatus.ONLINE,
+            source_url="https://official.test/registry",
+            source_checked_at=datetime.now(UTC),
+        )
+        program = Program(
+            university=university,
+            code="6-05-0311-05",
+            slug="economic-informatics",
+            name="Экономическая информатика",
+            official_url="https://official.test/program",
+            source_checked_at=datetime.now(UTC),
+        )
+        session.add(
+            ProgramOffering(
+                program=program,
+                admission_year=2026,
+                study_form=StudyForm.FULL_TIME,
+                funding_type=FundingType.PAID,
+                places=60,
+                monitoring_supported=True,
+                monitoring_status=MonitoringStatus.ONLINE,
+                official_url="https://official.test/plan",
+                source_url="https://official.test/plan",
+                source_checked_at=datetime.now(UTC),
+            )
+        )
+        session.add(
+            DataSource(
+                university=university,
+                source_type="admission_xml",
+                source_url="https://example.test/data.xml",
+                enabled=True,
+            )
+        )
+        session.commit()
     monkeypatch.setattr(scraper_module, "SessionLocal", factory)
     return factory
 
@@ -129,8 +185,15 @@ async def test_304_without_snapshot_retries_once_without_conditions_and_saves_da
     assert result["snapshot_created"] is True
     assert seen_headers == [{"If-None-Match": '"orphaned-etag"'}, {}]
     with session_factory() as session:
-        assert session.query(AdmissionSnapshot).count() == 1
-        assert session.query(ScraperRun).one().status == "success"
+        snapshot = session.query(AdmissionSnapshot).one()
+        run = session.query(ScraperRun).one()
+        mapping = session.query(LegacySpecialtyMapping).one()
+        source = session.query(DataSource).one()
+        assert snapshot.program_offering_id == mapping.program_offering_id
+        assert run.status == "success"
+        assert run.data_source_id == source.id
+        assert source.last_success_at == run.finished_at
+        assert source.consecutive_failures == 0
 
 
 @pytest.mark.asyncio

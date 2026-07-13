@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -20,6 +21,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .models import Base
+
+if TYPE_CHECKING:
+    from .models import AdmissionSnapshot, ScraperRun, Specialty
 
 
 def utc_now() -> datetime:
@@ -202,6 +206,9 @@ class Program(Base):
 
     university: Mapped[University] = relationship(back_populates="programs")
     offerings: Mapped[list["ProgramOffering"]] = relationship(back_populates="program", passive_deletes=True)
+    legacy_mappings: Mapped[list["LegacySpecialtyMapping"]] = relationship(
+        back_populates="program", passive_deletes=True
+    )
 
 
 class ProgramOffering(Base):
@@ -244,6 +251,12 @@ class ProgramOffering(Base):
     )
 
     program: Mapped[Program] = relationship(back_populates="offerings")
+    legacy_mapping: Mapped["LegacySpecialtyMapping | None"] = relationship(
+        back_populates="program_offering", uselist=False, passive_deletes=True
+    )
+    legacy_snapshots: Mapped[list["AdmissionSnapshot"]] = relationship(
+        back_populates="program_offering", passive_deletes=True
+    )
 
 
 class DataSource(Base):
@@ -286,3 +299,33 @@ class DataSource(Base):
     )
 
     university: Mapped[University] = relationship(back_populates="data_sources")
+    legacy_scraper_runs: Mapped[list["ScraperRun"]] = relationship(
+        back_populates="data_source", passive_deletes=True
+    )
+
+
+class LegacySpecialtyMapping(Base):
+    __tablename__ = "legacy_specialty_mappings"
+    __table_args__ = (
+        UniqueConstraint("program_offering_id", name="uq_legacy_specialty_mappings_offering"),
+        CheckConstraint("mapping_version >= 1", name="mapping_version_positive"),
+        Index("ix_legacy_specialty_mappings_program_id", "program_id"),
+    )
+
+    legacy_specialty_id: Mapped[int] = mapped_column(
+        ForeignKey("specialties.id", ondelete="RESTRICT"), primary_key=True
+    )
+    program_id: Mapped[int] = mapped_column(ForeignKey("programs.id", ondelete="RESTRICT"))
+    program_offering_id: Mapped[int] = mapped_column(
+        ForeignKey("program_offerings.id", ondelete="RESTRICT")
+    )
+    mapping_version: Mapped[int] = mapped_column(Integer, default=1, server_default=text("1"))
+    mapped_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, server_default=text("CURRENT_TIMESTAMP")
+    )
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    legacy_specialty: Mapped["Specialty"] = relationship(back_populates="catalog_mapping")
+    program: Mapped[Program] = relationship(back_populates="legacy_mappings")
+    program_offering: Mapped[ProgramOffering] = relationship(back_populates="legacy_mapping")

@@ -34,7 +34,8 @@ from app.schema import (
 )
 
 BASELINE = "0001_legacy_baseline"
-HEAD = "0002_core_catalog_schema"
+CORE = "0002_core_catalog_schema"
+HEAD = "0003_backfill_bseu_catalog"
 LEGACY_TABLES = {
     "admission_snapshots",
     "http_cache_state",
@@ -49,6 +50,20 @@ CATALOG_TABLES = {
     "universities",
     "university_categories",
     "university_category_links",
+}
+BRIDGE_TABLES = {"legacy_specialty_mappings"}
+LEGACY_COLUMNS = {
+    "specialties": "id, normalized_name, display_name, study_form, funding_type, source_url, active",
+    "admission_snapshots": (
+        "id, specialty_id, fetched_at, source_updated_at, admission_plan, applications_total, competition, "
+        "estimated_cutoff_min, estimated_cutoff_max, user_score, estimated_user_position, user_status, "
+        "distribution_json, raw_data_hash"
+    ),
+    "scraper_runs": (
+        "id, started_at, finished_at, status, http_status, error_type, error_message, rows_found, content_hash"
+    ),
+    "notification_logs": "id, fingerprint, sent_at, message",
+    "http_cache_state": "url, etag, last_modified, checked_at",
 }
 
 FROZEN_LEGACY_DDL = """
@@ -141,9 +156,33 @@ def table_names(path: Path) -> set[str]:
 def legacy_rows(path: Path) -> dict[str, list[tuple[object, ...]]]:
     with sqlite3.connect(path) as connection:
         return {
-            table: list(connection.execute(f'SELECT * FROM "{table}" ORDER BY rowid'))
+            table: list(
+                connection.execute(f'SELECT {LEGACY_COLUMNS[table]} FROM "{table}" ORDER BY rowid')
+            )
             for table in sorted(LEGACY_TABLES)
         }
+
+
+def assert_bseu_seed(connection: sqlite3.Connection, *, mapping_count: int) -> None:
+    expected_counts = {
+        "universities": 1,
+        "university_categories": 1,
+        "university_category_links": 1,
+        "programs": 1,
+        "program_offerings": 1,
+        "data_sources": 1,
+        "legacy_specialty_mappings": mapping_count,
+    }
+    for table, expected in expected_counts.items():
+        assert connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0] == expected
+    assert connection.execute("SELECT code, slug FROM universities").fetchone() == ("bseu", "bseu")
+    assert connection.execute("SELECT code, name FROM programs").fetchone() == (
+        "6-05-0311-05",
+        "Экономическая информатика",
+    )
+    assert connection.execute(
+        "SELECT admission_year, study_form, funding_type, places FROM program_offerings"
+    ).fetchone() == (2026, "full_time", "paid", 60)
 
 
 def seed_legacy_database(path: Path) -> dict[str, list[tuple[object, ...]]]:
@@ -189,12 +228,11 @@ def test_fresh_database_upgrade_head(tmp_path: Path) -> None:
     command.upgrade(make_alembic_config(sqlite_url(database)), "head")
 
     assert revision(database) == HEAD
-    assert LEGACY_TABLES | CATALOG_TABLES | {"alembic_version"} == table_names(database)
+    assert LEGACY_TABLES | CATALOG_TABLES | BRIDGE_TABLES | {"alembic_version"} == table_names(database)
     with sqlite3.connect(database) as connection:
         assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         assert list(connection.execute("PRAGMA foreign_key_check")) == []
-        for table in CATALOG_TABLES:
-            assert connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0] == 0
+        assert_bseu_seed(connection, mapping_count=0)
 
 
 def test_baseline_matches_independent_legacy_fingerprint(tmp_path: Path) -> None:
@@ -260,8 +298,11 @@ def test_existing_legacy_database_stamp_and_upgrade_preserves_rows(tmp_path: Pat
             for table in LEGACY_TABLES
         }
         assert after_counts == before_counts
-        for table in CATALOG_TABLES:
-            assert connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0] == 0
+        assert_bseu_seed(connection, mapping_count=1)
+        assert connection.execute(
+            "SELECT program_offering_id FROM admission_snapshots"
+        ).fetchall() == [(1,)]
+        assert connection.execute("SELECT data_source_id FROM scraper_runs").fetchall() == [(1,)]
     assert legacy_rows(database) == expected_legacy_rows
 
 
@@ -448,20 +489,23 @@ def test_catalog_unique_constraints(tmp_path: Path) -> None:
     engine.dispose()
 
 
-def test_catalog_downgrade_refuses_non_empty_tables(tmp_path: Path) -> None:
+def test_bseu_downgrade_refuses_new_dependencies(tmp_path: Path) -> None:
     database = tmp_path / "non-empty-downgrade.db"
     engine = _migrated_engine(database)
     with Session(engine) as session:
-        session.add(university("kept", "kept"))
+        bseu = session.scalar(select(University).where(University.code == "bseu"))
+        assert bseu is not None
+        session.add(program(bseu, "unexpected"))
         session.commit()
     engine.dispose()
 
-    with pytest.raises(RuntimeError, match="non-empty catalog schema"):
-        command.downgrade(make_alembic_config(sqlite_url(database)), BASELINE)
+    with pytest.raises(RuntimeError, match="unexpected dependent rows in programs"):
+        command.downgrade(make_alembic_config(sqlite_url(database)), CORE)
 
     assert revision(database) == HEAD
     with sqlite3.connect(database) as connection:
-        assert connection.execute("SELECT code FROM universities").fetchall() == [("kept",)]
+        assert connection.execute("SELECT code FROM universities").fetchall() == [("bseu",)]
+        assert connection.execute("SELECT COUNT(*) FROM programs").fetchone()[0] == 2
 
 
 def test_catalog_delete_is_restricted_and_legacy_is_untouched(tmp_path: Path) -> None:

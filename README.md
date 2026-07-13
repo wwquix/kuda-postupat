@@ -125,8 +125,13 @@ Production-схема изменяется только явными Alembic-к�
 # применить migrations
 .\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini upgrade head
 
-# откатить только пустую catalog revision на тестовой копии
-.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini downgrade 0001_legacy_baseline
+# откатить только guarded BSEU backfill на тестовой копии
+.\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini downgrade 0002_core_catalog_schema
+
+# проверить канонические BSEU-связи после upgrade
+Push-Location backend
+..\.venv\Scripts\python.exe -m app.cli verify-bseu-backfill
+Pop-Location
 ```
 
 Для первой регистрации существующей legacy-базы:
@@ -145,7 +150,7 @@ Pop-Location
 .\.venv\Scripts\python.exe -m alembic -c backend\alembic.ini upgrade head
 ```
 
-Baseline downgrade является no-op и не удаляет legacy history. Catalog downgrade удаляет только пустые catalog tables и проверяется исключительно на копии.
+Baseline downgrade является no-op и не удаляет legacy history. Revision `0002` удаляет только пустые catalog tables. Guarded downgrade revision `0003` удаляет только точные migration-owned BSEU seed/link rows и сохраняет legacy history; оба downgrade проверяются исключительно на копиях.
 
 > Downgrade production database выполняется только после backup и проверки на копии.
 

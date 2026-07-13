@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
+from .catalog_api import router as catalog_router
 from .config import get_settings
 from .database import get_db, init_db
 from .models import AdmissionSnapshot, ScraperRun, Specialty
@@ -64,6 +65,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Authorization", "Content-Type", "X-Refresh-Token"],
 )
+app.include_router(catalog_router)
 
 
 def _get_specialty(session: Session, specialty_id: int) -> Specialty:

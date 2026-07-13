@@ -6,12 +6,14 @@ from datetime import UTC, datetime, timedelta
 import httpx
 from sqlalchemy import desc, select
 
+from .bseu_mapping import ensure_bseu_mapping_for_specialty
 from .calculations import calculate_metrics
 from .config import Settings
 from .database import SessionLocal
 from .models import AdmissionSnapshot, HttpCacheState, ScraperRun
 from .parser import ParserError, parse_document, select_specialties
 from .repository import get_or_create_specialty, save_snapshot_if_changed
+from .source_runtime import attach_run_to_source, record_source_error, record_source_success
 from .telegram import TelegramDeliveryError, build_change_message, send_once
 
 logger = logging.getLogger(__name__)
@@ -78,6 +80,7 @@ class AdmissionScraper:
                     raise RefreshTooSoonError("Повторный запрос разрешен не чаще одного раза в 5 минут")
                 run = ScraperRun(started_at=started, status="running", rows_found=0)
                 session.add(run)
+                source = attach_run_to_source(session, run, self.settings.data_url, started)
                 session.commit()
                 cache = session.get(HttpCacheState, self.settings.data_url)
                 headers = {}
@@ -113,6 +116,7 @@ class AdmissionScraper:
                             run.finished_at = datetime.now(UTC)
                             if cache:
                                 cache.checked_at = run.finished_at
+                            record_source_success(source, cache, run.finished_at)
                             session.commit()
                             return {
                                 "status": "not_modified",
@@ -137,11 +141,17 @@ class AdmissionScraper:
                     messages: list[str] = []
                     for row in selected:
                         specialty = get_or_create_specialty(session, row, self.settings.source_page_url)
+                        program_offering_id = ensure_bseu_mapping_for_specialty(session, specialty)
                         metrics = calculate_metrics(
                             row.admission_plan, row.applications_total, row.distribution, self.settings.user_score
                         )
                         snapshot, previous, was_created = save_snapshot_if_changed(
-                            session, specialty, row, self.settings.user_score, metrics
+                            session,
+                            specialty,
+                            row,
+                            self.settings.user_score,
+                            metrics,
+                            program_offering_id,
                         )
                         created += int(was_created)
                         if was_created:
@@ -156,6 +166,7 @@ class AdmissionScraper:
                     cache.checked_at = datetime.now(UTC)
                     run.status = "success"
                     run.finished_at = datetime.now(UTC)
+                    record_source_success(source, cache, run.finished_at)
                     session.commit()
                     for message in messages:
                         try:
@@ -186,6 +197,7 @@ class AdmissionScraper:
                     run.error_message = str(exc)[:2000]
                     if isinstance(exc, httpx.HTTPStatusError):
                         run.http_status = exc.response.status_code
+                    record_source_error(source, run)
                     session.commit()
                     recent_runs = session.scalars(
                         select(ScraperRun).order_by(desc(ScraperRun.started_at)).limit(3)
