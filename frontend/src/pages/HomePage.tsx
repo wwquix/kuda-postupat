@@ -50,6 +50,7 @@ export function HomePage() {
               {catalogCount.status === 'available' && <p className="text-lg font-semibold">В каталоге платформы — <strong className="text-3xl font-extrabold text-ink">{catalogCount.universities}</strong> университетов Беларуси.</p>}
               {catalogCount.status === 'unavailable' && <p className="text-sm leading-6 text-ink/65">Количество вузов временно не удалось подтвердить. Обновите страницу позже.</p>}
             </div>
+            <Link className="mt-3 inline-flex items-center gap-2 font-bold text-moss hover:underline" to="/universities">Открыть каталог вузов <ArrowRight aria-hidden="true" size={17} /></Link>
           </div>
           <div className="rounded-2xl border border-moss/15 bg-mint/70 p-5">
             <div className="flex items-center gap-3 text-moss"><RadioTower aria-hidden="true" size={20} /><h2 className="text-base font-bold">Live-мониторинг</h2></div>

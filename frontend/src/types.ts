@@ -1,13 +1,72 @@
 export interface Specialty { id: number; display_name: string; study_form: string; funding_type: string; source_url: string }
+export interface CatalogCategory { code: string; label_ru: string }
+export interface CatalogCounts {
+  universities: number
+  programs: number
+  offerings: number
+  universities_with_programs: number
+  universities_with_admissions_url: number
+}
 export interface CatalogMeta {
-  counts: {
-    universities: number
-    programs: number
-    offerings: number
-    universities_with_programs: number
-    universities_with_admissions_url: number
+  cities: string[]
+  regions: string[]
+  ownership_types: string[]
+  institution_kinds: string[]
+  categories: CatalogCategory[]
+  monitoring_statuses: string[]
+  admission_years: number[]
+  study_forms: string[]
+  funding_types: string[]
+  counts: CatalogCounts
+  pagination: {
+    default_page_size: number
+    maximum_page_size: number
   }
-  coverage: { state: string; note: string }
+  coverage: {
+    universities_total: number
+    universities_with_imported_programs: number
+    programs_total: number
+    offerings_total: number
+    state: string
+    note: string
+  }
+}
+export interface UniversityCoverage {
+  programs: 'available' | 'not_imported'
+  offerings: 'available' | 'not_imported'
+  online_monitoring: 'available' | 'not_implemented'
+  note: string
+}
+export interface UniversityListItem {
+  id: number
+  code: string
+  slug: string
+  short_name: string
+  full_name: string
+  institution_kind: string
+  ownership_type: string
+  city: string | null
+  region: string | null
+  official_site_url: string
+  admissions_url: string | null
+  monitoring_status: string
+  active: boolean
+  categories: CatalogCategory[]
+  program_count: number
+  offering_count: number
+  coverage: UniversityCoverage
+}
+export interface Pagination {
+  page: number
+  page_size: number
+  total_items: number
+  total_pages: number
+  has_next: boolean
+  has_previous: boolean
+}
+export interface UniversityListResponse {
+  items: UniversityListItem[]
+  pagination: Pagination
 }
 export interface Snapshot {
   id: number; specialty_id: number; specialty: string; study_form: string; funding_type: string;

@@ -18,6 +18,7 @@ export function SiteLayout() {
         </Link>
         <nav aria-label="Основная навигация" className="flex flex-wrap items-center gap-1">
           <NavLink className={navigationClass} end to="/">Главная</NavLink>
+          <NavLink className={navigationClass} to="/universities">Вузы</NavLink>
           <NavLink className={navigationClass} to="/monitor">Монитор поступления</NavLink>
         </nav>
       </div>

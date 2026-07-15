@@ -18,6 +18,8 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 
 Главная страница: `http://127.0.0.1:5173/`
 
+Каталог вузов: `http://127.0.0.1:5173/universities`
+
 Монитор поступления БГЭУ: `http://127.0.0.1:5173/monitor`
 
 Backend API: `http://127.0.0.1:8000`
