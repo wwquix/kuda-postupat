@@ -130,3 +130,45 @@ export interface Snapshot {
   last_checked_at?: string;
 }
 export interface CollectorStatus { state: string; consecutive_errors: number; next_run_at: string | null; last_run: null | { status: string; error_message: string | null; finished_at: string | null; rows_found: number } }
+
+export interface AnonymousProfile {
+  personal_score: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PersonalAdmissionStatus {
+  offering_id: number
+  snapshot_id: number
+  fetched_at: string
+  status: string
+  competition: number
+  estimated_cutoff_min: number | null
+  estimated_cutoff_max: number | null
+  estimated_user_position: number | null
+  margin_min: number | null
+  margin_max: number | null
+  has_competition: boolean
+}
+
+export interface SavedUniversity {
+  saved_at: string
+  university: UniversityListItem
+}
+
+export interface SavedProgram {
+  saved_at: string
+  program: ImportedProgram
+  monitoring_state: 'available' | 'score_required' | 'temporarily_unavailable' | 'unsupported'
+  monitoring: PersonalAdmissionStatus | null
+}
+
+export interface SavedAdmissionList {
+  profile: AnonymousProfile
+  universities: SavedUniversity[]
+  programs: SavedProgram[]
+}
+
+export interface AnonymousProfileCreated extends SavedAdmissionList {
+  token: string
+}

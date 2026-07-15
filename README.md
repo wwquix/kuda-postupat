@@ -24,6 +24,8 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 
 Страница программы: `http://127.0.0.1:5173/universities/bseu/programs/economic-informatics`
 
+Анонимный список поступления: `http://127.0.0.1:5173/my-list`
+
 Монитор поступления БГЭУ: `http://127.0.0.1:5173/monitor`
 
 Backend API: `http://127.0.0.1:8000`
@@ -444,6 +446,10 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 - `GET /api/programs` и `GET /api/programs/{id}` — общий каталог программ
 - `GET /api/catalog/meta` — значения фильтров и database-derived счётчики
 - `GET /api/catalog/health` — локальная целостность каталога без внешних запросов
+- `POST /api/profile` — лениво создать анонимный профиль и один раз получить raw token
+- `GET /api/profile`, `PATCH /api/profile/score`, `GET /api/profile/saved` — читать список и управлять личным баллом через `Authorization: Bearer ...`
+- `PUT`/`DELETE /api/profile/universities/{slug}` — сохранить или удалить вуз
+- `PUT`/`DELETE /api/profile/programs/{university_slug}/{program_slug}` — сохранить или удалить программу
 - `GET /api/health`
 - `GET /api/config` — только публичная конфигурация, без secret values
 - `GET /api/status`
@@ -454,6 +460,7 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 - `POST /api/refresh` — `X-Refresh-Token` или `Authorization: Bearer ...`
 
 Полный контракт catalog/search API, включая обязательную пагинацию и семантику неполного покрытия, описан в `docs/catalog-search-api.md`.
+Контракт анонимной идентичности, хранения token и `/my-list` описан в `docs/anonymous-admission-list.md`.
 
 ## Docker как дополнительный вариант
 

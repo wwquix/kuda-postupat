@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from app import catalog_models  # noqa: F401 -- registers catalog tables on shared metadata
+from app import catalog_models, profile_models  # noqa: F401 -- registers all mapped tables
 from app.config import get_settings, resolve_database_url
 from app.models import Base
 

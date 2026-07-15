@@ -87,6 +87,8 @@
 
 ## 8. Anonymous profiles, favorites and compare
 
+- **Status:** M-MY-LIST-01 complete: первый пользовательский срез добавляет анонимный профиль, один личный балл, сохранённые University/Program и `/my-list`. Compare, cross-device merge и аккаунты не реализованы. Следующий выбранный milestone остаётся M-BSEU-ADAPTER-01 из раздела 4.
+
 - **Goal:** add privacy-conscious anonymous server profiles and optional cross-device state.
 - **In scope:** signed HttpOnly cookie, public UUID, server preferences, favorites, compare decision/implementation if justified, localStorage merge contract.
 - **Out of scope:** email/password login, Telegram linking, watchlist notifications, frontend redesign beyond integration needs.

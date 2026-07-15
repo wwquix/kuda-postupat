@@ -5,6 +5,8 @@ from urllib.parse import urljoin
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from .admission_score import MAX_ADMISSION_SCORE, MIN_ADMISSION_SCORE
+
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = BACKEND_DIR.parent
 
@@ -22,7 +24,7 @@ class Settings(BaseSettings):
     target_specialties: str = "Экономическая информатика"
     study_form: str = "дневная"
     funding_type: str = "платная"
-    user_score: int = Field(default=276, ge=0, le=500)
+    user_score: int = Field(default=276, ge=MIN_ADMISSION_SCORE, le=MAX_ADMISSION_SCORE)
     poll_interval_minutes: int = Field(default=10, ge=5)
     timezone: str = "Europe/Minsk"
     database_url: str = "sqlite:///./data/admission.db"

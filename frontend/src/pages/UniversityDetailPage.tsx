@@ -12,6 +12,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 
 import { api, ApiError } from '../api'
 import { apiValueLabel, formatCatalogDate, sourceTypeLabel } from '../catalogPresentation'
+import { SaveControl } from '../components/SaveControl'
 import type { ImportedProgram, OfferingSummary, UniversityDetail } from '../types'
 import { useDocumentTitle } from '../useDocumentTitle'
 
@@ -172,6 +173,9 @@ export function UniversityDetailPage() {
         <div className="eyebrow">{university.short_name}</div>
         <h1 className="mt-3 break-words text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{university.full_name}</h1>
         {university.description && <p className="mt-5 break-words text-lg leading-8 text-ink/70">{university.description}</p>}
+        <div className="mt-5">
+          <SaveControl kind="university" label={university.full_name} universitySlug={university.slug} />
+        </div>
       </header>
 
       <div className="mt-8 grid min-w-0 gap-5 lg:grid-cols-2">

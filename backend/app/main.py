@@ -15,6 +15,7 @@ from .catalog_api import router as catalog_router
 from .config import get_settings
 from .database import get_db, init_db
 from .models import AdmissionSnapshot, ScraperRun, Specialty
+from .profile_api import router as profile_router
 from .repository import latest_snapshot, snapshot_to_dict
 from .scraper import AdmissionScraper, RefreshInProgressError, RefreshTooSoonError
 
@@ -66,10 +67,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type", "X-Refresh-Token"],
 )
 app.include_router(catalog_router)
+app.include_router(profile_router)
 
 
 def _get_specialty(session: Session, specialty_id: int) -> Specialty:

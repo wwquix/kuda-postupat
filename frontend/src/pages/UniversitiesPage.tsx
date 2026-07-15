@@ -16,6 +16,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom'
 
 import { api } from '../api'
 import { apiValueLabel } from '../catalogPresentation'
+import { SaveControl } from '../components/SaveControl'
 import type { CatalogMeta, UniversityListItem, UniversityListResponse } from '../types'
 import {
   buildUniversityApiParams,
@@ -258,6 +259,7 @@ function UniversityCard({ university, returnTo }: { university: UniversityListIt
       {hasLiveMonitoring && <Link className="inline-flex items-center gap-1.5 font-semibold text-moss hover:underline" to="/monitor">
         <RadioTower aria-hidden="true" size={16} />Live-мониторинг БГЭУ
       </Link>}
+      <SaveControl kind="university" label={university.full_name} universitySlug={university.slug} />
     </div>
   </article>
 }

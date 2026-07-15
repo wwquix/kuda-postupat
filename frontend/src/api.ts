@@ -1,7 +1,10 @@
 import type {
   CatalogMeta,
   CollectorStatus,
+  AnonymousProfile,
+  AnonymousProfileCreated,
   ImportedProgram,
+  SavedAdmissionList,
   Snapshot,
   Specialty,
   UniversityDetail,
@@ -26,6 +29,14 @@ const json = async <T,>(url: string, init?: RequestInit): Promise<T> => {
   return response.json()
 }
 
+const profileJson = <T,>(token: string, url: string, init?: RequestInit) => json<T>(url, {
+  ...init,
+  headers: {
+    ...init?.headers,
+    Authorization: `Bearer ${token}`,
+  },
+})
+
 export const api = {
   catalogMeta: (signal?: AbortSignal) => json<CatalogMeta>(
     `${apiBase}/catalog/meta`,
@@ -48,4 +59,44 @@ export const api = {
   history: (id: number) => json<Snapshot[]>(`${apiBase}/specialties/${id}/history?limit=200`),
   status: () => json<CollectorStatus>(`${apiBase}/status`),
   refresh: (token: string) => json<{ status: string }>(`${apiBase}/refresh`, { method: 'POST', headers: { 'X-Refresh-Token': token } }),
+  createProfile: () => json<AnonymousProfileCreated>(`${apiBase}/profile`, { method: 'POST' }),
+  profile: (token: string, signal?: AbortSignal) => profileJson<AnonymousProfile>(
+    token,
+    `${apiBase}/profile`,
+    signal ? { signal } : undefined,
+  ),
+  savedAdmissionList: (token: string, signal?: AbortSignal) => profileJson<SavedAdmissionList>(
+    token,
+    `${apiBase}/profile/saved`,
+    signal ? { signal } : undefined,
+  ),
+  updateProfileScore: (token: string, score: number | null) => profileJson<SavedAdmissionList>(
+    token,
+    `${apiBase}/profile/score`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score }),
+    },
+  ),
+  saveUniversity: (token: string, slug: string) => profileJson<SavedAdmissionList>(
+    token,
+    `${apiBase}/profile/universities/${encodeURIComponent(slug)}`,
+    { method: 'PUT' },
+  ),
+  removeUniversity: (token: string, slug: string) => profileJson<SavedAdmissionList>(
+    token,
+    `${apiBase}/profile/universities/${encodeURIComponent(slug)}`,
+    { method: 'DELETE' },
+  ),
+  saveProgram: (token: string, universitySlug: string, programSlug: string) => profileJson<SavedAdmissionList>(
+    token,
+    `${apiBase}/profile/programs/${encodeURIComponent(universitySlug)}/${encodeURIComponent(programSlug)}`,
+    { method: 'PUT' },
+  ),
+  removeProgram: (token: string, universitySlug: string, programSlug: string) => profileJson<SavedAdmissionList>(
+    token,
+    `${apiBase}/profile/programs/${encodeURIComponent(universitySlug)}/${encodeURIComponent(programSlug)}`,
+    { method: 'DELETE' },
+  ),
 }

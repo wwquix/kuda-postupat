@@ -12,6 +12,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 
 import { api, ApiError } from '../api'
 import { apiValueLabel, formatCatalogDate } from '../catalogPresentation'
+import { SaveControl } from '../components/SaveControl'
 import type { ImportedProgram, OfferingSummary } from '../types'
 import { useDocumentTitle } from '../useDocumentTitle'
 
@@ -144,6 +145,14 @@ export function ProgramDetailPage() {
         <Link className="mt-5 inline-flex items-center gap-2 rounded-sm font-bold text-moss underline decoration-moss/30 underline-offset-4 hover:decoration-moss" to={`/universities/${encodeURIComponent(program.university.slug)}`}>
           <Building2 aria-hidden="true" size={18} />{program.university.short_name}
         </Link>
+        <div className="mt-5">
+          <SaveControl
+            kind="program"
+            label={program.name}
+            programSlug={program.slug}
+            universitySlug={program.university.slug}
+          />
+        </div>
       </header>
 
       <div className="mt-8 grid min-w-0 gap-5 lg:grid-cols-2">
