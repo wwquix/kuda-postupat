@@ -39,3 +39,24 @@ def test_relative_database_url_is_resolved_against_backend(monkeypatch, tmp_path
 def test_absolute_production_database_url_is_unchanged() -> None:
     production_url = "sqlite:////var/lib/bseu-admission-monitor/admission.db"
     assert resolve_database_url(production_url) == production_url
+
+
+def test_development_safe_mode_is_off_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("DEVELOPMENT_SAFE_MODE", raising=False)
+    assert Settings(_env_file=None).development_safe_mode is False
+
+
+@pytest.mark.parametrize(("value", "expected"), [("true", True), ("false", False)])
+def test_development_safe_mode_parses_only_explicit_environment_value(
+    monkeypatch: pytest.MonkeyPatch, value: str, expected: bool
+) -> None:
+    monkeypatch.setenv("DEVELOPMENT_SAFE_MODE", value)
+    assert Settings(_env_file=None).development_safe_mode is expected
+
+
+def test_invalid_development_safe_mode_does_not_activate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DEVELOPMENT_SAFE_MODE", "development")
+    with pytest.raises(ValidationError, match="development_safe_mode"):
+        Settings(_env_file=None)

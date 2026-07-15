@@ -40,6 +40,10 @@ async def scheduled_refresh() -> None:
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
+    if settings.development_safe_mode:
+        logger.info("Development-safe mode active; background scheduler and startup refresh are disabled")
+        yield
+        return
     scheduler.add_job(
         scheduled_refresh,
         "interval",

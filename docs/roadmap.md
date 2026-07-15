@@ -133,6 +133,8 @@
 
 - **Status:** M-DETAIL-01 (public University detail vertical slice) is complete. The next already-planned slice is the separate Program detail UI from this section; it has not been started.
 
+- **Blocking repair:** M-DEV-SAFETY-01 is complete: `start-dev.ps1` uses an explicit side-effect-free development mode before Program detail work begins.
+
 - **Goal:** expose `/universities/:slug`, program listing and `/programs/:id` with normalized offerings.
 - **In scope:** profile facts, offerings grouped by year/form/funding, tuition/scholarship/dormitory/media when sourced, source panels, favorite/compare hooks.
 - **Out of scope:** inventing missing content, collapsing Program and ProgramOffering, treating current estimates as history.

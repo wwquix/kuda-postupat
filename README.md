@@ -28,6 +28,12 @@ Backend API: `http://127.0.0.1:8000`
 
 OpenAPI: `http://127.0.0.1:8000/docs`
 
+`start-dev.ps1` запускает backend с process-only настройкой `DEVELOPMENT_SAFE_MODE=true`:
+APScheduler, автоматический startup refresh и связанная с ним фоновая отправка
+Telegram в этой development-сессии отключены. `.env` при этом не изменяется.
+Подробный контракт и проверка нулевых side effects описаны в
+`docs/development-startup.md`.
+
 `setup.ps1` создаёт `.venv`, устанавливает Python/Node зависимости и, только если `.env` отсутствует, копирует `.env.example` и генерирует случайный `MANUAL_REFRESH_TOKEN`. Значение token не печатается. Существующий `.env` никогда не перезаписывается.
 
 Локально допускается Python новее 3.12 с предупреждением. Production unit использует системный `python3` Ubuntu 24.04.
@@ -44,7 +50,10 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 
 Для существующей unversioned legacy-базы setup намеренно отказывается автоматически ставить stamp. Сначала создайте и проверьте backup, затем выполните процедуру из раздела «Alembic migrations» ниже.
 
-После подготовки схемы первый запуск backend выполняет live refresh. Если БГЭУ временно недоступен, frontend показывает понятную ошибку и не подставляет фиктивные данные.
+При обычном backend startup с production-default `DEVELOPMENT_SAFE_MODE=false`
+первый запуск выполняет live refresh. `start-dev.ps1` явно переопределяет режим
+только для локального browser QA и не запускает этот refresh. Уже сохранённые
+данные остаются доступны; фиктивные значения не подставляются.
 
 ## Последующие запуски
 
@@ -52,7 +61,13 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 .\start-dev.ps1
 ```
 
-PID хранятся в `.runtime`. Повторный запуск проверяет принадлежность PID этому проекту и не создаёт вторые backend, frontend или scheduler.
+PID хранятся в `.runtime`. Повторный запуск проверяет принадлежность PID этому
+проекту и не создаёт вторые backend или frontend. Scheduler в safe development
+mode не запускается вообще.
+
+Каждый новый backend-процесс из `start-dev.ps1` наследует
+`DEVELOPMENT_SAFE_MODE=true`; после запуска скрипт восстанавливает прежнее
+значение переменной в вызывающей PowerShell-сессии.
 
 ## Остановка
 

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     poll_interval_minutes: int = Field(default=10, ge=5)
     timezone: str = "Europe/Minsk"
     database_url: str = "sqlite:///./data/admission.db"
+    development_safe_mode: bool = False
     telegram_enabled: bool = False
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""

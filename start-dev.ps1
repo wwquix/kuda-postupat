@@ -32,11 +32,21 @@ $backendRunning = Test-ProjectProcess $backendPidFile 'uvicorn'
 $frontendRunning = Test-ProjectProcess $frontendPidFile $Root
 
 if (-not $backendRunning) {
-    $backend = Start-Process -FilePath $VenvPython `
-        -ArgumentList @('-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', '8000') `
-        -WorkingDirectory $BackendDir -PassThru -WindowStyle Hidden `
-        -RedirectStandardOutput (Join-Path $Runtime 'backend.stdout.log') `
-        -RedirectStandardError (Join-Path $Runtime 'backend.stderr.log')
+    $previousDevelopmentSafeMode = [Environment]::GetEnvironmentVariable('DEVELOPMENT_SAFE_MODE', 'Process')
+    try {
+        $env:DEVELOPMENT_SAFE_MODE = 'true'
+        $backend = Start-Process -FilePath $VenvPython `
+            -ArgumentList @('-m', 'uvicorn', 'app.main:app', '--host', '127.0.0.1', '--port', '8000') `
+            -WorkingDirectory $BackendDir -PassThru -WindowStyle Hidden `
+            -RedirectStandardOutput (Join-Path $Runtime 'backend.stdout.log') `
+            -RedirectStandardError (Join-Path $Runtime 'backend.stderr.log')
+    } finally {
+        if ($null -eq $previousDevelopmentSafeMode) {
+            Remove-Item Env:DEVELOPMENT_SAFE_MODE -ErrorAction SilentlyContinue
+        } else {
+            $env:DEVELOPMENT_SAFE_MODE = $previousDevelopmentSafeMode
+        }
+    }
     Set-Content -LiteralPath $backendPidFile -Value $backend.Id -Encoding ascii
 }
 
@@ -62,4 +72,5 @@ if ($health.status -ne 'ok' -or $response.StatusCode -ne 200) { throw 'Прое�
 Write-Host 'Backend:  http://127.0.0.1:8000'
 Write-Host 'Homepage: http://127.0.0.1:5173/'
 Write-Host 'Monitor:  http://127.0.0.1:5173/monitor'
+Write-Host 'Безопасный dev-режим: scheduler, автоматический refresh и фоновая отправка Telegram отключены.'
 if ($backendRunning -and $frontendRunning) { Write-Host 'Проект уже был запущен; повторные процессы не созданы.' }
