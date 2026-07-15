@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 import app.main as main
 import app.scraper as scraper_module
+from app.adapters import BSEU_ADAPTER_KEY
 from app.config import Settings
 
 
@@ -111,5 +112,5 @@ async def test_default_lifespan_preserves_production_scheduler_and_initial_refre
     assert args == ("interval",)
     assert kwargs["id"] == "admission-refresh"
     assert scheduler.start_calls == 1
-    refresh.assert_awaited_once_with()
+    refresh.assert_awaited_once_with(BSEU_ADAPTER_KEY)
     assert scheduler.shutdown_calls == [False]

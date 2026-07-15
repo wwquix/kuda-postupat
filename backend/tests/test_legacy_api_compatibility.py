@@ -8,6 +8,7 @@ from test_bseu_backfill import seed_core_database, sqlite_url
 
 from alembic import command
 from app import main
+from app.adapters import BSEU_ADAPTER_KEY
 from app.database import get_db
 from app.schema import make_alembic_config
 
@@ -45,7 +46,8 @@ def test_all_legacy_api_contracts_remain_compatible(tmp_path: Path, monkeypatch)
         with session_factory() as session:
             yield session
 
-    async def fake_refresh() -> dict:
+    async def fake_refresh(adapter_key: str) -> dict:
+        assert adapter_key == BSEU_ADAPTER_KEY
         return {"status": "success", "changed": False, "snapshot_created": False, "created": 0, "rows_found": 77}
 
     main.app.dependency_overrides[get_db] = override_db

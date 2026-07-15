@@ -1,6 +1,7 @@
 import httpx
 import pytest
 
+from app.adapters import build_bseu_monitoring_registry
 from app.config import Settings
 from app.scraper import AdmissionScraper
 
@@ -30,9 +31,10 @@ async def test_http_500_is_retried_and_raised(monkeypatch) -> None:
     FakeClient.outcomes = [httpx.Response(500, request=request), httpx.Response(500, request=request)]
     monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
     monkeypatch.setattr("app.scraper.asyncio.sleep", lambda _delay: _immediate())
-    scraper = AdmissionScraper(Settings(request_retries=2, source_data_url="https://example.test"))
+    settings = Settings(request_retries=2, source_data_url="https://example.test")
+    scraper = AdmissionScraper(settings, build_bseu_monitoring_registry(settings))
     with pytest.raises(httpx.HTTPStatusError):
-        await scraper._fetch({})
+        await scraper._fetch(settings.data_url, {})
 
 
 @pytest.mark.asyncio
@@ -40,9 +42,10 @@ async def test_timeout_is_retried_and_raised(monkeypatch) -> None:
     FakeClient.outcomes = [httpx.ReadTimeout("timeout"), httpx.ReadTimeout("timeout")]
     monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
     monkeypatch.setattr("app.scraper.asyncio.sleep", lambda _delay: _immediate())
-    scraper = AdmissionScraper(Settings(request_retries=2, source_data_url="https://example.test"))
+    settings = Settings(request_retries=2, source_data_url="https://example.test")
+    scraper = AdmissionScraper(settings, build_bseu_monitoring_registry(settings))
     with pytest.raises(httpx.ReadTimeout):
-        await scraper._fetch({})
+        await scraper._fetch(settings.data_url, {})
 
 
 async def _immediate() -> None:

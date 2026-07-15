@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
+from .adapters import BSEU_ADAPTER_KEY, build_bseu_monitoring_registry
 from .catalog_api import router as catalog_router
 from .config import get_settings
 from .database import get_db, init_db
@@ -25,13 +26,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 settings = get_settings()
-scraper = AdmissionScraper(settings)
+adapter_registry = build_bseu_monitoring_registry(settings)
+scraper = AdmissionScraper(settings, adapter_registry)
 scheduler = AsyncIOScheduler(timezone=settings.timezone)
+
+
+async def refresh_bseu() -> dict:
+    return await scraper.refresh(BSEU_ADAPTER_KEY)
 
 
 async def scheduled_refresh() -> None:
     try:
-        await scraper.refresh()
+        await refresh_bseu()
     except RefreshTooSoonError:
         logger.info("Scheduled refresh skipped because of the five-minute limit")
     except Exception:
@@ -244,7 +250,7 @@ async def manual_refresh(
     if token != settings.manual_refresh_token:
         raise HTTPException(status_code=401, detail="Неверный токен ручного обновления")
     try:
-        return await scraper.refresh()
+        return await refresh_bseu()
     except RefreshInProgressError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except RefreshTooSoonError as exc:

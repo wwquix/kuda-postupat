@@ -43,6 +43,8 @@
 
 ## 4. BSEU adapter extraction and registry
 
+- **Status:** M-BSEU-ADAPTER-01 complete. GAP-01 from the final integration readiness audit is resolved: scheduled and manual BSEU refresh now share explicit registry-backed orchestration with parser, 304, Snapshot, ScraperRun, status and Telegram parity.
+
 - **Goal:** extract BSEU source handling behind the documented adapter protocol and registry with behavioral parity.
 - **In scope:** adapter DTOs/errors/capabilities, registry, shared HTTP conditional state, BSEU adapter, monitoring service orchestration, compatibility delegation.
 - **Out of scope:** other universities, catalog UI, recommendation algorithm, removal of legacy endpoints/tables.
@@ -87,7 +89,7 @@
 
 ## 8. Anonymous profiles, favorites and compare
 
-- **Status:** M-MY-LIST-01 complete: первый пользовательский срез добавляет анонимный профиль, один личный балл, сохранённые University/Program и `/my-list`. Compare, cross-device merge и аккаунты не реализованы. Следующий выбранный milestone остаётся M-BSEU-ADAPTER-01 из раздела 4.
+- **Status:** M-MY-LIST-01 complete: первый пользовательский срез добавляет анонимный профиль, один личный балл, сохранённые University/Program и `/my-list`. Compare, cross-device merge и аккаунты не реализованы; эти части M8 остаются открытыми.
 
 - **Goal:** add privacy-conscious anonymous server profiles and optional cross-device state.
 - **In scope:** signed HttpOnly cookie, public UUID, server preferences, favorites, compare decision/implementation if justified, localStorage merge contract.
@@ -99,6 +101,8 @@
 - **Risk:** high (privacy and authorization).
 
 ## 9. Watchlists and Telegram linking
+
+- **Status:** prerequisite M4 is complete, so M9 is unblocked by the monitoring registry. M9 remains blocked by the unfinished M8 ownership/merge scope and is not started.
 
 - **Goal:** connect watched offerings and per-profile Telegram delivery while preserving owner mode.
 - **In scope:** one-time hashed link tokens, Telegram accounts, watchlists, notification events/status/retry, fingerprint dedup, owner compatibility.
@@ -148,7 +152,7 @@
 
 ## 13. Final integration and production readiness
 
-- **Status:** M-READINESS-AUDIT-01 is complete. The evidence-based result is **NO-GO** for beginning section 13: M4, M7, M8 and M9 are missing, while M12 and the current build/runtime/browser/data-integrity gates are verified. The selected next milestone is M-BSEU-ADAPTER-01. See `docs/final-integration-readiness-audit.md`.
+- **Status:** M-READINESS-AUDIT-01 is complete and its GAP-01/M4 prerequisite is now resolved by M-BSEU-ADAPTER-01. The result remains **NO-GO** for beginning section 13: M7, the unfinished M8 scope and M9 are still missing; production rehearsal/resource/operations gaps also remain. See `docs/final-integration-readiness-audit.md`.
 
 - **Goal:** harden the assembled first release for the existing low-resource VPS.
 - **In scope:** integration regression, query/load budgets, backup/restore/migration rehearsal, Nginx/systemd/base path, privacy/log audit, operator docs, compatibility/deprecation review.

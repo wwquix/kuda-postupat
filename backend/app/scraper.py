@@ -6,12 +6,13 @@ from datetime import UTC, datetime, timedelta
 import httpx
 from sqlalchemy import desc, select
 
+from .adapters import MonitoringAdapterRegistry, UnknownMonitoringAdapterError
 from .bseu_mapping import ensure_bseu_mapping_for_specialty
 from .calculations import calculate_metrics
 from .config import Settings
 from .database import SessionLocal
 from .models import AdmissionSnapshot, HttpCacheState, ScraperRun
-from .parser import ParserError, parse_document, select_specialties
+from .parser import ParserError
 from .repository import get_or_create_specialty, save_snapshot_if_changed
 from .source_runtime import attach_run_to_source, record_source_error, record_source_success
 from .telegram import TelegramDeliveryError, build_change_message, send_once
@@ -32,11 +33,12 @@ class NotModifiedWithoutSnapshotError(RuntimeError):
 
 
 class AdmissionScraper:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, adapter_registry: MonitoringAdapterRegistry):
         self.settings = settings
+        self.adapter_registry = adapter_registry
         self._lock = asyncio.Lock()
 
-    async def _fetch(self, headers: dict[str, str]) -> httpx.Response:
+    async def _fetch(self, source_url: str, headers: dict[str, str]) -> httpx.Response:
         last_error: Exception | None = None
         for attempt in range(self.settings.request_retries):
             try:
@@ -45,7 +47,7 @@ class AdmissionScraper:
                     follow_redirects=True,
                     headers={"User-Agent": "BGEU-Admission-Monitor/1.0 (+local deployment)"},
                 ) as client:
-                    response = await client.get(self.settings.data_url, headers=headers)
+                    response = await client.get(source_url, headers=headers)
                 if response.status_code == 304:
                     return response
                 if response.status_code >= 500:
@@ -59,12 +61,24 @@ class AdmissionScraper:
         assert last_error is not None
         raise last_error
 
-    async def refresh(self, *, force: bool = False) -> dict:
+    async def refresh(self, adapter_key: str, *, force: bool = False) -> dict:
         if self._lock.locked():
             raise RefreshInProgressError("Обновление уже выполняется")
         async with self._lock:
             started = datetime.now(UTC)
             with SessionLocal() as session:
+                try:
+                    adapter = self.adapter_registry.get(adapter_key)
+                except UnknownMonitoringAdapterError as exc:
+                    run = ScraperRun(started_at=started, status="running", rows_found=0)
+                    session.add(run)
+                    session.commit()
+                    run.status = "error"
+                    run.finished_at = datetime.now(UTC)
+                    run.error_type = type(exc).__name__
+                    run.error_message = str(exc)[:2000]
+                    session.commit()
+                    raise
                 last_run = session.scalar(
                     select(ScraperRun)
                     .where(ScraperRun.status.in_(["success", "not_modified"]))
@@ -80,9 +94,9 @@ class AdmissionScraper:
                     raise RefreshTooSoonError("Повторный запрос разрешен не чаще одного раза в 5 минут")
                 run = ScraperRun(started_at=started, status="running", rows_found=0)
                 session.add(run)
-                source = attach_run_to_source(session, run, self.settings.data_url, started)
+                source = attach_run_to_source(session, run, adapter.source_url, started)
                 session.commit()
-                cache = session.get(HttpCacheState, self.settings.data_url)
+                cache = session.get(HttpCacheState, adapter.source_url)
                 headers = {}
                 if cache and cache.etag:
                     headers["If-None-Match"] = cache.etag
@@ -100,12 +114,12 @@ class AdmissionScraper:
                         if previous_run.status != "error":
                             break
                         previous_consecutive_errors += 1
-                    response = await self._fetch(headers)
+                    response = await self._fetch(adapter.source_url, headers)
                     run.http_status = response.status_code
                     if response.status_code == 304:
                         has_snapshot = session.scalar(select(AdmissionSnapshot.id).limit(1)) is not None
                         if not has_snapshot:
-                            response = await self._fetch({})
+                            response = await self._fetch(adapter.source_url, {})
                             run.http_status = response.status_code
                             if response.status_code == 304:
                                 raise NotModifiedWithoutSnapshotError(
@@ -128,19 +142,15 @@ class AdmissionScraper:
                             }
                     if len(response.content) < 100:
                         raise ParserError("Источник вернул подозрительно короткий документ")
-                    rows = parse_document(response.content, response.headers.get("content-type"))
-                    selected = select_specialties(
-                        rows,
-                        self.settings.specialty_names,
-                        self.settings.study_form,
-                        self.settings.funding_type,
-                    )
+                    parsed = adapter.parse(response.content, response.headers.get("content-type"))
+                    rows = parsed.rows
+                    selected = parsed.selected
                     run.rows_found = len(rows)
                     run.content_hash = hashlib.sha256(response.content).hexdigest()
                     created = 0
                     messages: list[str] = []
                     for row in selected:
-                        specialty = get_or_create_specialty(session, row, self.settings.source_page_url)
+                        specialty = get_or_create_specialty(session, row, adapter.source_page_url)
                         program_offering_id = ensure_bseu_mapping_for_specialty(session, specialty)
                         metrics = calculate_metrics(
                             row.admission_plan, row.applications_total, row.distribution, self.settings.user_score
@@ -159,7 +169,7 @@ class AdmissionScraper:
                             if message:
                                 messages.append(message)
                     if cache is None:
-                        cache = HttpCacheState(url=self.settings.data_url)
+                        cache = HttpCacheState(url=adapter.source_url)
                         session.add(cache)
                     cache.etag = response.headers.get("etag")
                     cache.last_modified = response.headers.get("last-modified")

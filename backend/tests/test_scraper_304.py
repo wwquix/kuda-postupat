@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 import app.main as main_module
 import app.scraper as scraper_module
+from app.adapters import BSEU_ADAPTER_KEY, build_bseu_monitoring_registry
 from app.calculations import calculate_metrics
 from app.catalog_models import (
     DataSource,
@@ -93,6 +94,10 @@ def _settings() -> Settings:
     )
 
 
+def _scraper(settings: Settings) -> AdmissionScraper:
+    return AdmissionScraper(settings, build_bseu_monitoring_registry(settings))
+
+
 def _seed_snapshot(factory, fixture: Path, settings: Settings) -> tuple[int, str, datetime]:
     row = select_specialties(
         parse_document(fixture.read_bytes(), "text/xml"),
@@ -133,12 +138,12 @@ async def test_304_after_snapshot_is_successful_and_silent(
     _, original_hash, original_source_updated_at = _seed_snapshot(
         session_factory, fixtures_dir / "live_shape.xml", settings
     )
-    scraper = AdmissionScraper(settings)
+    scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", AsyncMock(return_value=_response(304)))
     send_mock = AsyncMock()
     monkeypatch.setattr(scraper_module, "send_once", send_mock)
 
-    result = await scraper.refresh(force=True)
+    result = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
 
     assert result == {
         "status": "not_modified",
@@ -173,13 +178,14 @@ async def test_304_without_snapshot_retries_once_without_conditions_and_saves_da
     responses = [_response(304), _response(200, (fixtures_dir / "live_shape.xml").read_bytes())]
     seen_headers: list[dict[str, str]] = []
 
-    async def fetch(headers: dict[str, str]) -> httpx.Response:
+    async def fetch(source_url: str, headers: dict[str, str]) -> httpx.Response:
+        assert source_url == settings.data_url
         seen_headers.append(headers.copy())
         return responses.pop(0)
 
-    scraper = AdmissionScraper(settings)
+    scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", fetch)
-    result = await scraper.refresh(force=True)
+    result = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
 
     assert result["status"] == "success"
     assert result["snapshot_created"] is True
@@ -203,14 +209,14 @@ async def test_repeated_304_without_snapshot_is_controlled_and_finite(session_fa
         session.add(HttpCacheState(url=settings.data_url, etag='"orphaned-etag"'))
         session.commit()
     fetch_mock = AsyncMock(side_effect=[_response(304), _response(304)])
-    scraper = AdmissionScraper(settings)
+    scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", fetch_mock)
 
     with pytest.raises(NotModifiedWithoutSnapshotError, match="сохраненных данных"):
-        await scraper.refresh(force=True)
+        await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
 
     assert fetch_mock.await_count == 2
-    assert fetch_mock.await_args_list[1].args[0] == {}
+    assert fetch_mock.await_args_list[1].args == (settings.data_url, {})
     with session_factory() as session:
         assert session.query(AdmissionSnapshot).count() == 0
         run = session.query(ScraperRun).one()
@@ -224,7 +230,7 @@ def test_manual_refresh_endpoint_returns_200_for_not_modified(
     settings = _settings()
     settings.manual_refresh_token = "unit-test-refresh-token"
     _seed_snapshot(session_factory, fixtures_dir / "live_shape.xml", settings)
-    scraper = AdmissionScraper(settings)
+    scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", AsyncMock(return_value=_response(304)))
     monkeypatch.setattr(main_module, "settings", settings)
     monkeypatch.setattr(main_module, "scraper", scraper)
@@ -263,10 +269,10 @@ async def test_304_updates_check_time_but_preserves_stale_source_time(
     specialty_id, _, original_source_updated_at = _seed_snapshot(
         session_factory, fixtures_dir / "live_shape.xml", settings
     )
-    scraper = AdmissionScraper(settings)
+    scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", AsyncMock(return_value=_response(304)))
 
-    await scraper.refresh(force=True)
+    await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
 
     with session_factory() as session:
         result = main_module.specialty_latest(specialty_id, session)
