@@ -131,7 +131,7 @@
 
 ## 12. University and program detail UI
 
-- **Status:** M-DETAIL-01 (public University detail vertical slice) and M-PROGRAM-DETAIL-01 (public Program detail vertical slice) are complete. Both are read-only and expose only imported coverage. The next numbered milestone is section 13, final integration and production readiness; it has not been started and remains gated by its stated dependencies.
+- **Status:** M-DETAIL-01 (public University detail vertical slice) and M-PROGRAM-DETAIL-01 (public Program detail vertical slice) are complete. Both are read-only and expose only imported coverage. M-READINESS-AUDIT-01 confirmed that section 13 remains gated by missing roadmap prerequisites; the selected next milestone is M-BSEU-ADAPTER-01 from section 4.
 
 - **Blocking repair:** M-DEV-SAFETY-01 is complete: `start-dev.ps1` uses an explicit side-effect-free development mode before Program detail work begins.
 
@@ -145,6 +145,8 @@
 - **Risk:** medium-high (dense data semantics).
 
 ## 13. Final integration and production readiness
+
+- **Status:** M-READINESS-AUDIT-01 is complete. The evidence-based result is **NO-GO** for beginning section 13: M4, M7, M8 and M9 are missing, while M12 and the current build/runtime/browser/data-integrity gates are verified. The selected next milestone is M-BSEU-ADAPTER-01. See `docs/final-integration-readiness-audit.md`.
 
 - **Goal:** harden the assembled first release for the existing low-resource VPS.
 - **In scope:** integration regression, query/load budgets, backup/restore/migration rehearsal, Nginx/systemd/base path, privacy/log audit, operator docs, compatibility/deprecation review.
