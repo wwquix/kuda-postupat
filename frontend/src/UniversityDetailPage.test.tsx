@@ -123,6 +123,7 @@ function installApiMock() {
     if (url.pathname === '/api/catalog/meta') return response(meta)
     if (url.pathname === '/api/universities') return response(catalogResponse(url))
     if (url.pathname === '/api/universities/bseu') return response(bseu)
+    if (url.pathname === '/api/universities/bseu/programs/economic-informatics') return response(bseu.programs[0])
     if (url.pathname === '/api/universities/brsu') return response(noPrograms)
     if (url.pathname === '/api/universities/slug-that-does-not-exist') return response({ detail: 'raw not found' }, 404)
     throw new Error(`Unexpected mocked request: ${url.pathname}`)
@@ -180,6 +181,10 @@ describe('university detail states and honest rendering', () => {
     expect(screen.getByText('60 мест')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Live-мониторинг БГЭУ' })).toHaveAttribute('href', '/monitor')
     expect(container.querySelectorAll('h1')).toHaveLength(1)
+    expect(screen.getByRole('link', { name: 'Экономическая информатика' })).toHaveAttribute(
+      'href',
+      '/universities/bseu/programs/economic-informatics',
+    )
     expect(container.querySelector('a[href^="/programs/"]')).not.toBeInTheDocument()
     await waitFor(() => expect(document.title).toBe('БГЭУ · Куда поступать'))
   })
@@ -224,6 +229,17 @@ describe('university detail states and honest rendering', () => {
 })
 
 describe('catalog return navigation and obsolete requests', () => {
+  it('carries the exact university URL through the program link and return action', async () => {
+    const origin = '/universities/bseu?from=catalog'
+    const user = userEvent.setup()
+    renderRoute([origin])
+
+    await screen.findByRole('heading', { level: 1, name: bseu.full_name })
+    await user.click(screen.getByRole('link', { name: 'Экономическая информатика' }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Экономическая информатика' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Назад к вузу' })).toHaveAttribute('href', origin)
+  })
+
   it('preserves the exact originating catalog URL through the card link and return action', async () => {
     const origin = '/universities?q=%D0%91%D0%93%D0%AD%D0%A3&city=%D0%9C%D0%B8%D0%BD%D1%81%D0%BA&sort=program_count&order=desc&page=2'
     const user = userEvent.setup()

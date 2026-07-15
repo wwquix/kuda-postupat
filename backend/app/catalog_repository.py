@@ -387,6 +387,26 @@ def program_by_id(session: Session, program_id: int) -> ProgramRow | None:
     return ProgramRow(program=row[0], offering_count=int(row[1]))
 
 
+def program_by_university_and_slug(
+    session: Session,
+    university_id: int,
+    program_slug: str,
+) -> ProgramRow | None:
+    offering_count = _program_offering_count()
+    row = session.execute(
+        select(Program, offering_count.label("offering_count"))
+        .where(
+            Program.university_id == university_id,
+            Program.slug == program_slug,
+            Program.active.is_(True),
+        )
+        .options(joinedload(Program.university), selectinload(Program.offerings))
+    ).one_or_none()
+    if row is None:
+        return None
+    return ProgramRow(program=row[0], offering_count=int(row[1]))
+
+
 def catalog_counts(session: Session) -> CatalogCounts:
     row = session.execute(
         select(

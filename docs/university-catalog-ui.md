@@ -93,4 +93,4 @@ Vitest and React Testing Library supply every metadata and university response t
 
 ## Detail route boundary
 
-The implemented university page is documented in [university-detail-page.md](university-detail-page.md). Program detail pages remain deferred, and the catalog still does not infer missing programs, tuition, dormitory, scholarship or media data from list coverage.
+The implemented university page is documented in [university-detail-page.md](university-detail-page.md), and the nested Program page in [program-detail-page.md](program-detail-page.md). The catalog still does not infer missing programs, tuition, dormitory, scholarship or media data from list coverage.

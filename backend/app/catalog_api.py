@@ -25,6 +25,7 @@ from .catalog_service import (
     get_offering,
     get_program,
     get_university,
+    get_university_program,
     list_university_programs,
     offering_distribution,
     offering_history,
@@ -98,6 +99,18 @@ def university_programs(
 ) -> ProgramListResponse:
     try:
         return list_university_programs(session, slug, page=page, page_size=page_size)
+    except CatalogNotFoundError as exc:
+        raise _not_found(exc) from exc
+
+
+@router.get("/universities/{university_slug}/programs/{program_slug}", response_model=ProgramResponse)
+def university_program_detail(
+    university_slug: str,
+    program_slug: str,
+    session: Session = Depends(get_db),
+) -> ProgramResponse:
+    try:
+        return get_university_program(session, university_slug, program_slug)
     except CatalogNotFoundError as exc:
         raise _not_found(exc) from exc
 

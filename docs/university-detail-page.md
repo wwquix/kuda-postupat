@@ -1,6 +1,6 @@
 # University detail page
 
-M-DETAIL-01 adds one read-only public university vertical slice. It reuses the existing catalog domain and does not add migrations, imports, adapters, program-detail routes or user features.
+M-DETAIL-01 adds one read-only public university vertical slice. It reuses the existing catalog domain and does not add migrations, imports, adapters or user features. M-PROGRAM-DETAIL-01 later adds links from its imported Program names to the separate read-only Program page.
 
 ## Public routes
 
@@ -34,7 +34,9 @@ The frontend displays only fields present in the detail response:
 3. Monitoring, platform coverage, source links and stored dates.
 4. Imported Programs and their imported offering summaries.
 
-Nullable identity or Program fields are omitted when absent. There are no links to `/programs/:id`. BSEU receives a `/monitor` link only when the established API coverage says online monitoring is available.
+Nullable identity or Program fields are omitted when absent. A Program name links to `/universities/:universitySlug/programs/:programSlug` only when its canonical stored slug is present; malformed missing identity remains plain text. There are no links to the legacy numeric frontend shape `/programs/:id`. BSEU receives a `/monitor` link only when the established API coverage says online monitoring is available.
+
+The Program link carries the exact current University `pathname + search` in validated React Router state. The Program page uses it for `Назад к вузу`; direct opening safely falls back to the owning University route.
 
 ## Catalog return navigation
 
@@ -88,4 +90,4 @@ Backend tests use a temporary SQLite database and dependency override. Frontend 
 
 ## Deliberately deferred
 
-Program detail pages, university-scoped program collection routes in the frontend, recommendations, comparison, favorites, profiles, authentication, watchlists, Telegram linking, new adapters/imports and deployment remain outside M-DETAIL-01. The next already-planned UI slice is the separate Program detail work from roadmap section 12.
+Recommendations, comparison, favorites, profiles, authentication, watchlists, Telegram linking, new adapters/imports and deployment remain outside M-DETAIL-01. The separate Program detail slice is documented in [program-detail-page.md](program-detail-page.md).

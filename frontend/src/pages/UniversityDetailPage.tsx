@@ -57,13 +57,30 @@ function OfferingCard({ offering }: { offering: OfferingSummary }) {
   </section>
 }
 
-function ProgramCard({ program }: { program: ImportedProgram }) {
+function ProgramCard({
+  program,
+  universitySlug,
+  universityReturnTo,
+}: {
+  program: ImportedProgram
+  universitySlug: string
+  universityReturnTo: string
+}) {
   const checkedAt = formatCatalogDate(program.verified_at ?? program.source_checked_at)
+  const programSlug = program.slug.trim()
   return <article className="panel min-w-0 p-5 sm:p-6" aria-labelledby={`program-${program.id}`}>
     <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         {program.code && <div className="eyebrow">{program.code}</div>}
-        <h3 className="mt-2 break-words text-xl font-extrabold" id={`program-${program.id}`}>{program.name}</h3>
+        <h3 className="mt-2 break-words text-xl font-extrabold" id={`program-${program.id}`}>
+          {programSlug
+            ? <Link
+              className="rounded-sm text-moss underline decoration-moss/25 underline-offset-4 hover:decoration-moss"
+              state={{ universityReturnTo }}
+              to={`/universities/${encodeURIComponent(universitySlug)}/programs/${encodeURIComponent(programSlug)}`}
+            >{program.name}</Link>
+            : program.name}
+        </h3>
       </div>
       <ExternalResourceLink href={program.official_url} label={`Официальная страница программы «${program.name}»`} />
     </div>
@@ -143,6 +160,7 @@ export function UniversityDetailPage() {
   if (!university) return <LoadingState returnTo={returnTo} />
   const verifiedAt = formatCatalogDate(university.data_verified_at)
   const sourceCheckedAt = formatCatalogDate(university.source_checked_at)
+  const universityReturnTo = `${location.pathname}${location.search}`
   const hasLiveMonitoring = university.slug === 'bseu'
     && university.coverage.online_monitoring === 'available'
 
@@ -203,7 +221,7 @@ export function UniversityDetailPage() {
         <h2 className="text-3xl font-extrabold" id="programs-title">Импортированные программы</h2>
         <p className="mt-3 max-w-3xl leading-7 text-ink/65">Здесь показаны только программы и наборы, уже импортированные этой платформой из сохранённых официальных источников.</p>
         {university.programs.length > 0
-          ? <div className="mt-5 grid min-w-0 gap-5">{university.programs.map((program) => <ProgramCard key={program.id} program={program} />)}</div>
+          ? <div className="mt-5 grid min-w-0 gap-5">{university.programs.map((program) => <ProgramCard key={program.id} program={program} universitySlug={university.slug} universityReturnTo={universityReturnTo} />)}</div>
           : <div className="panel mt-5 p-6"><p className="font-bold">Каталог программ ещё не импортирован</p><p className="mt-2 text-ink/65">Это не означает, что у университета нет реальных программ.</p></div>}
       </section>
     </div>

@@ -131,7 +131,7 @@
 
 ## 12. University and program detail UI
 
-- **Status:** M-DETAIL-01 (public University detail vertical slice) is complete. The next already-planned slice is the separate Program detail UI from this section; it has not been started.
+- **Status:** M-DETAIL-01 (public University detail vertical slice) and M-PROGRAM-DETAIL-01 (public Program detail vertical slice) are complete. Both are read-only and expose only imported coverage. The next numbered milestone is section 13, final integration and production readiness; it has not been started and remains gated by its stated dependencies.
 
 - **Blocking repair:** M-DEV-SAFETY-01 is complete: `start-dev.ps1` uses an explicit side-effect-free development mode before Program detail work begins.
 

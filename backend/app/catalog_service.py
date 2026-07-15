@@ -37,6 +37,7 @@ from .catalog_repository import (
     list_universities,
     offering_by_id,
     program_by_id,
+    program_by_university_and_slug,
     snapshots_for_offering,
     university_by_slug,
     university_detail_by_slug,
@@ -374,6 +375,20 @@ def list_university_programs(
 
 def get_program(session: Session, program_id: int) -> ProgramResponse:
     row = program_by_id(session, program_id)
+    if row is None:
+        raise CatalogNotFoundError("Программа не найдена")
+    return _program_response(row)
+
+
+def get_university_program(
+    session: Session,
+    university_slug: str,
+    program_slug: str,
+) -> ProgramResponse:
+    university = university_by_slug(session, university_slug)
+    if university is None:
+        raise CatalogNotFoundError("Университет не найден")
+    row = program_by_university_and_slug(session, university.id, program_slug)
     if row is None:
         raise CatalogNotFoundError("Программа не найдена")
     return _program_response(row)

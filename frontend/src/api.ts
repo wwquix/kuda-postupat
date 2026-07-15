@@ -1,6 +1,7 @@
 import type {
   CatalogMeta,
   CollectorStatus,
+  ImportedProgram,
   Snapshot,
   Specialty,
   UniversityDetail,
@@ -36,6 +37,10 @@ export const api = {
   ),
   university: (slug: string, signal: AbortSignal) => json<UniversityDetail>(
     `${apiBase}/universities/${encodeURIComponent(slug)}`,
+    { signal },
+  ),
+  program: (universitySlug: string, programSlug: string, signal: AbortSignal) => json<ImportedProgram>(
+    `${apiBase}/universities/${encodeURIComponent(universitySlug)}/programs/${encodeURIComponent(programSlug)}`,
     { signal },
   ),
   specialties: () => json<Specialty[]>(`${apiBase}/specialties`),

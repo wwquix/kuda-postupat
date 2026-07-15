@@ -4,7 +4,7 @@ This document describes the read-only public catalog contract implemented for th
 
 ## Base contract
 
-All endpoints are under `/api` and return JSON. Unknown university slugs and program IDs return HTTP 404. Invalid enum, pagination, sorting or numeric filter values return HTTP 422.
+All endpoints are under `/api` and return JSON. Unknown university slugs, program IDs and university-scoped program slugs return HTTP 404. A Program slug that belongs to another University also returns HTTP 404. Invalid enum, pagination, sorting or numeric filter values return HTTP 422.
 
 Pagination is mandatory for collection endpoints:
 
@@ -92,6 +92,12 @@ The response excludes ETag, Last-Modified, runtime error messages, filesystem pa
 
 Returns a paginated Program collection. If this platform has not imported programs for the university, `items` is empty and `coverage.note` explicitly says that the empty platform result does not prove real-world absence.
 
+### `GET /api/universities/{university_slug}/programs/{program_slug}`
+
+Returns one active imported Program only when its canonical stored `slug` belongs to the active University identified by `university_slug`. The response reuses `ProgramResponse`, including the owning university identity and deterministic imported offering summaries. The service resolves University ownership before Program lookup; unknown University, unknown Program and ownership mismatch all return HTTP 404.
+
+An empty `offerings` array is a valid successful response and means only that this platform has not imported offering coverage for that Program. The endpoint performs database reads only. It does not refresh sources, write snapshots, start scheduling, invoke Telegram or contact a university.
+
 ## Programs
 
 ### `GET /api/programs`
@@ -129,6 +135,8 @@ The response contains `items`, `pagination` and database-derived `coverage`:
 ### `GET /api/programs/{id}`
 
 Returns the imported Program, university identity and its imported offering summaries. It does not include admission snapshot history; the existing `/api/program-offerings/{id}/...` endpoints remain responsible for monitoring history.
+
+This numeric-ID endpoint remains available for compatibility. New public frontend links use the canonical University-scoped Program slug endpoint instead.
 
 ## Metadata
 

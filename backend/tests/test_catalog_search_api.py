@@ -358,6 +358,109 @@ def test_program_list_details_coverage_and_validation(catalog_client) -> None:  
         assert client.get(f"/api/programs?{query}").status_code == 422
 
 
+def test_nested_program_detail_uses_slug_ownership_and_deterministic_offerings(
+    catalog_client,
+) -> None:  # type: ignore[no-untyped-def]
+    client, engine, _database = catalog_client
+    checked_at = datetime(2026, 7, 12, 18, 14, 28, tzinfo=UTC)
+    with Session(engine) as session, session.begin():
+        bseu_program = session.scalar(select(Program).where(Program.id == 1))
+        brsu = session.scalar(select(University).where(University.code == "brsu"))
+        assert bseu_program is not None
+        assert brsu is not None
+        session.add_all([
+            ProgramOffering(
+                program_id=bseu_program.id,
+                admission_year=2027,
+                study_form=StudyForm.PART_TIME,
+                funding_type=FundingType.PAID,
+                places=None,
+                application_deadline=None,
+                monitoring_supported=False,
+                monitoring_status=MonitoringStatus.REFERENCE_ONLY,
+                official_url="https://example.invalid/offering-2027",
+                source_url="https://example.invalid/offering-2027",
+                source_checked_at=checked_at,
+                verified_at=None,
+            ),
+            ProgramOffering(
+                program_id=bseu_program.id,
+                admission_year=2025,
+                study_form=StudyForm.FULL_TIME,
+                funding_type=FundingType.BUDGET,
+                places=None,
+                application_deadline=None,
+                monitoring_supported=False,
+                monitoring_status=MonitoringStatus.REFERENCE_ONLY,
+                official_url="https://example.invalid/offering-2025",
+                source_url="https://example.invalid/offering-2025",
+                source_checked_at=checked_at,
+                verified_at=None,
+            ),
+            Program(
+                university_id=brsu.id,
+                code=None,
+                slug="test-program-without-offerings",
+                name="Тестовая программа без импортированных наборов",
+                qualification=None,
+                faculty_name=None,
+                education_level=None,
+                duration_years=None,
+                description=None,
+                admission_subjects_json=None,
+                career_fields_json=None,
+                category_tags_json=None,
+                official_url="https://example.invalid/program-without-offerings",
+                active=True,
+                source_checked_at=checked_at,
+                verified_at=None,
+            ),
+        ])
+        program_slug = bseu_program.slug
+
+    response = client.get(f"/api/universities/bseu/programs/{program_slug}")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["slug"] == program_slug
+    assert payload["university"] == {"id": 1, "code": "bseu", "slug": "bseu", "short_name": "БГЭУ"}
+    assert payload["offering_count"] == 3
+    assert [item["admission_year"] for item in payload["offerings"]] == [2025, 2026, 2027]
+    assert "history" not in payload
+
+    empty = client.get("/api/universities/brsu/programs/test-program-without-offerings")
+    assert empty.status_code == 200
+    assert empty.json()["offering_count"] == 0
+    assert empty.json()["offerings"] == []
+
+    assert client.get(f"/api/universities/brsu/programs/{program_slug}").status_code == 404
+    assert client.get(f"/api/universities/unknown/programs/{program_slug}").status_code == 404
+    assert client.get("/api/universities/bseu/programs/unknown").status_code == 404
+
+
+def test_nested_program_detail_is_read_only_and_performs_no_external_request(
+    catalog_client, monkeypatch: pytest.MonkeyPatch
+) -> None:  # type: ignore[no-untyped-def]
+    client, engine, _database = catalog_client
+
+    def block_network(*_args, **_kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("program detail must not open network connections")
+
+    monkeypatch.setattr(socket, "create_connection", block_network)
+    writes: list[str] = []
+
+    def capture(_connection, _cursor, statement, _parameters, _context, _executemany) -> None:  # type: ignore[no-untyped-def]
+        if statement.lstrip().upper().startswith(("INSERT", "UPDATE", "DELETE", "REPLACE")):
+            writes.append(statement)
+
+    event.listen(engine, "before_cursor_execute", capture)
+    try:
+        response = client.get("/api/universities/bseu/programs/economic-informatics")
+    finally:
+        event.remove(engine, "before_cursor_execute", capture)
+    assert response.status_code == 200
+    assert writes == []
+
+
 def test_catalog_metadata_and_health_use_database_values_without_internal_details(catalog_client) -> None:  # type: ignore[no-untyped-def]
     client, _engine, _database = catalog_client
     meta = client.get("/api/catalog/meta")
@@ -400,6 +503,7 @@ def test_catalog_openapi_contains_public_contract(catalog_client) -> None:  # ty
         "/api/universities",
         "/api/universities/{slug}",
         "/api/universities/{slug}/programs",
+        "/api/universities/{university_slug}/programs/{program_slug}",
         "/api/programs",
         "/api/programs/{program_id}",
         "/api/catalog/meta",
@@ -411,6 +515,10 @@ def test_catalog_openapi_contains_public_contract(catalog_client) -> None:  # ty
         "/ProgramResponse"
     )
     assert "programs" in university_schema["required"]
+    nested_program_schema = paths["/api/universities/{university_slug}/programs/{program_slug}"]["get"]
+    assert nested_program_schema["responses"]["200"]["content"]["application/json"]["schema"]["$ref"].endswith(
+        "/ProgramResponse"
+    )
 
 
 def test_primary_list_and_detail_queries_are_bounded(catalog_client) -> None:  # type: ignore[no-untyped-def]
@@ -434,6 +542,7 @@ def test_primary_list_and_detail_queries_are_bounded(catalog_client) -> None:  #
     assert count_queries("/api/universities/bseu") <= 4
     assert count_queries("/api/programs") <= 4
     assert count_queries("/api/programs/1") <= 3
+    assert count_queries("/api/universities/bseu/programs/economic-informatics") <= 4
 
 
 def test_importing_catalog_router_and_creating_test_app_have_no_runtime_side_effects(
