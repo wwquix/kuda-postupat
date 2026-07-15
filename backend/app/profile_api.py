@@ -23,6 +23,18 @@ from .profile_service import (
     profile_response,
     set_profile_score,
 )
+from .watch_schemas import (
+    ProgramWatchEventResponse,
+    ProgramWatchMutationResponse,
+    ProgramWatchResponse,
+)
+from .watch_service import (
+    ProgramWatchDomainError,
+    disable_program_watch,
+    enable_program_watch,
+    list_active_program_watches,
+    list_program_watch_events,
+)
 
 router = APIRouter(prefix="/api/profile", tags=["anonymous-profile"])
 
@@ -56,6 +68,10 @@ def current_profile(
 
 def _not_found(exc: CatalogNotFoundError) -> HTTPException:
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+def _watch_conflict(exc: ProgramWatchDomainError) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
 @router.post("", response_model=AnonymousProfileCreatedResponse, status_code=status.HTTP_201_CREATED)
@@ -139,5 +155,59 @@ def remove_program(
 ) -> SavedAdmissionListResponse:
     try:
         return delete_saved_program(session, profile, university_slug, program_slug)
+    except CatalogNotFoundError as exc:
+        raise _not_found(exc) from exc
+
+
+@router.get("/watches", response_model=list[ProgramWatchResponse])
+def read_active_watches(
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+) -> list[ProgramWatchResponse]:
+    return list_active_program_watches(session, profile)
+
+
+@router.get("/watch-events", response_model=list[ProgramWatchEventResponse])
+def read_watch_events(
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+) -> list[ProgramWatchEventResponse]:
+    return list_program_watch_events(session, profile)
+
+
+@router.put(
+    "/watches/{university_slug}/{program_slug}",
+    response_model=ProgramWatchResponse,
+)
+def put_program_watch(
+    university_slug: str,
+    program_slug: str,
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+) -> ProgramWatchResponse:
+    try:
+        return enable_program_watch(
+            session, profile, university_slug, program_slug
+        )
+    except CatalogNotFoundError as exc:
+        raise _not_found(exc) from exc
+    except ProgramWatchDomainError as exc:
+        raise _watch_conflict(exc) from exc
+
+
+@router.delete(
+    "/watches/{university_slug}/{program_slug}",
+    response_model=ProgramWatchMutationResponse,
+)
+def remove_program_watch(
+    university_slug: str,
+    program_slug: str,
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+) -> ProgramWatchMutationResponse:
+    try:
+        return disable_program_watch(
+            session, profile, university_slug, program_slug
+        )
     except CatalogNotFoundError as exc:
         raise _not_found(exc) from exc

@@ -1,10 +1,14 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .catalog_models import Program, University, utc_now
 from .models import Base
+
+if TYPE_CHECKING:
+    from .watch_models import ProgramWatch
 
 
 class AnonymousProfile(Base):
@@ -31,6 +35,9 @@ class AnonymousProfile(Base):
         back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
     )
     saved_programs: Mapped[list["SavedProgram"]] = relationship(
+        back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
+    )
+    program_watches: Mapped[list["ProgramWatch"]] = relationship(
         back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
     )
 

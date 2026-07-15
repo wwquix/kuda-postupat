@@ -102,7 +102,7 @@
 
 ## 9. Watchlists and Telegram linking
 
-- **Status:** prerequisite M4 is complete, so M9 is unblocked by the monitoring registry. M9 remains blocked by the unfinished M8 ownership/merge scope and is not started.
+- **Status:** M-WATCHLIST-01 complete: первый user-visible M9 slice добавляет анонимные BSEU Program watches и in-app history в `/my-list`, построенные на завершённых M8 anonymous ownership и M4 registry slices. Следующий milestone — Telegram linking и per-profile delivery поверх persisted watch events. Registered accounts, cross-device merge, comparison, recommendations и дополнительные adapters остаются отложенными.
 
 - **Goal:** connect watched offerings and per-profile Telegram delivery while preserving owner mode.
 - **In scope:** one-time hashed link tokens, Telegram accounts, watchlists, notification events/status/retry, fingerprint dedup, owner compatibility.

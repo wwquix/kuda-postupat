@@ -14,13 +14,15 @@ import {
   type ProfileLoadStatus,
 } from './profileContextValue'
 import { readProfileToken, removeProfileToken, storeProfileToken } from './profileStorage'
-import type { SavedAdmissionList } from './types'
+import type { ProgramWatch, ProgramWatchEvent, SavedAdmissionList } from './types'
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [initialToken] = useState(readProfileToken)
   const tokenRef = useRef<string | null>(initialToken)
   const createRequest = useRef<Promise<string> | null>(null)
   const [data, setData] = useState<SavedAdmissionList | null>(null)
+  const [watches, setWatches] = useState<ProgramWatch[]>([])
+  const [watchEvents, setWatchEvents] = useState<ProgramWatchEvent[]>([])
   const [status, setStatus] = useState<ProfileLoadStatus>(initialToken ? 'loading' : 'idle')
   const [invalidTokenRecovered, setInvalidTokenRecovered] = useState(false)
   const [hasProfileToken, setHasProfileToken] = useState(Boolean(initialToken))
@@ -32,11 +34,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setHasProfileToken(true)
   }, [])
 
+  const applyLoadedProfile = useCallback((
+    next: SavedAdmissionList,
+    nextWatches: ProgramWatch[],
+    nextEvents: ProgramWatchEvent[],
+  ) => {
+    setWatches(nextWatches)
+    setWatchEvents(nextEvents)
+    applyList(next)
+  }, [applyList])
+
   const clearInvalidToken = useCallback((expectedToken: string) => {
     if (tokenRef.current !== expectedToken) return false
     removeProfileToken()
     tokenRef.current = null
     setData(null)
+    setWatches([])
+    setWatchEvents([])
     setStatus('idle')
     setInvalidTokenRecovered(true)
     setHasProfileToken(false)
@@ -47,9 +61,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     const restoredToken = initialToken
     if (!restoredToken) return undefined
     const controller = new AbortController()
-    api.savedAdmissionList(restoredToken, controller.signal)
-      .then((next) => {
-        if (!controller.signal.aborted && tokenRef.current === restoredToken) applyList(next)
+    Promise.all([
+      api.savedAdmissionList(restoredToken, controller.signal),
+      api.watches(restoredToken, controller.signal),
+      api.watchEvents(restoredToken, controller.signal),
+    ])
+      .then(([next, nextWatches, nextEvents]) => {
+        if (!controller.signal.aborted && tokenRef.current === restoredToken) {
+          applyLoadedProfile(next, nextWatches, nextEvents)
+        }
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted || tokenRef.current !== restoredToken) return
@@ -60,7 +80,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setStatus('error')
       })
     return () => controller.abort()
-  }, [applyList, clearInvalidToken, initialToken])
+  }, [applyLoadedProfile, clearInvalidToken, initialToken])
 
   const ensureProfile = useCallback(async () => {
     if (tokenRef.current) return tokenRef.current
@@ -69,6 +89,8 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       const { token, ...savedList } = created
       tokenRef.current = token
       storeProfileToken(token)
+      setWatches([])
+      setWatchEvents([])
       applyList(savedList)
       return token
     })
@@ -80,9 +102,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [applyList])
 
-  const withProfile = useCallback(async (
-    operation: (token: string) => Promise<SavedAdmissionList>,
-  ) => {
+  const withProfile = useCallback(async <T,>(
+    operation: (token: string) => Promise<T>,
+  ): Promise<T> => {
     let token = await ensureProfile()
     try {
       return await operation(token)
@@ -109,7 +131,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
     setStatus('loading')
     try {
-      applyList(await api.savedAdmissionList(token))
+      const [next, nextWatches, nextEvents] = await Promise.all([
+        api.savedAdmissionList(token),
+        api.watches(token),
+        api.watchEvents(token),
+      ])
+      applyLoadedProfile(next, nextWatches, nextEvents)
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         clearInvalidToken(token)
@@ -117,10 +144,27 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }
       setStatus('error')
     }
-  }, [applyList, clearInvalidToken])
+  }, [applyLoadedProfile, clearInvalidToken])
+
+  const mutateWatch = useCallback(async (
+    operation: (token: string) => Promise<unknown>,
+  ) => {
+    const loaded = await withProfile(async (token) => {
+      await operation(token)
+      const [nextWatches, nextEvents] = await Promise.all([
+        api.watches(token),
+        api.watchEvents(token),
+      ])
+      return { nextWatches, nextEvents }
+    })
+    setWatches(loaded.nextWatches)
+    setWatchEvents(loaded.nextEvents)
+  }, [withProfile])
 
   const value = useMemo<ProfileContextValue>(() => ({
     data,
+    watches,
+    watchEvents,
     status,
     invalidTokenRecovered,
     hasProfileToken,
@@ -134,7 +178,23 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     removeProgram: (universitySlug, programSlug) => mutate(
       (token) => api.removeProgram(token, universitySlug, programSlug),
     ),
-  }), [data, hasProfileToken, invalidTokenRecovered, mutate, retry, status])
+    enableWatch: (universitySlug, programSlug) => mutateWatch(
+      (token) => api.enableWatch(token, universitySlug, programSlug),
+    ),
+    disableWatch: (universitySlug, programSlug) => mutateWatch(
+      (token) => api.disableWatch(token, universitySlug, programSlug),
+    ),
+  }), [
+    data,
+    hasProfileToken,
+    invalidTokenRecovered,
+    mutate,
+    mutateWatch,
+    retry,
+    status,
+    watchEvents,
+    watches,
+  ])
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
 }

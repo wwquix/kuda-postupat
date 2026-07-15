@@ -4,6 +4,9 @@ import type {
   AnonymousProfile,
   AnonymousProfileCreated,
   ImportedProgram,
+  ProgramWatch,
+  ProgramWatchEvent,
+  ProgramWatchMutation,
   SavedAdmissionList,
   Snapshot,
   Specialty,
@@ -97,6 +100,26 @@ export const api = {
   removeProgram: (token: string, universitySlug: string, programSlug: string) => profileJson<SavedAdmissionList>(
     token,
     `${apiBase}/profile/programs/${encodeURIComponent(universitySlug)}/${encodeURIComponent(programSlug)}`,
+    { method: 'DELETE' },
+  ),
+  watches: (token: string, signal?: AbortSignal) => profileJson<ProgramWatch[]>(
+    token,
+    `${apiBase}/profile/watches`,
+    signal ? { signal } : undefined,
+  ),
+  watchEvents: (token: string, signal?: AbortSignal) => profileJson<ProgramWatchEvent[]>(
+    token,
+    `${apiBase}/profile/watch-events`,
+    signal ? { signal } : undefined,
+  ),
+  enableWatch: (token: string, universitySlug: string, programSlug: string) => profileJson<ProgramWatch>(
+    token,
+    `${apiBase}/profile/watches/${encodeURIComponent(universitySlug)}/${encodeURIComponent(programSlug)}`,
+    { method: 'PUT' },
+  ),
+  disableWatch: (token: string, universitySlug: string, programSlug: string) => profileJson<ProgramWatchMutation>(
+    token,
+    `${apiBase}/profile/watches/${encodeURIComponent(universitySlug)}/${encodeURIComponent(programSlug)}`,
     { method: 'DELETE' },
   ),
 }

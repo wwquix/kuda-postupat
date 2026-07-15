@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import Engine, create_engine, event
 
-from app import catalog_models, profile_models  # noqa: F401 -- include every mapped table
+from app import catalog_models, profile_models, watch_models  # noqa: F401 -- include every mapped table
 from app.catalog_search import register_catalog_sqlite_functions
 from app.models import Base
 

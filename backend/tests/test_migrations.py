@@ -35,8 +35,9 @@ from app.schema import (
 
 BASELINE = "0001_legacy_baseline"
 CORE = "0002_core_catalog_schema"
-PREVIOUS_HEAD = "0003_backfill_bseu_catalog"
-HEAD = "0004_anonymous_admission_list"
+BSEU_HEAD = "0003_backfill_bseu_catalog"
+PREVIOUS_HEAD = "0004_anonymous_admission_list"
+HEAD = "0005_anonymous_program_watchlist"
 LEGACY_TABLES = {
     "admission_snapshots",
     "http_cache_state",
@@ -54,6 +55,7 @@ CATALOG_TABLES = {
 }
 BRIDGE_TABLES = {"legacy_specialty_mappings"}
 PROFILE_TABLES = {"anonymous_profiles", "saved_programs", "saved_universities"}
+WATCH_TABLES = {"program_watches", "program_watch_events"}
 LEGACY_COLUMNS = {
     "specialties": "id, normalized_name, display_name, study_form, funding_type, source_url, active",
     "admission_snapshots": (
@@ -235,6 +237,7 @@ def test_fresh_database_upgrade_head(tmp_path: Path) -> None:
         | CATALOG_TABLES
         | BRIDGE_TABLES
         | PROFILE_TABLES
+        | WATCH_TABLES
         | {"alembic_version"}
         == table_names(database)
     )
@@ -244,10 +247,10 @@ def test_fresh_database_upgrade_head(tmp_path: Path) -> None:
         assert_bseu_seed(connection, mapping_count=0)
 
 
-def test_upgrade_from_previous_head_adds_only_anonymous_list_schema(tmp_path: Path) -> None:
-    database = tmp_path / "previous-head.db"
+def test_upgrade_from_bseu_head_adds_only_anonymous_list_schema(tmp_path: Path) -> None:
+    database = tmp_path / "bseu-head.db"
     config = make_alembic_config(sqlite_url(database))
-    command.upgrade(config, PREVIOUS_HEAD)
+    command.upgrade(config, BSEU_HEAD)
     before_tables = table_names(database)
     with sqlite3.connect(database) as connection:
         before_catalog_counts = {
@@ -255,9 +258,9 @@ def test_upgrade_from_previous_head_adds_only_anonymous_list_schema(tmp_path: Pa
             for table in CATALOG_TABLES | BRIDGE_TABLES | LEGACY_TABLES
         }
 
-    command.upgrade(config, "head")
+    command.upgrade(config, PREVIOUS_HEAD)
 
-    assert revision(database) == HEAD
+    assert revision(database) == PREVIOUS_HEAD
     assert table_names(database) == before_tables | PROFILE_TABLES
     with sqlite3.connect(database) as connection:
         after_catalog_counts = {
@@ -277,6 +280,46 @@ def test_upgrade_from_previous_head_adds_only_anonymous_list_schema(tmp_path: Pa
         assert {(row[2], row[6]) for row in program_foreign_keys} == {
             ("anonymous_profiles", "CASCADE"),
             ("programs", "RESTRICT"),
+        }
+
+
+def test_upgrade_from_previous_head_adds_only_watch_schema(tmp_path: Path) -> None:
+    database = tmp_path / "previous-head.db"
+    config = make_alembic_config(sqlite_url(database))
+    command.upgrade(config, PREVIOUS_HEAD)
+    before_tables = table_names(database)
+    with sqlite3.connect(database) as connection:
+        before_counts = {
+            table: connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+            for table in CATALOG_TABLES | BRIDGE_TABLES | LEGACY_TABLES | PROFILE_TABLES
+        }
+
+    command.upgrade(config, "head")
+
+    assert revision(database) == HEAD
+    assert table_names(database) == before_tables | WATCH_TABLES
+    with sqlite3.connect(database) as connection:
+        after_counts = {
+            table: connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+            for table in CATALOG_TABLES | BRIDGE_TABLES | LEGACY_TABLES | PROFILE_TABLES
+        }
+        assert after_counts == before_counts
+        assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        assert list(connection.execute("PRAGMA foreign_key_check")) == []
+        assert connection.execute("SELECT COUNT(*) FROM program_watches").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM program_watch_events").fetchone()[0] == 0
+        watch_foreign_keys = list(connection.execute("PRAGMA foreign_key_list(program_watches)"))
+        event_foreign_keys = list(
+            connection.execute("PRAGMA foreign_key_list(program_watch_events)")
+        )
+        assert {(row[2], row[6]) for row in watch_foreign_keys} == {
+            ("anonymous_profiles", "CASCADE"),
+            ("programs", "RESTRICT"),
+            ("admission_snapshots", "RESTRICT"),
+        }
+        assert {(row[2], row[6]) for row in event_foreign_keys} == {
+            ("program_watches", "CASCADE"),
+            ("admission_snapshots", "RESTRICT"),
         }
 
 
@@ -547,8 +590,9 @@ def test_bseu_downgrade_refuses_new_dependencies(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="unexpected dependent rows in programs"):
         command.downgrade(make_alembic_config(sqlite_url(database)), CORE)
 
-    assert revision(database) == PREVIOUS_HEAD
+    assert revision(database) == BSEU_HEAD
     assert PROFILE_TABLES.isdisjoint(table_names(database))
+    assert WATCH_TABLES.isdisjoint(table_names(database))
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT code FROM universities").fetchall() == [("bseu",)]
         assert connection.execute("SELECT COUNT(*) FROM programs").fetchone()[0] == 2

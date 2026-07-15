@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from .calculations import calculate_metrics
-from .catalog_models import MonitoringStatus, Program, University
+from .catalog_models import Program, University
 from .catalog_repository import program_by_university_and_slug, university_by_slug
 from .catalog_service import (
     CatalogNotFoundError,
@@ -31,6 +31,7 @@ from .profile_schemas import (
     SavedUniversityResponse,
 )
 from .profile_security import generate_profile_token, hash_profile_token
+from .watch_service import disable_watch_for_removed_program, watchable_offering_for_program
 
 
 def create_anonymous_profile(session: Session) -> AnonymousProfileCreatedResponse:
@@ -100,27 +101,20 @@ def delete_saved_program(
     university_slug: str,
     program_slug: str,
 ) -> SavedAdmissionListResponse:
-    remove_program(session, profile, _resolve_program(session, university_slug, program_slug))
+    program = _resolve_program(session, university_slug, program_slug)
+    disable_watch_for_removed_program(session, profile, program)
+    remove_program(session, profile, program)
     return get_saved_admission_list(session, profile)
 
 
 def _program_monitoring(
     session: Session, profile: AnonymousProfile, program: Program
 ) -> tuple[str, PersonalAdmissionStatusResponse | None]:
-    monitored_offerings = sorted(
-        (
-            offering
-            for offering in program.offerings
-            if offering.monitoring_supported
-            and offering.monitoring_status == MonitoringStatus.ONLINE
-        ),
-        key=lambda offering: (-offering.admission_year, offering.id),
-    )
-    if not monitored_offerings:
+    offering = watchable_offering_for_program(session, program)
+    if offering is None:
         return "unsupported", None
     if profile.personal_score is None:
         return "score_required", None
-    offering = monitored_offerings[0]
     try:
         snapshot = offering_latest(
             session,
@@ -174,6 +168,7 @@ def get_saved_admission_list(
                 program=program_response,
                 monitoring_state=monitoring_state,
                 monitoring=monitoring,
+                watch_supported=watchable_offering_for_program(session, program) is not None,
             )
         )
     return SavedAdmissionListResponse(

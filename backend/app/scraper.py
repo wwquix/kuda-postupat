@@ -16,6 +16,7 @@ from .parser import ParserError
 from .repository import get_or_create_specialty, save_snapshot_if_changed
 from .source_runtime import attach_run_to_source, record_source_error, record_source_success
 from .telegram import TelegramDeliveryError, build_change_message, send_once
+from .watch_service import evaluate_program_watches
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +149,7 @@ class AdmissionScraper:
                     run.rows_found = len(rows)
                     run.content_hash = hashlib.sha256(response.content).hexdigest()
                     created = 0
+                    created_snapshot_ids: list[int] = []
                     messages: list[str] = []
                     for row in selected:
                         specialty = get_or_create_specialty(session, row, adapter.source_page_url)
@@ -165,6 +167,7 @@ class AdmissionScraper:
                         )
                         created += int(was_created)
                         if was_created:
+                            created_snapshot_ids.append(snapshot.id)
                             message = build_change_message(specialty, snapshot, previous)
                             if message:
                                 messages.append(message)
@@ -178,6 +181,14 @@ class AdmissionScraper:
                     run.finished_at = datetime.now(UTC)
                     record_source_success(source, cache, run.finished_at)
                     session.commit()
+                    if created_snapshot_ids:
+                        try:
+                            evaluate_program_watches(session, created_snapshot_ids)
+                        except Exception:
+                            session.rollback()
+                            logger.exception(
+                                "Program watch evaluation failed; persisted snapshots remain available"
+                            )
                     for message in messages:
                         try:
                             await send_once(session, self.settings, message)

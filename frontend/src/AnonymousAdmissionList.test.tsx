@@ -10,6 +10,8 @@ import { PROFILE_TOKEN_STORAGE_KEY } from './profileStorage'
 import type {
   CatalogMeta,
   ImportedProgram,
+  ProgramWatch,
+  ProgramWatchEvent,
   SavedAdmissionList,
   UniversityDetail,
   UniversityListItem,
@@ -168,6 +170,7 @@ const populatedList = (): SavedAdmissionList => ({
       saved_at: '2026-07-15T14:05:00Z',
       program,
       monitoring_state: 'available',
+      watch_supported: true,
       monitoring: {
         offering_id: 1,
         snapshot_id: 8,
@@ -187,6 +190,7 @@ const populatedList = (): SavedAdmissionList => ({
       program: unsupportedProgram,
       monitoring_state: 'unsupported',
       monitoring: null,
+      watch_supported: false,
     },
   ],
 })
@@ -195,6 +199,9 @@ const fetchMock = vi.fn<typeof fetch>()
 let serverList: SavedAdmissionList
 let acceptedToken: string
 let failMutation = false
+let failWatchMutation = false
+let serverWatches: ProgramWatch[]
+let serverWatchEvents: ProgramWatchEvent[]
 
 function response(body: unknown, status = 200): Response {
   return {
@@ -233,6 +240,14 @@ async function handleRequest(input: RequestInfo | URL, init?: RequestInit) {
     if (authorization !== `Bearer ${acceptedToken}`) return response({ detail: 'invalid' }, 401)
     return response(serverList)
   }
+  if (url.pathname === '/api/profile/watches' && method === 'GET') {
+    if (authorization !== `Bearer ${acceptedToken}`) return response({ detail: 'invalid' }, 401)
+    return response(serverWatches)
+  }
+  if (url.pathname === '/api/profile/watch-events' && method === 'GET') {
+    if (authorization !== `Bearer ${acceptedToken}`) return response({ detail: 'invalid' }, 401)
+    return response(serverWatchEvents)
+  }
   if (url.pathname === '/api/profile/score' && method === 'PATCH') {
     const body = JSON.parse(String(init?.body)) as { score: number | null }
     serverList = {
@@ -261,9 +276,34 @@ async function handleRequest(input: RequestInfo | URL, init?: RequestInit) {
           program,
           monitoring_state: serverList.profile.personal_score === null ? 'score_required' : 'available',
           monitoring: null,
+          watch_supported: true,
         }],
     }
     return response(serverList)
+  }
+  if (url.pathname === '/api/profile/watches/bseu/economic-informatics') {
+    if (failWatchMutation) return response({ detail: 'watch failure' }, 500)
+    if (method === 'PUT') {
+      const watch: ProgramWatch = {
+        enabled: true,
+        created_at: '2026-07-15T14:20:00Z',
+        updated_at: '2026-07-15T14:20:00Z',
+        university: {
+          slug: university.slug,
+          short_name: university.short_name,
+          full_name: university.full_name,
+        },
+        program: { slug: program.slug, name: program.name },
+      }
+      serverWatches = [watch]
+      return response(watch)
+    }
+    serverWatches = []
+    return response({
+      university_slug: university.slug,
+      program_slug: program.slug,
+      enabled: false,
+    })
   }
   throw new Error(`Unexpected mocked request: ${method} ${url.pathname}`)
 }
@@ -291,6 +331,9 @@ beforeEach(() => {
   serverList = emptyList()
   acceptedToken = 'restored-profile-token'
   failMutation = false
+  failWatchMutation = false
+  serverWatches = []
+  serverWatchEvents = []
   fetchMock.mockReset()
   fetchMock.mockImplementation(handleRequest)
   vi.stubGlobal('fetch', fetchMock)
@@ -356,14 +399,40 @@ describe('anonymous profile bootstrap and save controls', () => {
   it('keeps saved state after refresh and supports /bseu/my-list directly', async () => {
     acceptedToken = 'restored-profile-token'
     serverList = populatedList()
+    serverWatches = [{
+      enabled: true,
+      created_at: '2026-07-15T14:20:00Z',
+      updated_at: '2026-07-15T14:20:00Z',
+      university: {
+        slug: university.slug,
+        short_name: university.short_name,
+        full_name: university.full_name,
+      },
+      program: { slug: program.slug, name: program.name },
+    }]
+    serverWatchEvents = [{
+      event_kind: 'applications_total_changed',
+      description: 'Количество заявлений изменилось: 5 → 6.',
+      created_at: '2026-07-15T14:25:00Z',
+      university: {
+        slug: university.slug,
+        short_name: university.short_name,
+        full_name: university.full_name,
+      },
+      program: { slug: program.slug, name: program.name },
+    }]
     localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
     const { container } = renderRoute('/bseu/my-list', '/bseu')
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Мой список поступления' })).toBeInTheDocument()
-    expect(await screen.findByRole('link', { name: university.full_name })).toHaveAttribute('href', '/bseu/universities/bseu')
+    expect((await screen.findAllByRole('link', { name: university.full_name })).some((link) => (
+      link.getAttribute('href') === '/bseu/universities/bseu'
+    ))).toBe(true)
     expect(screen.getByRole('link', { name: 'Мой список' })).toHaveAttribute('href', '/bseu/my-list')
     expect(container.querySelectorAll('h1')).toHaveLength(1)
     expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
+    expect(screen.getByText('Наблюдение включено')).toBeInTheDocument()
+    expect(screen.getByText('Количество заявлений изменилось: 5 → 6.')).toBeInTheDocument()
   })
 
   it('clears an invalid restored token and creates a replacement only after an action', async () => {
@@ -407,8 +476,105 @@ describe('/my-list behavior and truthful monitoring', () => {
     expect(screen.getAllByText('Мониторинг пока недоступен').length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: 'Подробнее в мониторе' })).toHaveAttribute('href', '/monitor')
     const requestedUrls = fetchMock.mock.calls.map(([input]) => String(input))
-    expect(requestedUrls).toEqual(['/api/profile/saved'])
+    expect(requestedUrls).toEqual([
+      '/api/profile/saved',
+      '/api/profile/watches',
+      '/api/profile/watch-events',
+    ])
     expect(requestedUrls.some((url) => url.includes('/latest') || url.includes('score-distribution'))).toBe(false)
+  })
+
+  it('enables and disables a watch only after confirmed backend responses', async () => {
+    const user = userEvent.setup()
+    serverList = populatedList()
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    renderRoute('/my-list')
+
+    const enable = await screen.findByRole('button', { name: 'Включить наблюдение' })
+    expect(screen.queryByText('Наблюдение включено')).not.toBeInTheDocument()
+    await user.click(enable)
+    expect(await screen.findByText('Наблюдение включено')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Отключить наблюдение' }))
+    expect(await screen.findByRole('button', { name: 'Включить наблюдение' })).toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([input, init]) => (
+      String(input) === '/api/profile/watches/bseu/economic-informatics'
+      && init?.method === 'PUT'
+    ))).toBe(true)
+    expect(fetchMock.mock.calls.some(([input, init]) => (
+      String(input) === '/api/profile/watches/bseu/economic-informatics'
+      && init?.method === 'DELETE'
+    ))).toBe(true)
+  })
+
+  it('shows pending and retryable watch-operation failure states without optimistic enablement', async () => {
+    const user = userEvent.setup()
+    serverList = populatedList()
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    let resolveMutation: ((value: Response) => void) | undefined
+    fetchMock.mockImplementation((input, init) => {
+      if (
+        String(input) === '/api/profile/watches/bseu/economic-informatics'
+        && init?.method === 'PUT'
+      ) {
+        return new Promise((resolve) => { resolveMutation = resolve })
+      }
+      return handleRequest(input, init)
+    })
+    renderRoute('/my-list')
+    await user.click(await screen.findByRole('button', { name: 'Включить наблюдение' }))
+    expect(screen.getByRole('button', { name: 'Включаем…' })).toBeDisabled()
+    expect(screen.queryByText('Наблюдение включено')).not.toBeInTheDocument()
+    resolveMutation?.(response({ enabled: true }))
+    await waitFor(() => expect(resolveMutation).toBeDefined())
+
+    failWatchMutation = true
+    fetchMock.mockImplementation(handleRequest)
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Включить наблюдение' })).toBeEnabled())
+    await user.click(screen.getByRole('button', { name: 'Включить наблюдение' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось изменить наблюдение')
+    expect(screen.getByRole('button', { name: 'Включить наблюдение' })).toBeInTheDocument()
+  })
+
+  it('renders empty and populated event history with real links and score guidance', async () => {
+    serverList = populatedList()
+    serverList = {
+      ...serverList,
+      profile: { ...serverList.profile, personal_score: null },
+      programs: serverList.programs.map((item) => (
+        item.program.slug === program.slug
+          ? { ...item, monitoring_state: 'score_required', monitoring: null }
+          : item
+      )),
+    }
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    const { unmount } = renderRoute('/my-list')
+    expect(await screen.findByText('Изменений пока нет')).toBeInTheDocument()
+    expect(screen.getByText(/Изменения позиции и статуса появятся/)).toBeInTheDocument()
+    unmount()
+
+    serverWatchEvents = [{
+      event_kind: 'user_status_changed',
+      description: 'Статус для вашего балла изменился: «Пограничная ситуация» → «Пока не проходит».',
+      created_at: '2026-07-15T14:25:00Z',
+      university: {
+        slug: university.slug,
+        short_name: university.short_name,
+        full_name: university.full_name,
+      },
+      program: { slug: program.slug, name: program.name },
+    }]
+    renderRoute('/my-list')
+    expect(await screen.findByText(/Статус для вашего балла изменился/)).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: program.name }).some((link) => (
+      link.getAttribute('href') === '/universities/bseu/programs/economic-informatics'
+    ))).toBe(true)
+    expect(screen.getByRole('link', { name: 'Открыть программу' })).toHaveAttribute(
+      'href',
+      '/universities/bseu/programs/economic-informatics',
+    )
+    expect(screen.getAllByRole('link', { name: 'Открыть монитор' }).some((link) => (
+      link.getAttribute('href') === '/monitor'
+    ))).toBe(true)
   })
 
   it('keeps the saved UI when a save/remove mutation fails and allows retry', async () => {

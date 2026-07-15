@@ -50,6 +50,7 @@ class SavedProgramResponse(ProfileSchema):
         "unsupported",
     ]
     monitoring: PersonalAdmissionStatusResponse | None
+    watch_supported: bool
 
 
 class SavedAdmissionListResponse(ProfileSchema):

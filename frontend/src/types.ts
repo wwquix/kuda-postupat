@@ -161,6 +161,7 @@ export interface SavedProgram {
   program: ImportedProgram
   monitoring_state: 'available' | 'score_required' | 'temporarily_unavailable' | 'unsupported'
   monitoring: PersonalAdmissionStatus | null
+  watch_supported: boolean
 }
 
 export interface SavedAdmissionList {
@@ -171,4 +172,44 @@ export interface SavedAdmissionList {
 
 export interface AnonymousProfileCreated extends SavedAdmissionList {
   token: string
+}
+
+export interface ProgramWatch {
+  enabled: boolean
+  created_at: string
+  updated_at: string
+  university: {
+    slug: string
+    short_name: string
+    full_name: string
+  }
+  program: {
+    slug: string
+    name: string
+  }
+}
+
+export interface ProgramWatchEvent {
+  event_kind:
+    | 'applications_total_changed'
+    | 'estimated_cutoff_changed'
+    | 'user_position_changed'
+    | 'user_status_changed'
+  description: string
+  created_at: string
+  university: {
+    slug: string
+    short_name: string
+    full_name: string
+  }
+  program: {
+    slug: string
+    name: string
+  }
+}
+
+export interface ProgramWatchMutation {
+  university_slug: string
+  program_slug: string
+  enabled: boolean
 }

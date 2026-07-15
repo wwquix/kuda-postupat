@@ -1,6 +1,6 @@
 # Монитор вступительной кампании БГЭУ
 
-Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. При необходимости значимые изменения отправляются в Telegram.
+Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. Анонимный пользователь может сохранить Program, включить наблюдение и читать персональный feed изменений в `/my-list`. Существующая owner-mode отправка Telegram остаётся отдельной; per-profile Telegram delivery ещё не реализована.
 
 > Это автоматическая оценка на основании текущих заявлений, а не официальный итоговый проходной балл. Она не гарантирует поступление.
 
@@ -24,7 +24,7 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 
 Страница программы: `http://127.0.0.1:5173/universities/bseu/programs/economic-informatics`
 
-Анонимный список поступления: `http://127.0.0.1:5173/my-list`
+Анонимный список поступления и наблюдения: `http://127.0.0.1:5173/my-list`
 
 Монитор поступления БГЭУ: `http://127.0.0.1:5173/monitor`
 
@@ -450,6 +450,8 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 - `GET /api/profile`, `PATCH /api/profile/score`, `GET /api/profile/saved` — читать список и управлять личным баллом через `Authorization: Bearer ...`
 - `PUT`/`DELETE /api/profile/universities/{slug}` — сохранить или удалить вуз
 - `PUT`/`DELETE /api/profile/programs/{university_slug}/{program_slug}` — сохранить или удалить программу
+- `GET /api/profile/watches`, `PUT`/`DELETE /api/profile/watches/{university_slug}/{program_slug}` — читать и переключать наблюдение за сохранённой BSEU Program
+- `GET /api/profile/watch-events` — читать profile-scoped историю значимых изменений
 - `GET /api/health`
 - `GET /api/config` — только публичная конфигурация, без secret values
 - `GET /api/status`
@@ -461,6 +463,7 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 
 Полный контракт catalog/search API, включая обязательную пагинацию и семантику неполного покрытия, описан в `docs/catalog-search-api.md`.
 Контракт анонимной идентичности, хранения token и `/my-list` описан в `docs/anonymous-admission-list.md`.
+Контракт BSEU Program watches, baseline, event kinds и in-app feed описан в `docs/anonymous-program-watchlist.md`.
 
 ## Docker как дополнительный вариант
 

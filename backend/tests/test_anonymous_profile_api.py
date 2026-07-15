@@ -372,4 +372,7 @@ def test_profile_api_isolated_from_external_network_and_documents_typed_routes(
         "/api/profile/saved",
         "/api/profile/universities/{university_slug}",
         "/api/profile/programs/{university_slug}/{program_slug}",
+        "/api/profile/watches",
+        "/api/profile/watch-events",
+        "/api/profile/watches/{university_slug}/{program_slug}",
     }

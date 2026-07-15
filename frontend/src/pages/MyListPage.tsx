@@ -1,15 +1,19 @@
-import { LoaderCircle, RefreshCw } from 'lucide-react'
+import { BellRing, LoaderCircle, RefreshCw } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { apiValueLabel } from '../catalogPresentation'
 import { SaveControl } from '../components/SaveControl'
-import type { SavedProgram, SavedUniversity } from '../types'
+import type { ProgramWatchEvent, SavedProgram, SavedUniversity } from '../types'
 import { useProfile } from '../useProfile'
 import { useDocumentTitle } from '../useDocumentTitle'
 
 const MIN_SCORE = 0
 const MAX_SCORE = 500
+const eventTimeFormatter = new Intl.DateTimeFormat('ru-BY', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 function ScoreEditor({ currentScore }: { currentScore: number | null }) {
   const { updateScore } = useProfile()
@@ -141,7 +145,73 @@ function MonitoringResult({ item }: { item: SavedProgram }) {
   </div>
 }
 
-function SavedProgramCard({ item }: { item: SavedProgram }) {
+function WatchControl({
+  item,
+  enabled,
+  personalScore,
+}: {
+  item: SavedProgram
+  enabled: boolean
+  personalScore: number | null
+}) {
+  const profile = useProfile()
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const program = item.program
+
+  if (!item.watch_supported) {
+    return <p className="mt-4 rounded-2xl bg-cream/65 p-4 font-semibold">
+      Мониторинг пока недоступен
+    </p>
+  }
+
+  const toggle = async () => {
+    setPending(true)
+    setError(null)
+    try {
+      if (enabled) {
+        await profile.disableWatch(program.university.slug, program.slug)
+      } else {
+        await profile.enableWatch(program.university.slug, program.slug)
+      }
+    } catch {
+      setError('Не удалось изменить наблюдение. Попробуйте ещё раз.')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return <div className="mt-4 rounded-2xl border border-moss/15 bg-white p-4" aria-busy={pending}>
+    {enabled && <p aria-live="polite" className="inline-flex items-center gap-2 font-extrabold text-moss" role="status">
+      <BellRing aria-hidden="true" size={18} />Наблюдение включено
+    </p>}
+    <button
+      className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-moss/25 bg-mint px-4 py-2.5 font-bold text-moss disabled:cursor-wait disabled:opacity-60 sm:w-auto"
+      disabled={pending}
+      onClick={() => void toggle()}
+      type="button"
+    >
+      {pending && <LoaderCircle aria-hidden="true" className="animate-spin" size={17} />}
+      {pending
+        ? enabled ? 'Отключаем…' : 'Включаем…'
+        : enabled ? 'Отключить наблюдение' : 'Включить наблюдение'}
+    </button>
+    {personalScore === null && <p className="mt-3 text-sm leading-6 text-ink/65">
+      Изменения позиции и статуса требуют личный балл. Добавьте его выше, чтобы получать такие события.
+    </p>}
+    {error && <p aria-live="assertive" className="mt-3 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+  </div>
+}
+
+function SavedProgramCard({
+  item,
+  watchEnabled,
+  personalScore,
+}: {
+  item: SavedProgram
+  watchEnabled: boolean
+  personalScore: number | null
+}) {
   const program = item.program
   return <article className="panel min-w-0 p-5 sm:p-6">
     <h3 className="break-words text-xl font-extrabold">
@@ -161,6 +231,7 @@ function SavedProgramCard({ item }: { item: SavedProgram }) {
       </div>)}
     </div>}
     <MonitoringResult item={item} />
+    <WatchControl enabled={watchEnabled} item={item} personalScore={personalScore} />
     <div className="mt-5 border-t border-ink/10 pt-4">
       <SaveControl
         kind="program"
@@ -172,6 +243,50 @@ function SavedProgramCard({ item }: { item: SavedProgram }) {
   </article>
 }
 
+function ChangeHistory({
+  events,
+  personalScore,
+}: {
+  events: ProgramWatchEvent[]
+  personalScore: number | null
+}) {
+  return <section aria-labelledby="watch-history-title" className="min-w-0">
+    <h2 className="text-3xl font-extrabold" id="watch-history-title">История изменений</h2>
+    {personalScore === null && <p className="mt-3 max-w-3xl text-sm leading-6 text-ink/65">
+      Изменения позиции и статуса появятся после того, как вы укажете личный балл. Общие изменения заявлений и диапазона доступны без него.
+    </p>}
+    {events.length === 0
+      ? <p className="panel mt-5 p-5 text-ink/65">Изменений пока нет</p>
+      : <ol className="mt-5 grid min-w-0 gap-4">
+        {events.map((event, index) => {
+          const programPath = `/universities/${encodeURIComponent(event.university.slug)}/programs/${encodeURIComponent(event.program.slug)}`
+          return <li className="panel min-w-0 p-5 sm:p-6" key={`${event.created_at}:${event.event_kind}:${event.program.slug}:${index}`}>
+            <article className="min-w-0">
+              <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+                <h3 className="min-w-0 break-words text-lg font-extrabold">
+                  <Link className="underline decoration-moss/35 decoration-2 underline-offset-4" to={programPath}>{event.program.name}</Link>
+                </h3>
+                <time className="text-sm text-ink/55" dateTime={event.created_at}>
+                  {eventTimeFormatter.format(new Date(event.created_at))}
+                </time>
+              </div>
+              <p className="mt-2 break-words text-sm text-ink/65">
+                <Link className="font-bold text-moss underline" to={`/universities/${encodeURIComponent(event.university.slug)}`}>
+                  {event.university.full_name}
+                </Link>
+              </p>
+              <p className="mt-4 break-words leading-7">{event.description}</p>
+              <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold">
+                <Link className="text-moss underline" to={programPath}>Открыть программу</Link>
+                <Link className="text-moss underline" to="/monitor">Открыть монитор</Link>
+              </div>
+            </article>
+          </li>
+        })}
+      </ol>}
+  </section>
+}
+
 export function MyListPage() {
   const profile = useProfile()
   useDocumentTitle('Мой список поступления · Куда поступать')
@@ -180,6 +295,9 @@ export function MyListPage() {
   const programs = profile.data?.programs ?? []
   const score = profile.data?.profile.personal_score ?? null
   const empty = universities.length === 0 && programs.length === 0
+  const watchedPrograms = new Set(profile.watches.map((watch) => (
+    `${watch.university.slug}:${watch.program.slug}`
+  )))
 
   return <div className="min-w-0 bg-[linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
     <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
@@ -227,9 +345,19 @@ export function MyListPage() {
         <section aria-labelledby="saved-programs-title" className="min-w-0">
           <h2 className="text-3xl font-extrabold" id="saved-programs-title">Сохранённые программы</h2>
           {programs.length > 0
-            ? <div className="mt-5 grid min-w-0 gap-5">{programs.map((item) => <SavedProgramCard item={item} key={`${item.program.university.slug}:${item.program.slug}`} />)}</div>
+            ? <div className="mt-5 grid min-w-0 gap-5">{programs.map((item) => {
+              const key = `${item.program.university.slug}:${item.program.slug}`
+              return <SavedProgramCard
+                item={item}
+                key={key}
+                personalScore={score}
+                watchEnabled={watchedPrograms.has(key)}
+              />
+            })}</div>
             : <p className="panel mt-5 p-5 text-ink/65">Сохранённых программ пока нет.</p>}
         </section>
+
+        <ChangeHistory events={profile.watchEvents} personalScore={score} />
       </div>}
     </div>
   </div>

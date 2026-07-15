@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import httpx
 import pytest
@@ -169,8 +169,10 @@ async def test_success_duplicate_and_telegram_decision_parity(
     changed = original.replace(b'AllCount="8"', b'AllCount="9"')
     fetch_mock = AsyncMock(side_effect=[_response(original), _response(changed), _response(changed)])
     send_mock = AsyncMock(return_value=True)
+    evaluate_mock = Mock(return_value=0)
     monkeypatch.setattr(scraper, "_fetch", fetch_mock)
     monkeypatch.setattr(scraper_module, "send_once", send_mock)
+    monkeypatch.setattr(scraper_module, "evaluate_program_watches", evaluate_mock)
 
     first = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
     second = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
@@ -191,6 +193,8 @@ async def test_success_duplicate_and_telegram_decision_parity(
         assert {run.status for run in session.scalars(select(ScraperRun))} == {"success"}
         assert session.query(NotificationLog).count() == 0
     send_mock.assert_awaited_once()
+    assert evaluate_mock.call_count == 2
+    assert all(len(call.args[1]) == 1 for call in evaluate_mock.call_args_list)
 
 
 @pytest.mark.asyncio
@@ -203,8 +207,10 @@ async def test_parser_and_transport_failures_preserve_run_lifecycle(
     request = httpx.Request("GET", settings.data_url)
     fetch_mock = AsyncMock(side_effect=[malformed, httpx.ReadTimeout("timeout", request=request)])
     send_mock = AsyncMock()
+    evaluate_mock = Mock()
     monkeypatch.setattr(scraper, "_fetch", fetch_mock)
     monkeypatch.setattr(scraper_module, "send_once", send_mock)
+    monkeypatch.setattr(scraper_module, "evaluate_program_watches", evaluate_mock)
 
     with pytest.raises(ParserError):
         await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
@@ -219,6 +225,42 @@ async def test_parser_and_transport_failures_preserve_run_lifecycle(
         assert session.query(AdmissionSnapshot).count() == 0
         assert session.query(NotificationLog).count() == 0
     send_mock.assert_not_awaited()
+    evaluate_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_watch_evaluation_failure_keeps_committed_snapshot_and_is_logged(
+    monitoring_session_factory,
+    fixtures_dir: Path,
+    monkeypatch,
+) -> None:
+    settings = _settings()
+    scraper = AdmissionScraper(settings, build_bseu_monitoring_registry(settings))
+    monkeypatch.setattr(
+        scraper,
+        "_fetch",
+        AsyncMock(return_value=_response((fixtures_dir / "live_shape.xml").read_bytes())),
+    )
+    monkeypatch.setattr(scraper_module, "send_once", AsyncMock())
+    monkeypatch.setattr(
+        scraper_module,
+        "evaluate_program_watches",
+        Mock(side_effect=RuntimeError("isolated evaluator failure")),
+    )
+
+    log_exception = Mock()
+    monkeypatch.setattr(scraper_module.logger, "exception", log_exception)
+    result = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
+
+    assert result["snapshot_created"] is True
+    log_exception.assert_called_once_with(
+        "Program watch evaluation failed; persisted snapshots remain available"
+    )
+    with monitoring_session_factory() as session:
+        assert session.query(AdmissionSnapshot).count() == 1
+        run = session.scalar(select(ScraperRun))
+        assert run is not None
+        assert run.status == "success"
 
 
 @pytest.mark.asyncio

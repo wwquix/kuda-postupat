@@ -1,6 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import httpx
 import pytest
@@ -141,7 +141,9 @@ async def test_304_after_snapshot_is_successful_and_silent(
     scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", AsyncMock(return_value=_response(304)))
     send_mock = AsyncMock()
+    evaluate_mock = Mock()
     monkeypatch.setattr(scraper_module, "send_once", send_mock)
+    monkeypatch.setattr(scraper_module, "evaluate_program_watches", evaluate_mock)
 
     result = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
 
@@ -165,6 +167,7 @@ async def test_304_after_snapshot_is_successful_and_silent(
         assert cache is not None and cache.checked_at == last_run.finished_at
         assert session.query(NotificationLog).count() == 0
     send_mock.assert_not_awaited()
+    evaluate_mock.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -184,7 +187,9 @@ async def test_304_without_snapshot_retries_once_without_conditions_and_saves_da
         return responses.pop(0)
 
     scraper = _scraper(settings)
+    evaluate_mock = Mock(return_value=0)
     monkeypatch.setattr(scraper, "_fetch", fetch)
+    monkeypatch.setattr(scraper_module, "evaluate_program_watches", evaluate_mock)
     result = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
 
     assert result["status"] == "success"
@@ -200,6 +205,8 @@ async def test_304_without_snapshot_retries_once_without_conditions_and_saves_da
         assert run.data_source_id == source.id
         assert source.last_success_at == run.finished_at
         assert source.consecutive_failures == 0
+        assert evaluate_mock.call_count == 1
+        assert evaluate_mock.call_args.args[1] == [snapshot.id]
 
 
 @pytest.mark.asyncio
@@ -209,8 +216,10 @@ async def test_repeated_304_without_snapshot_is_controlled_and_finite(session_fa
         session.add(HttpCacheState(url=settings.data_url, etag='"orphaned-etag"'))
         session.commit()
     fetch_mock = AsyncMock(side_effect=[_response(304), _response(304)])
+    evaluate_mock = Mock()
     scraper = _scraper(settings)
     monkeypatch.setattr(scraper, "_fetch", fetch_mock)
+    monkeypatch.setattr(scraper_module, "evaluate_program_watches", evaluate_mock)
 
     with pytest.raises(NotModifiedWithoutSnapshotError, match="сохраненных данных"):
         await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
@@ -222,6 +231,7 @@ async def test_repeated_304_without_snapshot_is_controlled_and_finite(session_fa
         run = session.query(ScraperRun).one()
         assert run.status == "error"
         assert run.http_status == 304
+    evaluate_mock.assert_not_called()
 
 
 def test_manual_refresh_endpoint_returns_200_for_not_modified(
