@@ -1,6 +1,6 @@
 # Монитор вступительной кампании БГЭУ
 
-Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. Анонимный пользователь может сохранить Program, включить наблюдение, читать персональный feed изменений в `/my-list` и связать один Telegram chat для доставки новых persisted watch events. Существующая owner-mode отправка Telegram остаётся отдельной.
+Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. Публичный `/recommendations` подбирает University и импортированные Program по явным параметрам, не выдавая catalog match за вероятность поступления. Анонимный пользователь может сохранить Program, включить наблюдение, читать персональный feed изменений в `/my-list` и связать один Telegram chat для доставки новых persisted watch events. Существующая owner-mode отправка Telegram остаётся отдельной.
 
 > Это автоматическая оценка на основании текущих заявлений, а не официальный итоговый проходной балл. Она не гарантирует поступление.
 
@@ -19,6 +19,8 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 Главная страница: `http://127.0.0.1:5173/`
 
 Каталог вузов: `http://127.0.0.1:5173/universities`
+
+Подбор вариантов: `http://127.0.0.1:5173/recommendations`
 
 Страница вуза: `http://127.0.0.1:5173/universities/bseu`
 
@@ -459,6 +461,7 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 
 ## API
 
+- `GET /api/recommendations` — публичный детерминированный подбор Program и University с отдельными monitored, parameter-match и insufficient-coverage состояниями
 - `GET /api/universities` — каталог, поиск, фильтры, сортировка и пагинация
 - `GET /api/universities/{slug}` — карточка вуза, безопасные источники и импортированные Program/Offering summaries
 - `GET /api/universities/{slug}/programs` — импортированные программы вуза
@@ -486,6 +489,7 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 - `POST /api/refresh` — `X-Refresh-Token` или `Authorization: Bearer ...`
 
 Полный контракт catalog/search API, включая обязательную пагинацию и семантику неполного покрытия, описан в `docs/catalog-search-api.md`.
+Контракт честного подбора, классы результата, ranking и ограничения описаны в `docs/recommendations-v1.md`.
 Контракт анонимной идентичности, хранения token и `/my-list` описан в `docs/anonymous-admission-list.md`.
 Контракт BSEU Program watches, baseline, event kinds и in-app feed описан в `docs/anonymous-program-watchlist.md`.
 Контракт Telegram linking, webhook authentication и WatchEvent delivery описан в `docs/telegram-watch-notifications.md`.

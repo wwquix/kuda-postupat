@@ -17,6 +17,7 @@ from .config import get_settings
 from .database import get_db, init_db
 from .models import AdmissionSnapshot, ScraperRun, Specialty
 from .profile_api import router as profile_router
+from .recommendation_api import router as recommendation_router
 from .repository import latest_snapshot, snapshot_to_dict
 from .scraper import AdmissionScraper, RefreshInProgressError, RefreshTooSoonError
 from .telegram_watch_api import router as telegram_watch_router
@@ -79,6 +80,7 @@ app.add_middleware(
 )
 app.include_router(catalog_router)
 app.include_router(profile_router)
+app.include_router(recommendation_router)
 app.include_router(telegram_watch_router)
 
 

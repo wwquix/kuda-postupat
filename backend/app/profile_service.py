@@ -107,19 +107,27 @@ def delete_saved_program(
     return get_saved_admission_list(session, profile)
 
 
-def _program_monitoring(
-    session: Session, profile: AnonymousProfile, program: Program
+def program_monitoring_for_score(
+    session: Session,
+    program: Program,
+    score: int | None,
+    *,
+    stale_after_minutes: int | None = None,
 ) -> tuple[str, PersonalAdmissionStatusResponse | None]:
     offering = watchable_offering_for_program(session, program)
     if offering is None:
         return "unsupported", None
-    if profile.personal_score is None:
+    if score is None:
         return "score_required", None
     try:
         snapshot = offering_latest(
             session,
             offering.id,
-            stale_after_minutes=get_settings().stale_after_minutes,
+            stale_after_minutes=(
+                stale_after_minutes
+                if stale_after_minutes is not None
+                else get_settings().stale_after_minutes
+            ),
         )
         if snapshot.is_stale:
             return "temporarily_unavailable", None
@@ -127,7 +135,7 @@ def _program_monitoring(
             snapshot.admission_plan,
             snapshot.applications_total,
             snapshot.distribution,
-            profile.personal_score,
+            score,
         )
     except Exception:
         return "temporarily_unavailable", None
@@ -161,7 +169,9 @@ def get_saved_admission_list(
     programs: list[SavedProgramResponse] = []
     for link, program in saved_program_rows(session, profile.id):
         program_response = get_program(session, program.id)
-        monitoring_state, monitoring = _program_monitoring(session, profile, program)
+        monitoring_state, monitoring = program_monitoring_for_score(
+            session, program, profile.personal_score
+        )
         programs.append(
             SavedProgramResponse(
                 saved_at=link.created_at,

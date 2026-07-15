@@ -78,6 +78,8 @@
 
 ## 7. Recommendations API v1
 
+- **Status:** M-RECOMMENDATIONS-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, разделяют monitored status, catalog match и insufficient coverage, интегрированы с явным profile-score action и не создают вероятность поступления. Нормализованная совместимость предметов и расширение данных остаются отдельным будущим scope. Следующий planned user-visible milestone — M-COMPARE-01, честное сравнение сохранённых вариантов как отдельный срез раздела 8.
+
 - **Goal:** implement a deterministic, explainable first recommendation service using canonical offerings.
 - **In scope:** request/output contract, required subject compatibility, filters/preferences, match/confidence/reasons/warnings/freshness, versioned API.
 - **Out of scope:** ML/probability claims, frontend experience, account auth, fabricated completion of missing data.
@@ -102,7 +104,7 @@
 
 ## 9. Watchlists and Telegram linking
 
-- **Status:** M-WATCHLIST-01 и M-TELEGRAM-WATCH-01 complete: анонимный профиль может включить BSEU Program watch, видеть persisted event history, безопасно связать один Telegram chat и получать confirmed per-profile delivery с bounded retry/dedup status. Следующий planned user-visible milestone — Recommendations API v1 из раздела 7. Registered accounts, cross-device merge, comparison, Recommendations UI, production rehearsal и дополнительные adapters остаются незавершёнными.
+- **Status:** M-WATCHLIST-01 и M-TELEGRAM-WATCH-01 complete: анонимный профиль может включить BSEU Program watch, видеть persisted event history, безопасно связать один Telegram chat и получать confirmed per-profile delivery с bounded retry/dedup status. Recommendations v1 теперь завершены отдельным M-RECOMMENDATIONS-01. Registered accounts, cross-device merge, comparison, production rehearsal и дополнительные adapters остаются незавершёнными; следующий planned user-visible milestone — M-COMPARE-01 из раздела 8.
 
 - **Goal:** connect watched offerings and per-profile Telegram delivery while preserving owner mode.
 - **In scope:** one-time hashed link tokens, Telegram accounts, watchlists, notification events/status/retry, fingerprint dedup, owner compatibility.
@@ -152,7 +154,7 @@
 
 ## 13. Final integration and production readiness
 
-- **Status:** M-READINESS-AUDIT-01 is complete and its GAP-01/M4 prerequisite is now resolved by M-BSEU-ADAPTER-01. The result remains **NO-GO** for beginning section 13: M7, the unfinished M8 scope and M9 are still missing; production rehearsal/resource/operations gaps also remain. See `docs/final-integration-readiness-audit.md`.
+- **Status:** M-READINESS-AUDIT-01 is complete and its GAP-01/M4 prerequisite is now resolved by M-BSEU-ADAPTER-01. M-RECOMMENDATIONS-01 and the selected M9 watch/Telegram slices are complete, but the remaining M7 subject scope, unfinished M8 scope and production rehearsal/resource/operations gaps keep section 13 at **NO-GO**. See `docs/final-integration-readiness-audit.md`.
 
 - **Goal:** harden the assembled first release for the existing low-resource VPS.
 - **In scope:** integration regression, query/load budgets, backup/restore/migration rehearsal, Nginx/systemd/base path, privacy/log audit, operator docs, compatibility/deprecation review.

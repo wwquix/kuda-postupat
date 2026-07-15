@@ -7,6 +7,7 @@ import { MyListPage } from './pages/MyListPage'
 import MonitorPage from './pages/MonitorPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ProgramDetailPage } from './pages/ProgramDetailPage'
+import { RecommendationsPage } from './pages/RecommendationsPage'
 import { UniversityDetailPage } from './pages/UniversityDetailPage'
 import { UniversitiesPage } from './pages/UniversitiesPage'
 
@@ -16,6 +17,7 @@ export default function App() {
       <Route element={<SiteLayout />}>
         <Route index element={<HomePage />} />
         <Route path="universities" element={<UniversitiesPage />} />
+        <Route path="recommendations" element={<RecommendationsPage />} />
         <Route path="universities/:universitySlug/programs/:programKey" element={<ProgramDetailPage />} />
         <Route path="universities/:slug" element={<UniversityDetailPage />} />
         <Route path="my-list" element={<MyListPage />} />

@@ -225,3 +225,46 @@ export interface TelegramLinkChallenge {
   deep_link: string
   expires_at: string
 }
+
+export type RecommendationResultClass =
+  | 'MONITORED_STATUS'
+  | 'PARAMETER_MATCH'
+  | 'INSUFFICIENT_COVERAGE'
+
+export interface RecommendationReason {
+  parameter: string
+  value: string
+}
+
+export interface ProgramRecommendation {
+  result_class: RecommendationResultClass
+  result_label: string
+  admission_evaluation: string
+  match_reasons: RecommendationReason[]
+  coverage_notes: string[]
+  monitoring_state: 'available' | 'score_required' | 'temporarily_unavailable' | 'unsupported'
+  monitoring: PersonalAdmissionStatus | null
+  program: ImportedProgram
+}
+
+export interface UniversityRecommendation {
+  result_class: RecommendationResultClass
+  result_label: string
+  admission_evaluation: string
+  match_reasons: RecommendationReason[]
+  coverage_notes: string[]
+  university: UniversityListItem
+}
+
+export interface RecommendationResponse {
+  applied_parameters: RecommendationReason[]
+  programs: {
+    items: ProgramRecommendation[]
+    pagination: Pagination
+  }
+  universities: {
+    items: UniversityRecommendation[]
+    pagination: Pagination
+  }
+  coverage: CatalogMeta['coverage']
+}

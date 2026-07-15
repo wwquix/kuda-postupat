@@ -7,6 +7,7 @@ import type {
   ProgramWatch,
   ProgramWatchEvent,
   ProgramWatchMutation,
+  RecommendationResponse,
   SavedAdmissionList,
   Snapshot,
   Specialty,
@@ -49,6 +50,10 @@ export const api = {
   ),
   universities: (params: URLSearchParams, signal: AbortSignal) => json<UniversityListResponse>(
     `${apiBase}/universities?${params.toString()}`,
+    { signal },
+  ),
+  recommendations: (params: URLSearchParams, signal: AbortSignal) => json<RecommendationResponse>(
+    `${apiBase}/recommendations?${params.toString()}`,
     { signal },
   ),
   university: (slug: string, signal: AbortSignal) => json<UniversityDetail>(
