@@ -78,7 +78,7 @@ Each item contains imported `program_count` and `offering_count` plus explicit `
 
 ### `GET /api/universities/{slug}`
 
-Returns public university fields, categories, safe source identities, verification times, imported counts and explicit platform coverage. Public sources contain only:
+Returns public university fields, categories, safe source identities, verification times, imported counts, explicit platform coverage and a required `programs` array. The nested array reuses `ProgramResponse`; each Program contains deterministic imported `OfferingSummaryResponse` items. Empty `programs` means `not_imported` platform coverage, not real-world absence. Public sources contain only:
 
 ```text
 source_type

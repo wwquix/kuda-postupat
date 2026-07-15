@@ -8,10 +8,11 @@ This document describes the routed frontend foundation for «Куда посту
 |---|---|
 | `/` | Finished minimal homepage with platform scope, database-derived university count, BSEU-only live-monitoring notice and official-data limitations. |
 | `/universities` | Backend-driven university catalog with URL-synchronized search, filters, sorting and pagination. |
+| `/universities/:slug` | Read-only university profile with stored identity, sources and imported Program/Offering coverage. |
 | `/monitor` | Existing BSEU admission dashboard, including score scenario, snapshots, charts, history, freshness, source link and manual refresh. |
 | `*` | Safe frontend 404 with links to implemented public routes. |
 
-No placeholder routes exist for university details, programs, recommendations, profiles or user-state features.
+No placeholder routes exist for program details, recommendations, profiles or user-state features.
 
 ## Layout structure
 
@@ -74,4 +75,4 @@ The repository-wide command also runs the frontend tests before lint and build:
 
 ## Deferred milestones
 
-The following remain deferred: university/program details, recommendations, authentication, profiles, favorites, comparison, watchlists and Telegram linking.
+The following remain deferred: Program details, recommendations, authentication, profiles, favorites, comparison, watchlists and Telegram linking.

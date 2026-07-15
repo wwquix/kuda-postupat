@@ -1,22 +1,24 @@
 from __future__ import annotations
 
 import os
+import socket
 import subprocess
 import sys
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, event, select
+from sqlalchemy import Engine, event, select, text
 from sqlalchemy.orm import Session, sessionmaker
 from test_bseu_backfill import sqlite_url
 from test_university_catalog_import import _seed_bseu
 
 from app.catalog_api import router
 from app.catalog_import_service import seed_universities
-from app.catalog_models import University
+from app.catalog_models import FundingType, MonitoringStatus, Program, ProgramOffering, StudyForm, University
 from app.database import get_db
 from app.schema import expected_head
 
@@ -150,6 +152,7 @@ def test_university_details_sources_and_missing_program_coverage_are_honest(cata
     assert payload["coverage"]["online_monitoring"] == "not_implemented"
     assert "не означает" in payload["coverage"]["note"]
     assert payload["sources"]
+    assert payload["programs"] == []
     assert all(set(source) == {"source_type", "source_url", "checked_at"} for source in payload["sources"])
     response_text = university.text.lower()
     for forbidden in ("etag", "last_modified", "last_error", "filesystem", "telegram_bot_token"):
@@ -158,6 +161,14 @@ def test_university_details_sources_and_missing_program_coverage_are_honest(cata
     bseu = client.get("/api/universities/bseu").json()
     assert bseu["program_count"] == bseu["offering_count"] == 1
     assert bseu["coverage"]["online_monitoring"] == "available"
+    assert bseu["short_name"] == "БГЭУ"
+    assert bseu["city"] == bseu["region"] == "Минск"
+    assert bseu["categories"] == [{"code": "economic", "label_ru": "Экономический"}]
+    assert len(bseu["programs"]) == 1
+    assert bseu["programs"][0]["name"] == "Экономическая информатика"
+    assert bseu["programs"][0]["offerings"][0]["admission_year"] == 2026
+    assert bseu["programs"][0]["offerings"][0]["study_form"] == "full_time"
+    assert bseu["programs"][0]["offerings"][0]["funding_type"] == "paid"
     assert client.get("/api/universities/unknown").status_code == 404
 
     missing_programs = client.get("/api/universities/brsu/programs")
@@ -169,6 +180,137 @@ def test_university_details_sources_and_missing_program_coverage_are_honest(cata
     assert imported_programs.status_code == 200
     assert imported_programs.json()["items"][0]["id"] == 1
     assert client.get("/api/universities/unknown/programs").status_code == 404
+
+
+def test_university_detail_nested_collections_are_deterministic(catalog_client) -> None:  # type: ignore[no-untyped-def]
+    client, engine, _database = catalog_client
+    checked_at = datetime(2026, 7, 12, 18, 14, 28, tzinfo=UTC)
+    with Session(engine) as session, session.begin():
+        university = session.scalar(select(University).where(University.code == "bseu"))
+        assert university is not None
+        alpha = Program(
+            university_id=university.id,
+            code="test-alpha",
+            slug="test-alpha",
+            name="Альфа — тест порядка",
+            qualification=None,
+            faculty_name=None,
+            education_level=None,
+            duration_years=None,
+            description=None,
+            admission_subjects_json=None,
+            career_fields_json=None,
+            category_tags_json=None,
+            official_url="https://example.invalid/program-alpha",
+            active=True,
+            source_checked_at=checked_at,
+            verified_at=None,
+        )
+        omega = Program(
+            university_id=university.id,
+            code="test-omega",
+            slug="test-omega",
+            name="Янтарь — тест порядка",
+            qualification=None,
+            faculty_name=None,
+            education_level=None,
+            duration_years=None,
+            description=None,
+            admission_subjects_json=None,
+            career_fields_json=None,
+            category_tags_json=None,
+            official_url="https://example.invalid/program-omega",
+            active=True,
+            source_checked_at=checked_at,
+            verified_at=None,
+        )
+        session.add_all([omega, alpha])
+        session.flush()
+        session.add_all([
+            ProgramOffering(
+                program_id=alpha.id,
+                admission_year=2027,
+                study_form=StudyForm.PART_TIME,
+                funding_type=FundingType.PAID,
+                places=None,
+                application_deadline=None,
+                monitoring_supported=False,
+                monitoring_status=MonitoringStatus.REFERENCE_ONLY,
+                official_url="https://example.invalid/offering-2027",
+                source_url="https://example.invalid/offering-2027",
+                source_checked_at=checked_at,
+                verified_at=None,
+            ),
+            ProgramOffering(
+                program_id=alpha.id,
+                admission_year=2025,
+                study_form=StudyForm.FULL_TIME,
+                funding_type=FundingType.BUDGET,
+                places=None,
+                application_deadline=None,
+                monitoring_supported=False,
+                monitoring_status=MonitoringStatus.REFERENCE_ONLY,
+                official_url="https://example.invalid/offering-2025",
+                source_url="https://example.invalid/offering-2025",
+                source_checked_at=checked_at,
+                verified_at=None,
+            ),
+        ])
+
+    first = client.get("/api/universities/bseu")
+    second = client.get("/api/universities/bseu")
+    assert first.status_code == second.status_code == 200
+    first_programs = first.json()["programs"]
+    second_programs = second.json()["programs"]
+    assert first_programs == second_programs
+    assert [item["name"] for item in first_programs] == [
+        "Альфа — тест порядка",
+        "Экономическая информатика",
+        "Янтарь — тест порядка",
+    ]
+    assert [item["admission_year"] for item in first_programs[0]["offerings"]] == [2025, 2027]
+
+
+def test_university_detail_is_read_only_and_performs_no_external_request(
+    catalog_client, monkeypatch: pytest.MonkeyPatch
+) -> None:  # type: ignore[no-untyped-def]
+    client, engine, _database = catalog_client
+    tracked_tables = (
+        "universities",
+        "programs",
+        "program_offerings",
+        "data_sources",
+        "admission_snapshots",
+        "scraper_runs",
+        "notification_logs",
+    )
+
+    def counts() -> dict[str, int]:
+        with engine.connect() as connection:
+            return {
+                table: int(connection.execute(text(f'SELECT COUNT(*) FROM "{table}"')).scalar_one())
+                for table in tracked_tables
+            }
+
+    def block_network(*_args, **_kwargs):  # type: ignore[no-untyped-def]
+        raise AssertionError("university detail must not open network connections")
+
+    monkeypatch.setattr(socket, "create_connection", block_network)
+    writes: list[str] = []
+
+    def capture(_connection, _cursor, statement, _parameters, _context, _executemany) -> None:  # type: ignore[no-untyped-def]
+        if statement.lstrip().upper().startswith(("INSERT", "UPDATE", "DELETE", "REPLACE")):
+            writes.append(statement)
+
+    before = counts()
+    event.listen(engine, "before_cursor_execute", capture)
+    try:
+        response = client.get("/api/universities/bseu")
+    finally:
+        event.remove(engine, "before_cursor_execute", capture)
+    assert response.status_code == 200
+    assert writes == []
+    assert counts() == before
 
 
 @pytest.mark.parametrize(
@@ -264,6 +406,11 @@ def test_catalog_openapi_contains_public_contract(catalog_client) -> None:  # ty
         "/api/catalog/health",
     ):
         assert path in paths
+    university_schema = schema.json()["components"]["schemas"]["UniversityResponse"]
+    assert university_schema["properties"]["programs"]["items"]["$ref"].endswith(
+        "/ProgramResponse"
+    )
+    assert "programs" in university_schema["required"]
 
 
 def test_primary_list_and_detail_queries_are_bounded(catalog_client) -> None:  # type: ignore[no-untyped-def]

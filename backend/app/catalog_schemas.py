@@ -82,15 +82,6 @@ class UniversityListItemResponse(CatalogSchema):
     coverage: UniversityCoverageResponse
 
 
-class UniversityResponse(UniversityListItemResponse):
-    description: str | None
-    source_url: str
-    source_checked_at: datetime
-    data_verified_at: datetime | None
-    updated_at: datetime
-    sources: list[PublicSourceResponse]
-
-
 class UniversityListResponse(CatalogSchema):
     items: list[UniversityListItemResponse]
     pagination: PaginationResponse
@@ -142,6 +133,16 @@ class ProgramResponse(CatalogSchema):
     offering_count: int
     offerings: list[OfferingSummaryResponse]
     coverage_state: Literal["available"] = "available"
+
+
+class UniversityResponse(UniversityListItemResponse):
+    description: str | None
+    source_url: str
+    source_checked_at: datetime
+    data_verified_at: datetime | None
+    updated_at: datetime
+    sources: list[PublicSourceResponse]
+    programs: list[ProgramResponse]
 
 
 class CatalogCoverageResponse(CatalogSchema):

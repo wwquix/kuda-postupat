@@ -12,9 +12,10 @@ import {
   X,
 } from 'lucide-react'
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 
 import { api } from '../api'
+import { apiValueLabel } from '../catalogPresentation'
 import type { CatalogMeta, UniversityListItem, UniversityListResponse } from '../types'
 import {
   buildUniversityApiParams,
@@ -32,23 +33,6 @@ import {
 import { useDocumentTitle } from '../useDocumentTitle'
 
 const SEARCH_DELAY_MS = 300
-
-const apiValueLabels: Record<string, string> = {
-  academy: 'Академия',
-  institute: 'Институт',
-  military_academy: 'Военная академия',
-  university: 'Университет',
-  state: 'Государственный',
-  private: 'Частный',
-  mixed: 'Смешанная форма',
-  unknown: 'Не указано',
-  online: 'Онлайн-мониторинг',
-  reference_only: 'Справочная карточка',
-  needs_review: 'Требует дополнительной проверки',
-}
-
-const apiValueLabel = (value: string) => apiValueLabels[value]
-  ?? value.replaceAll('_', ' ').replace(/^./u, (letter) => letter.toUpperCase())
 
 const booleanValue = (value: string) => {
   if (value === 'true') return true
@@ -208,7 +192,7 @@ function UniversityFilters({
   </details>
 }
 
-function UniversityCard({ university }: { university: UniversityListItem }) {
+function UniversityCard({ university, returnTo }: { university: UniversityListItem; returnTo: string }) {
   const hasLiveMonitoring = university.slug === 'bseu'
     && university.coverage.online_monitoring === 'available'
 
@@ -220,7 +204,13 @@ function UniversityCard({ university }: { university: UniversityListItem }) {
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         <div className="eyebrow">{university.short_name}</div>
-        <h2 className="mt-2 break-words text-xl font-extrabold leading-snug">{university.full_name}</h2>
+        <h2 className="mt-2 break-words text-xl font-extrabold leading-snug">
+          <Link
+            className="inline-block rounded-sm text-ink underline decoration-moss/35 decoration-2 underline-offset-4 hover:decoration-moss"
+            state={{ catalogReturnTo: returnTo }}
+            to={`/universities/${encodeURIComponent(university.slug)}`}
+          >{university.full_name}</Link>
+        </h2>
         <p className="mt-2 text-sm text-ink/60">
           {[university.city, university.region].filter(Boolean).join(' · ') || 'Местоположение уточняется'}
         </p>
@@ -321,6 +311,7 @@ function LoadingCards() {
 }
 
 export function UniversitiesPage() {
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchKey = searchParams.toString()
   const query = useMemo(() => parseUniversityCatalogQuery(new URLSearchParams(searchKey)), [searchKey])
@@ -540,7 +531,11 @@ export function UniversitiesPage() {
           {hasUniversityCatalogFilters(query) && <button className="mt-5 rounded-xl bg-moss px-5 py-3 font-bold text-white" onClick={clearFilters} type="button">Очистить поиск и фильтры</button>}
         </div>}
         {meta && results.data && !results.error && results.data.items.length > 0 && <div className={`grid min-w-0 gap-5 lg:grid-cols-2 ${results.loading ? 'opacity-60' : ''}`}>
-          {results.data.items.map((university) => <UniversityCard key={university.id} university={university} />)}
+          {results.data.items.map((university) => <UniversityCard
+            key={university.id}
+            returnTo={`${location.pathname}${location.search}`}
+            university={university}
+          />)}
         </div>}
         {meta && results.data && !results.error && !results.loading && <CatalogPagination response={results.data} onPage={(page) => updateQuery({ page }, { resetPage: false })} />}
       </section>

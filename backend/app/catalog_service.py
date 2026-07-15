@@ -213,6 +213,13 @@ def get_university(session: Session, slug: str) -> UniversityResponse:
         data_verified_at=_as_utc(university.data_verified_at),
         updated_at=_as_utc(university.updated_at),
         sources=public_sources,
+        programs=[
+            _program_response(ProgramRow(program=program, offering_count=len(program.offerings)))
+            for program in sorted(
+                (program for program in university.programs if program.active),
+                key=lambda item: (normalize_search_text(item.name), item.id),
+            )
+        ],
     )
 
 

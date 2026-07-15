@@ -262,6 +262,7 @@ def university_detail_by_slug(session: Session, slug: str) -> UniversityRow | No
         .options(
             selectinload(University.categories),
             selectinload(University.data_sources),
+            selectinload(University.programs).joinedload(Program.offerings),
         )
     ).one_or_none()
     if row is None:

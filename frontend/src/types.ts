@@ -68,6 +68,57 @@ export interface UniversityListResponse {
   items: UniversityListItem[]
   pagination: Pagination
 }
+export interface PublicSource {
+  source_type: string
+  source_url: string
+  checked_at: string
+}
+export interface OfferingSummary {
+  id: number
+  admission_year: number
+  study_form: string
+  funding_type: string
+  places: number | null
+  monitoring_supported: boolean
+  monitoring_status: string
+  official_url: string
+  source_url: string
+  source_checked_at: string
+}
+export interface ImportedProgram {
+  id: number
+  university_id: number
+  university: {
+    id: number
+    code: string
+    slug: string
+    short_name: string
+  }
+  code: string | null
+  slug: string
+  name: string
+  qualification: string | null
+  faculty_name: string | null
+  education_level: string | null
+  duration_years: number | null
+  official_url: string
+  active: boolean
+  source_checked_at: string
+  verified_at: string | null
+  updated_at: string
+  offering_count: number
+  offerings: OfferingSummary[]
+  coverage_state: 'available'
+}
+export interface UniversityDetail extends UniversityListItem {
+  description: string | null
+  source_url: string
+  source_checked_at: string
+  data_verified_at: string | null
+  updated_at: string
+  sources: PublicSource[]
+  programs: ImportedProgram[]
+}
 export interface Snapshot {
   id: number; specialty_id: number; specialty: string; study_form: string; funding_type: string;
   source_url: string; fetched_at: string; source_updated_at: string | null; admission_plan: number;

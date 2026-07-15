@@ -20,6 +20,8 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 
 Каталог вузов: `http://127.0.0.1:5173/universities`
 
+Страница вуза: `http://127.0.0.1:5173/universities/bseu`
+
 Монитор поступления БГЭУ: `http://127.0.0.1:5173/monitor`
 
 Backend API: `http://127.0.0.1:8000`
@@ -419,7 +421,7 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 ## API
 
 - `GET /api/universities` — каталог, поиск, фильтры, сортировка и пагинация
-- `GET /api/universities/{slug}` — карточка вуза и покрытие платформы
+- `GET /api/universities/{slug}` — карточка вуза, безопасные источники и импортированные Program/Offering summaries
 - `GET /api/universities/{slug}/programs` — импортированные программы вуза
 - `GET /api/programs` и `GET /api/programs/{id}` — общий каталог программ
 - `GET /api/catalog/meta` — значения фильтров и database-derived счётчики

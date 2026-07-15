@@ -169,14 +169,15 @@ beforeEach(() => {
 })
 
 describe('university catalog route and cards', () => {
-  it('renders the route, active navigation and production API result without detail links', async () => {
+  it('renders the route, active navigation and accessible university detail links', async () => {
     const { container } = renderCatalog()
 
     expect(screen.getByRole('heading', { level: 1, name: 'Вузы Беларуси' })).toBeInTheDocument()
     expect(await screen.findByText(/Найдено в каталоге платформы/)).toHaveTextContent('47')
     expect(screen.getByRole('link', { name: 'Вузы' })).toHaveAttribute('aria-current', 'page')
     expect(container.querySelectorAll('h1')).toHaveLength(1)
-    expect(container.querySelector('a[href^="/universities/"]')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: bseu.full_name })).toHaveAttribute('href', '/universities/bseu')
+    expect(screen.getByRole('link', { name: privateUniversity.full_name })).toHaveAttribute('href', '/universities/private-test')
 
     const request = lastUniversityUrl()
     expect(request.searchParams.get('page')).toBe('1')

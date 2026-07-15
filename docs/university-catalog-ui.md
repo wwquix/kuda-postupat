@@ -1,6 +1,6 @@
 # University catalog interface
 
-The public university catalog is available at `/universities`. It is a collection page only: this milestone does not register `/universities/:slug`, turn university names into internal links or start a university detail interface.
+The public university catalog is available at `/universities`. University names are accessible links to the separately implemented `/universities/:slug` detail route; the surrounding non-interactive card area is not a fake link.
 
 ## API dependencies
 
@@ -66,7 +66,7 @@ Required honest states are literal:
 - zero imported programs: `Каталог программ ещё не импортирован`;
 - missing admissions URL: `Ссылка для абитуриентов пока не добавлена`;
 - BSEU with confirmed online coverage: a link to `/monitor`;
-- no university name links to an unfinished detail route.
+- the university name links to its implemented detail route and carries the exact current catalog URL for return navigation.
 
 The page also states that counts and monitoring statuses describe this platform's incomplete coverage. It never renders zero imported programs as proof that a university has no real programs, and only BSEU receives the live-monitor link.
 
@@ -91,6 +91,6 @@ Pop-Location
 
 Vitest and React Testing Library supply every metadata and university response through a strict `fetch` mock. Tests cover routing/navigation, loading, retry/error, empty results, debounce, cancellation, every public filter, combined filters, clearing, sorting, pagination/recovery, refresh state, Back/Forward state, honest wording, BSEU monitor linking and the absence of detail links. They do not import FastAPI, open SQLite, start lifespan/APScheduler, invoke Telegram or contact a university.
 
-## Deferred detail milestone
+## Detail route boundary
 
-University details remain deferred. The next milestone may implement `/universities/:slug` only after inspecting its real API response and provenance fields; it must not infer missing programs, tuition, dormitory, scholarship or media data from catalog list coverage.
+The implemented university page is documented in [university-detail-page.md](university-detail-page.md). Program detail pages remain deferred, and the catalog still does not infer missing programs, tuition, dormitory, scholarship or media data from list coverage.

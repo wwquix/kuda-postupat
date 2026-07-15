@@ -1,12 +1,26 @@
-import type { CatalogMeta, CollectorStatus, Snapshot, Specialty, UniversityListResponse } from './types'
+import type {
+  CatalogMeta,
+  CollectorStatus,
+  Snapshot,
+  Specialty,
+  UniversityDetail,
+  UniversityListResponse,
+} from './types'
 
 const apiBase = `${import.meta.env.BASE_URL}api`.replace(/\/$/, '')
+
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
 
 const json = async <T,>(url: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(url, init)
   if (!response.ok) {
     const payload = await response.json().catch(() => ({ detail: response.statusText }))
-    throw new Error(payload.detail || 'Ошибка запроса')
+    throw new ApiError(payload.detail || 'Ошибка запроса', response.status)
   }
   return response.json()
 }
@@ -18,6 +32,10 @@ export const api = {
   ),
   universities: (params: URLSearchParams, signal: AbortSignal) => json<UniversityListResponse>(
     `${apiBase}/universities?${params.toString()}`,
+    { signal },
+  ),
+  university: (slug: string, signal: AbortSignal) => json<UniversityDetail>(
+    `${apiBase}/universities/${encodeURIComponent(slug)}`,
     { signal },
   ),
   specialties: () => json<Specialty[]>(`${apiBase}/specialties`),
