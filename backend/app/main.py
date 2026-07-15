@@ -19,6 +19,7 @@ from .models import AdmissionSnapshot, ScraperRun, Specialty
 from .profile_api import router as profile_router
 from .repository import latest_snapshot, snapshot_to_dict
 from .scraper import AdmissionScraper, RefreshInProgressError, RefreshTooSoonError
+from .telegram_watch_api import router as telegram_watch_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -78,6 +79,7 @@ app.add_middleware(
 )
 app.include_router(catalog_router)
 app.include_router(profile_router)
+app.include_router(telegram_watch_router)
 
 
 def _get_specialty(session: Session, specialty_id: int) -> Specialty:

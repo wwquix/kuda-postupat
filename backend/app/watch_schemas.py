@@ -42,5 +42,6 @@ class ProgramWatchEventResponse(WatchSchema):
     ]
     description: str
     created_at: datetime
+    telegram_delivery_status: Literal["confirmed", "failed", "pending"] | None
     university: WatchUniversityResponse
     program: WatchProgramResponse

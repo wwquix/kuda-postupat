@@ -1,6 +1,7 @@
+import re
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,6 +33,10 @@ class Settings(BaseSettings):
     telegram_enabled: bool = False
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
+    telegram_bot_username: str = ""
+    telegram_webhook_secret: str = ""
+    telegram_watch_delivery_enabled: bool = False
+    public_app_base_url: str = ""
     manual_refresh_token: str = "change-me"
     request_timeout_seconds: float = Field(default=20, gt=0, le=120)
     request_retries: int = Field(default=3, ge=1, le=6)
@@ -45,12 +50,45 @@ class Settings(BaseSettings):
             raise ValueError("TARGET_SPECIALTIES must contain at least one name")
         return value
 
+    @field_validator("telegram_bot_username")
+    @classmethod
+    def normalize_telegram_bot_username(cls, value: str) -> str:
+        value = value.strip().removeprefix("@")
+        if value and re.fullmatch(r"[A-Za-z0-9_]{5,32}", value) is None:
+            raise ValueError("TELEGRAM_BOT_USERNAME must be a valid Telegram username")
+        return value
+
+    @field_validator("telegram_webhook_secret")
+    @classmethod
+    def validate_telegram_webhook_secret(cls, value: str) -> str:
+        value = value.strip()
+        if value and (len(value) > 256 or not all(character.isalnum() or character in "_-" for character in value)):
+            raise ValueError("TELEGRAM_WEBHOOK_SECRET may contain only letters, digits, underscore and hyphen")
+        return value
+
+    @field_validator("public_app_base_url")
+    @classmethod
+    def validate_public_app_base_url(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            return value
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.query or parsed.fragment:
+            raise ValueError("PUBLIC_APP_BASE_URL must be an absolute HTTP(S) URL without query or fragment")
+        return value.rstrip("/") + "/"
+
     @model_validator(mode="after")
     def validate_telegram_configuration(self) -> "Settings":
         if self.telegram_enabled and not self.telegram_bot_token.strip():
             raise ValueError("TELEGRAM_ENABLED=true requires TELEGRAM_BOT_TOKEN")
         if self.telegram_enabled and not self.telegram_chat_id.strip():
             raise ValueError("TELEGRAM_ENABLED=true requires TELEGRAM_CHAT_ID")
+        if self.telegram_watch_delivery_enabled and not self.telegram_bot_token.strip():
+            raise ValueError("TELEGRAM_WATCH_DELIVERY_ENABLED=true requires TELEGRAM_BOT_TOKEN")
+        if self.telegram_watch_delivery_enabled and not self.telegram_bot_username:
+            raise ValueError("TELEGRAM_WATCH_DELIVERY_ENABLED=true requires TELEGRAM_BOT_USERNAME")
+        if self.telegram_watch_delivery_enabled and not self.telegram_webhook_secret:
+            raise ValueError("TELEGRAM_WATCH_DELIVERY_ENABLED=true requires TELEGRAM_WEBHOOK_SECRET")
         return self
 
     @property

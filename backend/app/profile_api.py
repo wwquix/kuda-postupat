@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .catalog_service import CatalogNotFoundError
+from .config import Settings, get_settings
 from .database import get_db
 from .profile_models import AnonymousProfile
 from .profile_schemas import (
@@ -22,6 +23,16 @@ from .profile_service import (
     get_saved_admission_list,
     profile_response,
     set_profile_score,
+)
+from .telegram_watch_schemas import (
+    TelegramLinkChallengeResponse,
+    TelegramLinkStatusResponse,
+)
+from .telegram_watch_service import (
+    TelegramLinkUnavailableError,
+    create_link_challenge,
+    telegram_link_status,
+    unlink_telegram,
 )
 from .watch_schemas import (
     ProgramWatchEventResponse,
@@ -72,6 +83,10 @@ def _not_found(exc: CatalogNotFoundError) -> HTTPException:
 
 def _watch_conflict(exc: ProgramWatchDomainError) -> HTTPException:
     return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+
+
+def _telegram_unavailable(exc: TelegramLinkUnavailableError) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc))
 
 
 @router.post("", response_model=AnonymousProfileCreatedResponse, status_code=status.HTTP_201_CREATED)
@@ -211,3 +226,35 @@ def remove_program_watch(
         )
     except CatalogNotFoundError as exc:
         raise _not_found(exc) from exc
+
+
+@router.get("/telegram", response_model=TelegramLinkStatusResponse)
+def read_telegram_link(
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+) -> TelegramLinkStatusResponse:
+    return telegram_link_status(session, profile)
+
+
+@router.post(
+    "/telegram/challenge",
+    response_model=TelegramLinkChallengeResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_telegram_link_challenge(
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> TelegramLinkChallengeResponse:
+    try:
+        return create_link_challenge(session, profile, settings)
+    except TelegramLinkUnavailableError as exc:
+        raise _telegram_unavailable(exc) from exc
+
+
+@router.delete("/telegram", response_model=TelegramLinkStatusResponse)
+def delete_telegram_link(
+    profile: Annotated[AnonymousProfile, Depends(current_profile)],
+    session: Annotated[Session, Depends(get_db)],
+) -> TelegramLinkStatusResponse:
+    return unlink_telegram(session, profile)

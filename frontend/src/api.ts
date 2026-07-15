@@ -10,6 +10,8 @@ import type {
   SavedAdmissionList,
   Snapshot,
   Specialty,
+  TelegramLinkChallenge,
+  TelegramLinkStatus,
   UniversityDetail,
   UniversityListResponse,
 } from './types'
@@ -120,6 +122,21 @@ export const api = {
   disableWatch: (token: string, universitySlug: string, programSlug: string) => profileJson<ProgramWatchMutation>(
     token,
     `${apiBase}/profile/watches/${encodeURIComponent(universitySlug)}/${encodeURIComponent(programSlug)}`,
+    { method: 'DELETE' },
+  ),
+  telegramLinkStatus: (token: string, signal?: AbortSignal) => profileJson<TelegramLinkStatus>(
+    token,
+    `${apiBase}/profile/telegram`,
+    signal ? { signal } : undefined,
+  ),
+  createTelegramLinkChallenge: (token: string) => profileJson<TelegramLinkChallenge>(
+    token,
+    `${apiBase}/profile/telegram/challenge`,
+    { method: 'POST' },
+  ),
+  unlinkTelegram: (token: string) => profileJson<TelegramLinkStatus>(
+    token,
+    `${apiBase}/profile/telegram`,
     { method: 'DELETE' },
   ),
 }

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     JSON,
@@ -16,6 +17,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .catalog_models import Program, utc_now
 from .models import AdmissionSnapshot, Base
 from .profile_models import AnonymousProfile
+
+if TYPE_CHECKING:
+    from .telegram_watch_models import TelegramWatchDelivery
 
 WATCH_EVENT_KINDS = (
     "applications_total_changed",
@@ -98,3 +102,6 @@ class ProgramWatchEvent(Base):
 
     watch: Mapped[ProgramWatch] = relationship(back_populates="events")
     source_snapshot: Mapped[AdmissionSnapshot] = relationship()
+    telegram_deliveries: Mapped[list["TelegramWatchDelivery"]] = relationship(
+        back_populates="watch_event", cascade="all, delete-orphan", passive_deletes=True
+    )

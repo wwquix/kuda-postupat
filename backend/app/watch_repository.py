@@ -84,10 +84,11 @@ def profile_event_rows(session: Session, profile_id: int) -> list[ProgramWatchEv
             .options(
                 joinedload(ProgramWatchEvent.watch)
                 .joinedload(ProgramWatch.program)
-                .joinedload(Program.university)
+                .joinedload(Program.university),
+                joinedload(ProgramWatchEvent.telegram_deliveries),
             )
             .order_by(desc(ProgramWatchEvent.created_at), desc(ProgramWatchEvent.id))
-        ).all()
+        ).unique().all()
     )
 
 

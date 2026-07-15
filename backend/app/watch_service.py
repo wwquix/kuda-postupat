@@ -286,7 +286,7 @@ def _cutoff_label(value: object) -> str:
     return str(minimum) if minimum == maximum else f"{minimum}–{maximum}"
 
 
-def _event_description(event: ProgramWatchEvent) -> str:
+def event_description(event: ProgramWatchEvent) -> str:
     previous = event.previous_value
     current = event.current_value
     if event.event_kind == "applications_total_changed":
@@ -313,8 +313,9 @@ def list_program_watch_events(
         responses.append(
             ProgramWatchEventResponse(
                 event_kind=event.event_kind,
-                description=_event_description(event),
+                description=event_description(event),
                 created_at=event.created_at,
+                telegram_delivery_status=_telegram_delivery_status(event),
                 university=WatchUniversityResponse(
                     slug=university.slug,
                     short_name=university.short_name,
@@ -324,3 +325,16 @@ def list_program_watch_events(
             )
         )
     return responses
+
+
+def _telegram_delivery_status(
+    event: ProgramWatchEvent,
+) -> str | None:
+    states = {delivery.state for delivery in event.telegram_deliveries}
+    if "confirmed" in states:
+        return "confirmed"
+    if states & {"pending", "retryable"}:
+        return "pending"
+    if states:
+        return "failed"
+    return None

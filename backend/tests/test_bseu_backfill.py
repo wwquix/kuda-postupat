@@ -13,7 +13,7 @@ from app.bseu_mapping import verify_bseu_backfill
 from app.schema import make_alembic_config
 
 CORE = "0002_core_catalog_schema"
-HEAD = "0005_anonymous_program_watchlist"
+HEAD = "0006_telegram_watch_notifications"
 LEGACY_COLUMNS = {
     "specialties": "id, normalized_name, display_name, study_form, funding_type, source_url, active",
     "admission_snapshots": (

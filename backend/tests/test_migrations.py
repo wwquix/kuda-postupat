@@ -37,7 +37,8 @@ BASELINE = "0001_legacy_baseline"
 CORE = "0002_core_catalog_schema"
 BSEU_HEAD = "0003_backfill_bseu_catalog"
 PREVIOUS_HEAD = "0004_anonymous_admission_list"
-HEAD = "0005_anonymous_program_watchlist"
+WATCH_HEAD = "0005_anonymous_program_watchlist"
+HEAD = "0006_telegram_watch_notifications"
 LEGACY_TABLES = {
     "admission_snapshots",
     "http_cache_state",
@@ -56,6 +57,11 @@ CATALOG_TABLES = {
 BRIDGE_TABLES = {"legacy_specialty_mappings"}
 PROFILE_TABLES = {"anonymous_profiles", "saved_programs", "saved_universities"}
 WATCH_TABLES = {"program_watches", "program_watch_events"}
+TELEGRAM_WATCH_TABLES = {
+    "telegram_profile_links",
+    "telegram_link_challenges",
+    "telegram_watch_deliveries",
+}
 LEGACY_COLUMNS = {
     "specialties": "id, normalized_name, display_name, study_form, funding_type, source_url, active",
     "admission_snapshots": (
@@ -238,6 +244,7 @@ def test_fresh_database_upgrade_head(tmp_path: Path) -> None:
         | BRIDGE_TABLES
         | PROFILE_TABLES
         | WATCH_TABLES
+        | TELEGRAM_WATCH_TABLES
         | {"alembic_version"}
         == table_names(database)
     )
@@ -294,9 +301,9 @@ def test_upgrade_from_previous_head_adds_only_watch_schema(tmp_path: Path) -> No
             for table in CATALOG_TABLES | BRIDGE_TABLES | LEGACY_TABLES | PROFILE_TABLES
         }
 
-    command.upgrade(config, "head")
+    command.upgrade(config, WATCH_HEAD)
 
-    assert revision(database) == HEAD
+    assert revision(database) == WATCH_HEAD
     assert table_names(database) == before_tables | WATCH_TABLES
     with sqlite3.connect(database) as connection:
         after_counts = {
@@ -321,6 +328,66 @@ def test_upgrade_from_previous_head_adds_only_watch_schema(tmp_path: Path) -> No
             ("program_watches", "CASCADE"),
             ("admission_snapshots", "RESTRICT"),
         }
+
+
+def test_upgrade_from_watch_head_adds_only_telegram_delivery_schema(tmp_path: Path) -> None:
+    database = tmp_path / "watch-head.db"
+    config = make_alembic_config(sqlite_url(database))
+    command.upgrade(config, WATCH_HEAD)
+    before_tables = table_names(database)
+    with sqlite3.connect(database) as connection:
+        before_counts = {
+            table: connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+            for table in CATALOG_TABLES
+            | BRIDGE_TABLES
+            | LEGACY_TABLES
+            | PROFILE_TABLES
+            | WATCH_TABLES
+        }
+
+    command.upgrade(config, HEAD)
+
+    assert revision(database) == HEAD
+    assert table_names(database) == before_tables | TELEGRAM_WATCH_TABLES
+    with sqlite3.connect(database) as connection:
+        after_counts = {
+            table: connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
+            for table in CATALOG_TABLES
+            | BRIDGE_TABLES
+            | LEGACY_TABLES
+            | PROFILE_TABLES
+            | WATCH_TABLES
+        }
+        assert after_counts == before_counts
+        assert connection.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        assert list(connection.execute("PRAGMA foreign_key_check")) == []
+        for table in TELEGRAM_WATCH_TABLES:
+            assert connection.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0] == 0
+        link_foreign_keys = list(
+            connection.execute("PRAGMA foreign_key_list(telegram_profile_links)")
+        )
+        challenge_foreign_keys = list(
+            connection.execute("PRAGMA foreign_key_list(telegram_link_challenges)")
+        )
+        delivery_foreign_keys = list(
+            connection.execute("PRAGMA foreign_key_list(telegram_watch_deliveries)")
+        )
+        assert {(row[2], row[6]) for row in link_foreign_keys} == {
+            ("anonymous_profiles", "CASCADE"),
+        }
+        assert {(row[2], row[6]) for row in challenge_foreign_keys} == {
+            ("anonymous_profiles", "CASCADE"),
+        }
+        assert {(row[2], row[6]) for row in delivery_foreign_keys} == {
+            ("program_watch_events", "CASCADE"),
+            ("telegram_profile_links", "CASCADE"),
+        }
+        indexes = {
+            row[1]: row[2]
+            for row in connection.execute("PRAGMA index_list(telegram_profile_links)")
+        }
+        assert indexes["uq_telegram_profile_links_active_profile"] == 1
+        assert indexes["uq_telegram_profile_links_active_chat"] == 1
 
 
 def test_baseline_matches_independent_legacy_fingerprint(tmp_path: Path) -> None:

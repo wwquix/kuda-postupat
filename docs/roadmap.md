@@ -102,7 +102,7 @@
 
 ## 9. Watchlists and Telegram linking
 
-- **Status:** M-WATCHLIST-01 complete: первый user-visible M9 slice добавляет анонимные BSEU Program watches и in-app history в `/my-list`, построенные на завершённых M8 anonymous ownership и M4 registry slices. Следующий milestone — Telegram linking и per-profile delivery поверх persisted watch events. Registered accounts, cross-device merge, comparison, recommendations и дополнительные adapters остаются отложенными.
+- **Status:** M-WATCHLIST-01 и M-TELEGRAM-WATCH-01 complete: анонимный профиль может включить BSEU Program watch, видеть persisted event history, безопасно связать один Telegram chat и получать confirmed per-profile delivery с bounded retry/dedup status. Следующий planned user-visible milestone — Recommendations API v1 из раздела 7. Registered accounts, cross-device merge, comparison, Recommendations UI, production rehearsal и дополнительные adapters остаются незавершёнными.
 
 - **Goal:** connect watched offerings and per-profile Telegram delivery while preserving owner mode.
 - **In scope:** one-time hashed link tokens, Telegram accounts, watchlists, notification events/status/retry, fingerprint dedup, owner compatibility.

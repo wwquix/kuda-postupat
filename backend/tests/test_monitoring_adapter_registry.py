@@ -170,9 +170,15 @@ async def test_success_duplicate_and_telegram_decision_parity(
     fetch_mock = AsyncMock(side_effect=[_response(original), _response(changed), _response(changed)])
     send_mock = AsyncMock(return_value=True)
     evaluate_mock = Mock(return_value=0)
+    delivery_mock = AsyncMock(return_value=0)
     monkeypatch.setattr(scraper, "_fetch", fetch_mock)
     monkeypatch.setattr(scraper_module, "send_once", send_mock)
     monkeypatch.setattr(scraper_module, "evaluate_program_watches", evaluate_mock)
+    monkeypatch.setattr(
+        scraper_module,
+        "deliver_watch_events_for_snapshots",
+        delivery_mock,
+    )
 
     first = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
     second = await scraper.refresh(BSEU_ADAPTER_KEY, force=True)
@@ -195,6 +201,9 @@ async def test_success_duplicate_and_telegram_decision_parity(
     send_mock.assert_awaited_once()
     assert evaluate_mock.call_count == 2
     assert all(len(call.args[1]) == 1 for call in evaluate_mock.call_args_list)
+    assert delivery_mock.await_count == 2
+    assert all(call.args[0] is monitoring_session_factory for call in delivery_mock.await_args_list)
+    assert all(call.args[1] is settings for call in delivery_mock.await_args_list)
 
 
 @pytest.mark.asyncio
@@ -247,6 +256,12 @@ async def test_watch_evaluation_failure_keeps_committed_snapshot_and_is_logged(
         "evaluate_program_watches",
         Mock(side_effect=RuntimeError("isolated evaluator failure")),
     )
+    delivery_mock = AsyncMock()
+    monkeypatch.setattr(
+        scraper_module,
+        "deliver_watch_events_for_snapshots",
+        delivery_mock,
+    )
 
     log_exception = Mock()
     monkeypatch.setattr(scraper_module.logger, "exception", log_exception)
@@ -261,6 +276,7 @@ async def test_watch_evaluation_failure_keeps_committed_snapshot_and_is_logged(
         run = session.scalar(select(ScraperRun))
         assert run is not None
         assert run.status == "success"
+    delivery_mock.assert_not_awaited()
 
 
 @pytest.mark.asyncio

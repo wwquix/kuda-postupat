@@ -17,6 +17,13 @@ class TelegramDeliveryError(RuntimeError):
     """A sanitized Telegram delivery failure that never contains the bot token."""
 
 
+class TelegramTransportError(TelegramDeliveryError):
+    def __init__(self, summary: str, *, retryable: bool):
+        super().__init__("Telegram API request failed")
+        self.summary = summary[:200]
+        self.retryable = retryable
+
+
 def notification_fingerprint(message: str) -> str:
     return hashlib.sha256(message.encode("utf-8")).hexdigest()
 
@@ -71,18 +78,29 @@ def build_change_message(
     )
 
 
+async def send_telegram_message(settings: Settings, chat_id: str, message: str) -> None:
+    if not settings.telegram_bot_token.strip():
+        raise TelegramTransportError("telegram_not_configured", retryable=False)
+    url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendMessage"
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.post(url, json={"chat_id": chat_id, "text": message})
+            response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        status_code = exc.response.status_code
+        retryable = status_code == 429 or status_code >= 500
+        summary = "telegram_retryable_response" if retryable else "telegram_rejected_request"
+        raise TelegramTransportError(summary, retryable=retryable) from exc
+    except httpx.RequestError as exc:
+        raise TelegramTransportError("telegram_transport_error", retryable=True) from exc
+
+
 async def send_once(session: Session, settings: Settings, message: str) -> bool:
     if not settings.telegram_enabled or not message:
         return False
     if notification_was_sent(session, message):
         return False
-    url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendMessage"
-    try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            response = await client.post(url, json={"chat_id": settings.telegram_chat_id, "text": message})
-            response.raise_for_status()
-    except httpx.HTTPError as exc:
-        raise TelegramDeliveryError("Telegram API request failed") from exc
+    await send_telegram_message(settings, settings.telegram_chat_id, message)
     session.add(
         NotificationLog(fingerprint=notification_fingerprint(message), sent_at=datetime.now(UTC), message=message)
     )

@@ -30,6 +30,60 @@ def test_telegram_enabled_requires_complete_configuration(
         Settings(telegram_enabled=True, telegram_bot_token=token, telegram_chat_id=chat_id)
 
 
+def test_telegram_watch_delivery_is_disabled_by_default() -> None:
+    settings = Settings(_env_file=None)
+    assert settings.telegram_watch_delivery_enabled is False
+    assert settings.telegram_bot_username == ""
+    assert settings.telegram_webhook_secret == ""
+    assert settings.public_app_base_url == ""
+
+
+@pytest.mark.parametrize(
+    ("overrides", "expected"),
+    [
+        (
+            {"telegram_bot_token": ""},
+            "TELEGRAM_BOT_TOKEN",
+        ),
+        (
+            {"telegram_bot_username": ""},
+            "TELEGRAM_BOT_USERNAME",
+        ),
+        (
+            {"telegram_webhook_secret": ""},
+            "TELEGRAM_WEBHOOK_SECRET",
+        ),
+    ],
+)
+def test_telegram_watch_delivery_requires_linking_configuration(
+    overrides: dict[str, str], expected: str
+) -> None:
+    values = {
+        "telegram_watch_delivery_enabled": True,
+        "telegram_bot_token": "secret",
+        "telegram_bot_username": "@bseu_test_bot",
+        "telegram_webhook_secret": "webhook_secret",
+    }
+    values.update(overrides)
+    with pytest.raises(ValidationError, match=expected):
+        Settings(_env_file=None, **values)
+
+
+def test_telegram_watch_public_values_are_normalized_and_validated() -> None:
+    settings = Settings(
+        _env_file=None,
+        telegram_bot_username="@bseu_test_bot",
+        telegram_webhook_secret="safe-secret_123",
+        public_app_base_url="https://admission.test/bseu",
+    )
+    assert settings.telegram_bot_username == "bseu_test_bot"
+    assert settings.public_app_base_url == "https://admission.test/bseu/"
+    with pytest.raises(ValidationError, match="PUBLIC_APP_BASE_URL"):
+        Settings(_env_file=None, public_app_base_url="javascript:alert(1)")
+    with pytest.raises(ValidationError, match="TELEGRAM_WEBHOOK_SECRET"):
+        Settings(_env_file=None, telegram_webhook_secret="unsafe secret")
+
+
 def test_relative_database_url_is_resolved_against_backend(monkeypatch, tmp_path) -> None:
     expected = f"sqlite:///{(BACKEND_DIR / 'data/admission.db').resolve().as_posix()}"
     monkeypatch.chdir(tmp_path)

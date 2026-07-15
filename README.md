@@ -1,6 +1,6 @@
 # Монитор вступительной кампании БГЭУ
 
-Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. Анонимный пользователь может сохранить Program, включить наблюдение и читать персональный feed изменений в `/my-list`. Существующая owner-mode отправка Telegram остаётся отдельной; per-profile Telegram delivery ещё не реализована.
+Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. Анонимный пользователь может сохранить Program, включить наблюдение, читать персональный feed изменений в `/my-list` и связать один Telegram chat для доставки новых persisted watch events. Существующая owner-mode отправка Telegram остаётся отдельной.
 
 > Это автоматическая оценка на основании текущих заявлений, а не официальный итоговый проходной балл. Она не гарантирует поступление.
 
@@ -274,6 +274,8 @@ USER_SCORE=276
 
 ## Как включить Telegram
 
+### Legacy owner-mode
+
 При `TELEGRAM_ENABLED=false` пустой token безопасен и не мешает запуску. При `true` без token/chat ID конфигурация завершается понятной ошибкой до старта приложения.
 
 На production откройте защищённый environment-файл:
@@ -293,6 +295,24 @@ TELEGRAM_CHAT_ID=1157476891
 ```
 
 Bot token нельзя добавлять в Git, README, frontend, shell-аргументы или отчёты. Telegram HTTP-ошибки преобразуются в sanitised-сообщение без URL/token. Дедупликация хранится в SQLite.
+
+### Анонимные Program watches
+
+Profile-scoped Telegram linking и delivery выключены по умолчанию. Для production
+заполните защищённый EnvironmentFile и примените migration `0006`:
+
+```env
+TELEGRAM_BOT_TOKEN=<secret>
+TELEGRAM_BOT_USERNAME=<bot-username-without-at-sign>
+TELEGRAM_WEBHOOK_SECRET=<dedicated-secret>
+TELEGRAM_WATCH_DELIVERY_ENABLED=true
+PUBLIC_APP_BASE_URL=https://<public-host>/bseu/
+```
+
+Webhook endpoint — `/api/telegram/webhook`; он требует стандартный header
+`X-Telegram-Bot-Api-Secret-Token`. Реальный webhook не регистрируется при setup,
+startup или migrations. Полная privacy, retry/dedup, registration и test
+процедура описана в `docs/telegram-watch-notifications.md`.
 
 ## Production-деплой на Ubuntu 24.04 без Docker
 
@@ -452,6 +472,10 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 - `PUT`/`DELETE /api/profile/programs/{university_slug}/{program_slug}` — сохранить или удалить программу
 - `GET /api/profile/watches`, `PUT`/`DELETE /api/profile/watches/{university_slug}/{program_slug}` — читать и переключать наблюдение за сохранённой BSEU Program
 - `GET /api/profile/watch-events` — читать profile-scoped историю значимых изменений
+- `GET /api/profile/telegram` — читать безопасный status Telegram link
+- `POST /api/profile/telegram/challenge` — создать 15-минутный одноразовый deep link
+- `DELETE /api/profile/telegram` — идемпотентно отключить Telegram текущего профиля
+- `POST /api/telegram/webhook` — authenticated inbound `/start <link-token>` update
 - `GET /api/health`
 - `GET /api/config` — только публичная конфигурация, без secret values
 - `GET /api/status`
@@ -464,6 +488,7 @@ sudo /opt/bseu-admission-monitor/deploy/healthcheck.sh
 Полный контракт catalog/search API, включая обязательную пагинацию и семантику неполного покрытия, описан в `docs/catalog-search-api.md`.
 Контракт анонимной идентичности, хранения token и `/my-list` описан в `docs/anonymous-admission-list.md`.
 Контракт BSEU Program watches, baseline, event kinds и in-app feed описан в `docs/anonymous-program-watchlist.md`.
+Контракт Telegram linking, webhook authentication и WatchEvent delivery описан в `docs/telegram-watch-notifications.md`.
 
 ## Docker как дополнительный вариант
 

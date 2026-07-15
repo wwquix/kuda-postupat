@@ -1,5 +1,5 @@
-import { BellRing, LoaderCircle, RefreshCw } from 'lucide-react'
-import { type FormEvent, useState } from 'react'
+import { BellRing, LoaderCircle, RefreshCw, Send } from 'lucide-react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { apiValueLabel } from '../catalogPresentation'
@@ -14,6 +14,175 @@ const eventTimeFormatter = new Intl.DateTimeFormat('ru-BY', {
   dateStyle: 'medium',
   timeStyle: 'short',
 })
+
+function TelegramNotifications() {
+  const profile = useProfile()
+  const [operation, setOperation] = useState<'challenge' | 'refresh' | 'unlink' | null>(null)
+  const [confirmingUnlink, setConfirmingUnlink] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [clock, setClock] = useState(Date.now)
+  const status = profile.telegramLinkStatus
+  const challengeExpiry = status?.challenge_expires_at ?? null
+  const challengeExpired = challengeExpiry !== null && Date.parse(challengeExpiry) <= clock
+  const localChallengeActive = profile.telegramLinkChallenge !== null
+    && Date.parse(profile.telegramLinkChallenge.expires_at) > clock
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setClock(Date.now()), 30_000)
+    return () => window.clearInterval(interval)
+  }, [])
+
+  const createChallenge = async (openAfterCreation = false) => {
+    if (operation !== null) return
+    setOperation('challenge')
+    setError(null)
+    try {
+      const challenge = await profile.createTelegramLinkChallenge()
+      if (openAfterCreation) {
+        window.open(challenge.deep_link, '_blank', 'noopener,noreferrer')
+      }
+    } catch {
+      setError('Не удалось подготовить подключение. Попробуйте ещё раз.')
+    } finally {
+      setOperation(null)
+    }
+  }
+
+  const refreshStatus = async () => {
+    if (operation !== null) return
+    setOperation('refresh')
+    setError(null)
+    try {
+      await profile.refreshTelegramLinkStatus()
+    } catch {
+      setError('Не удалось проверить подключение. Попробуйте ещё раз.')
+    } finally {
+      setOperation(null)
+    }
+  }
+
+  const unlink = async () => {
+    if (operation !== null) return
+    setOperation('unlink')
+    setError(null)
+    try {
+      await profile.unlinkTelegram()
+      setConfirmingUnlink(false)
+    } catch {
+      setError('Не удалось отключить Telegram. Попробуйте ещё раз.')
+    } finally {
+      setOperation(null)
+    }
+  }
+
+  return <section aria-labelledby="telegram-notifications-title" className="panel min-w-0 p-5 sm:p-6">
+    <h2 className="text-2xl font-extrabold" id="telegram-notifications-title">Уведомления в Telegram</h2>
+
+    {profile.telegramStatusState === 'loading' && <p
+      aria-live="polite"
+      className="mt-4 flex items-center gap-2 text-ink/65"
+      role="status"
+    >
+      <LoaderCircle aria-hidden="true" className="animate-spin" size={18} />Проверяем подключение…
+    </p>}
+
+    {profile.telegramStatusState === 'error' && <div className="mt-4" role="alert">
+      <p className="font-semibold text-red-700">Не удалось загрузить статус Telegram.</p>
+      <button
+        className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss disabled:cursor-wait disabled:opacity-60"
+        disabled={operation !== null}
+        onClick={() => void refreshStatus()}
+        type="button"
+      >
+        <RefreshCw aria-hidden="true" size={17} />Повторить запрос
+      </button>
+    </div>}
+
+    {profile.telegramStatusState === 'ready' && status?.linked && <div className="mt-4">
+      <p aria-live="polite" className="inline-flex items-center gap-2 font-extrabold text-moss" role="status">
+        <Send aria-hidden="true" size={18} />Telegram подключён
+      </p>
+      {status.linked_at && <p className="mt-2 text-sm text-ink/60">
+        Подключено {eventTimeFormatter.format(new Date(status.linked_at))}.
+      </p>}
+      {!confirmingUnlink
+        ? <button
+          className="mt-4 min-h-11 rounded-xl border border-red-200 bg-white px-4 py-2.5 font-bold text-red-700"
+          onClick={() => setConfirmingUnlink(true)}
+          type="button"
+        >Отключить Telegram</button>
+        : <div aria-live="polite" className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <p className="font-semibold">Отключить уведомления для этого анонимного профиля?</p>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <button
+              className="min-h-11 rounded-xl bg-red-700 px-4 py-2.5 font-bold text-white disabled:cursor-wait disabled:opacity-60"
+              disabled={operation !== null}
+              onClick={() => void unlink()}
+              type="button"
+            >{operation === 'unlink' ? 'Отключаем…' : 'Подтвердить отключение'}</button>
+            <button
+              className="min-h-11 rounded-xl border border-ink/15 bg-white px-4 py-2.5 font-bold"
+              disabled={operation !== null}
+              onClick={() => setConfirmingUnlink(false)}
+              type="button"
+            >Отмена</button>
+          </div>
+        </div>}
+    </div>}
+
+    {profile.telegramStatusState === 'ready' && status && !status.linked && <div className="mt-4">
+      <p className="max-w-3xl leading-7 text-ink/65">
+        Telegram получает новые изменения из включённых наблюдений БГЭУ. Отключение Telegram не выключает наблюдения.
+      </p>
+      {challengeExpiry && !challengeExpired && <div className="mt-4 rounded-2xl bg-cream/65 p-4">
+        <p className="font-semibold">Запрос на подключение действует до{' '}
+          <time dateTime={challengeExpiry}>{eventTimeFormatter.format(new Date(challengeExpiry))}</time>.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          {localChallengeActive
+            ? <a
+              className="inline-flex min-h-11 items-center rounded-xl bg-moss px-4 py-2.5 font-bold text-white"
+              href={profile.telegramLinkChallenge?.deep_link}
+              rel="noopener noreferrer"
+              target="_blank"
+            >Открыть Telegram</a>
+            : <button
+              className="min-h-11 rounded-xl bg-moss px-4 py-2.5 font-bold text-white disabled:cursor-wait disabled:opacity-60"
+              disabled={operation !== null}
+              onClick={() => void createChallenge(true)}
+              type="button"
+            >{operation === 'challenge' ? 'Готовим ссылку…' : 'Открыть Telegram'}</button>}
+          <button
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss disabled:cursor-wait disabled:opacity-60"
+            disabled={operation !== null}
+            onClick={() => void refreshStatus()}
+            type="button"
+          >
+            {operation === 'refresh' && <LoaderCircle aria-hidden="true" className="animate-spin" size={17} />}
+            Проверить подключение
+          </button>
+        </div>
+      </div>}
+      {challengeExpiry && challengeExpired && <div aria-live="polite" className="mt-4 rounded-2xl bg-cream/65 p-4" role="status">
+        <p className="font-semibold">Срок ссылки истёк. Создайте новую ссылку для подключения.</p>
+        <button
+          className="mt-3 min-h-11 rounded-xl bg-moss px-4 py-2.5 font-bold text-white disabled:cursor-wait disabled:opacity-60"
+          disabled={operation !== null}
+          onClick={() => void createChallenge()}
+          type="button"
+        >{operation === 'challenge' ? 'Создаём…' : 'Создать новую ссылку'}</button>
+      </div>}
+      {!challengeExpiry && <button
+        className="mt-4 min-h-11 rounded-xl bg-moss px-4 py-2.5 font-bold text-white disabled:cursor-wait disabled:opacity-60"
+        disabled={operation !== null}
+        onClick={() => void createChallenge()}
+        type="button"
+      >{operation === 'challenge' ? 'Подключаем…' : 'Подключить Telegram'}</button>}
+    </div>}
+
+    {error && <p aria-live="assertive" className="mt-3 text-sm font-semibold text-red-700" role="alert">{error}</p>}
+  </section>
+}
 
 function ScoreEditor({ currentScore }: { currentScore: number | null }) {
   const { updateScore } = useProfile()
@@ -276,6 +445,9 @@ function ChangeHistory({
                 </Link>
               </p>
               <p className="mt-4 break-words leading-7">{event.description}</p>
+              {event.telegram_delivery_status === 'confirmed' && <p className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-moss">
+                <Send aria-hidden="true" size={16} />Отправлено в Telegram
+              </p>}
               <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold">
                 <Link className="text-moss underline" to={programPath}>Открыть программу</Link>
                 <Link className="text-moss underline" to="/monitor">Открыть монитор</Link>
@@ -325,6 +497,7 @@ export function MyListPage() {
 
       {profile.status !== 'loading' && profile.status !== 'error' && <div className="mt-8 grid gap-8">
         <ScoreEditor currentScore={score} />
+        <TelegramNotifications />
 
         {empty && <section aria-labelledby="empty-list-title" className="panel p-6 sm:p-8">
           <h2 className="text-2xl font-extrabold" id="empty-list-title">Список пока пуст</h2>

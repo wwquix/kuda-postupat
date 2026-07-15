@@ -197,6 +197,7 @@ export interface ProgramWatchEvent {
     | 'user_status_changed'
   description: string
   created_at: string
+  telegram_delivery_status: 'confirmed' | 'failed' | 'pending' | null
   university: {
     slug: string
     short_name: string
@@ -212,4 +213,15 @@ export interface ProgramWatchMutation {
   university_slug: string
   program_slug: string
   enabled: boolean
+}
+
+export interface TelegramLinkStatus {
+  linked: boolean
+  linked_at: string | null
+  challenge_expires_at: string | null
+}
+
+export interface TelegramLinkChallenge {
+  deep_link: string
+  expires_at: string
 }

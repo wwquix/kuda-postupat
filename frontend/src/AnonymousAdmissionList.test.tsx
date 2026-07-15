@@ -13,6 +13,7 @@ import type {
   ProgramWatch,
   ProgramWatchEvent,
   SavedAdmissionList,
+  TelegramLinkStatus,
   UniversityDetail,
   UniversityListItem,
 } from './types'
@@ -200,8 +201,11 @@ let serverList: SavedAdmissionList
 let acceptedToken: string
 let failMutation = false
 let failWatchMutation = false
+let failTelegramMutation = false
+let failTelegramStatus = false
 let serverWatches: ProgramWatch[]
 let serverWatchEvents: ProgramWatchEvent[]
+let serverTelegramStatus: TelegramLinkStatus
 
 function response(body: unknown, status = 200): Response {
   return {
@@ -247,6 +251,33 @@ async function handleRequest(input: RequestInfo | URL, init?: RequestInit) {
   if (url.pathname === '/api/profile/watch-events' && method === 'GET') {
     if (authorization !== `Bearer ${acceptedToken}`) return response({ detail: 'invalid' }, 401)
     return response(serverWatchEvents)
+  }
+  if (url.pathname === '/api/profile/telegram' && method === 'GET') {
+    if (authorization !== `Bearer ${acceptedToken}`) return response({ detail: 'invalid' }, 401)
+    if (failTelegramStatus) return response({ detail: 'telegram status failure' }, 500)
+    return response(serverTelegramStatus)
+  }
+  if (url.pathname === '/api/profile/telegram/challenge' && method === 'POST') {
+    if (authorization !== `Bearer ${acceptedToken}`) return response({ detail: 'invalid' }, 401)
+    const expiresAt = '2099-07-15T14:30:00Z'
+    serverTelegramStatus = {
+      linked: false,
+      linked_at: null,
+      challenge_expires_at: expiresAt,
+    }
+    return response({
+      deep_link: 'https://t.me/bseu_test_bot?start=one-time-link-token',
+      expires_at: expiresAt,
+    }, 201)
+  }
+  if (url.pathname === '/api/profile/telegram' && method === 'DELETE') {
+    if (failTelegramMutation) return response({ detail: 'telegram failure' }, 500)
+    serverTelegramStatus = {
+      linked: false,
+      linked_at: null,
+      challenge_expires_at: null,
+    }
+    return response(serverTelegramStatus)
   }
   if (url.pathname === '/api/profile/score' && method === 'PATCH') {
     const body = JSON.parse(String(init?.body)) as { score: number | null }
@@ -332,8 +363,15 @@ beforeEach(() => {
   acceptedToken = 'restored-profile-token'
   failMutation = false
   failWatchMutation = false
+  failTelegramMutation = false
+  failTelegramStatus = false
   serverWatches = []
   serverWatchEvents = []
+  serverTelegramStatus = {
+    linked: false,
+    linked_at: null,
+    challenge_expires_at: null,
+  }
   fetchMock.mockReset()
   fetchMock.mockImplementation(handleRequest)
   vi.stubGlobal('fetch', fetchMock)
@@ -414,6 +452,7 @@ describe('anonymous profile bootstrap and save controls', () => {
       event_kind: 'applications_total_changed',
       description: 'Количество заявлений изменилось: 5 → 6.',
       created_at: '2026-07-15T14:25:00Z',
+      telegram_delivery_status: null,
       university: {
         slug: university.slug,
         short_name: university.short_name,
@@ -480,6 +519,7 @@ describe('/my-list behavior and truthful monitoring', () => {
       '/api/profile/saved',
       '/api/profile/watches',
       '/api/profile/watch-events',
+      '/api/profile/telegram',
     ])
     expect(requestedUrls.some((url) => url.includes('/latest') || url.includes('score-distribution'))).toBe(false)
   })
@@ -556,6 +596,7 @@ describe('/my-list behavior and truthful monitoring', () => {
       event_kind: 'user_status_changed',
       description: 'Статус для вашего балла изменился: «Пограничная ситуация» → «Пока не проходит».',
       created_at: '2026-07-15T14:25:00Z',
+      telegram_delivery_status: null,
       university: {
         slug: university.slug,
         short_name: university.short_name,
@@ -594,5 +635,128 @@ describe('/my-list behavior and truthful monitoring', () => {
     await user.click(screen.getByRole('button', { name: `Удалить из списка — ${university.full_name}` }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось изменить список')
     expect(screen.getByText('Сохранено')).toBeInTheDocument()
+  })
+})
+
+describe('/my-list Telegram linking and delivery states', () => {
+  it('creates one challenge through the established profile and renders only the safe deep link', async () => {
+    serverList = populatedList()
+    const { container } = renderRoute('/my-list')
+
+    expect(await screen.findByRole('heading', { name: 'Уведомления в Telegram' })).toBeInTheDocument()
+    const connect = screen.getByRole('button', { name: 'Подключить Telegram' })
+    fireEvent.click(connect)
+    fireEvent.click(connect)
+
+    const open = await screen.findByRole('link', { name: 'Открыть Telegram' })
+    expect(open).toHaveAttribute(
+      'href',
+      'https://t.me/bseu_test_bot?start=one-time-link-token',
+    )
+    expect(open).toHaveAttribute('target', '_blank')
+    expect(open).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(open.getAttribute('href')).not.toContain(acceptedToken)
+    expect(container.textContent).not.toContain('created-profile-token')
+    expect(container.textContent).not.toContain('1157476891')
+    expect(fetchMock.mock.calls.filter(([input, init]) => (
+      String(input) === '/api/profile/telegram/challenge' && init?.method === 'POST'
+    ))).toHaveLength(1)
+    expect(fetchMock.mock.calls.filter(([input, init]) => (
+      String(input) === '/api/profile' && init?.method === 'POST'
+    ))).toHaveLength(1)
+  })
+
+  it('renders restored pending and expired states without re-exposing a challenge token', async () => {
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    serverTelegramStatus = {
+      linked: false,
+      linked_at: null,
+      challenge_expires_at: '2099-07-15T14:30:00Z',
+    }
+    const { container, unmount } = renderRoute('/my-list')
+    expect(await screen.findByRole('button', { name: 'Открыть Telegram' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Проверить подключение' })).toBeInTheDocument()
+    expect(container.querySelector('a[href*="start="]')).toBeNull()
+    unmount()
+
+    serverTelegramStatus = {
+      linked: false,
+      linked_at: null,
+      challenge_expires_at: '2000-01-01T00:00:00Z',
+    }
+    renderRoute('/my-list')
+    expect(await screen.findByText(/Срок ссылки истёк/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Создать новую ссылку' })).toBeInTheDocument()
+  })
+
+  it('refreshes into confirmed state without optimistic linking and preserves it after remount', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    const { unmount } = renderRoute('/my-list')
+    await user.click(await screen.findByRole('button', { name: 'Подключить Telegram' }))
+    expect(screen.queryByText('Telegram подключён')).not.toBeInTheDocument()
+
+    serverTelegramStatus = {
+      linked: true,
+      linked_at: '2026-07-15T14:26:00Z',
+      challenge_expires_at: null,
+    }
+    await user.click(screen.getByRole('button', { name: 'Проверить подключение' }))
+    expect(await screen.findByText('Telegram подключён')).toBeInTheDocument()
+    unmount()
+
+    renderRoute('/my-list')
+    expect(await screen.findByText('Telegram подключён')).toBeInTheDocument()
+  })
+
+  it('requires accessible unlink confirmation, keeps linked state on failure and prevents duplicate deletes', async () => {
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    serverTelegramStatus = {
+      linked: true,
+      linked_at: '2026-07-15T14:26:00Z',
+      challenge_expires_at: null,
+    }
+    failTelegramMutation = true
+    renderRoute('/my-list')
+    fireEvent.click(await screen.findByRole('button', { name: 'Отключить Telegram' }))
+    const confirm = screen.getByRole('button', { name: 'Подтвердить отключение' })
+    fireEvent.click(confirm)
+    fireEvent.click(confirm)
+    expect(await screen.findByRole('alert')).toHaveTextContent('Не удалось отключить Telegram')
+    expect(screen.getByText('Telegram подключён')).toBeInTheDocument()
+    expect(fetchMock.mock.calls.filter(([input, init]) => (
+      String(input) === '/api/profile/telegram' && init?.method === 'DELETE'
+    ))).toHaveLength(1)
+
+    failTelegramMutation = false
+    await userEvent.click(screen.getByRole('button', { name: 'Подтвердить отключение' }))
+    expect(await screen.findByRole('button', { name: 'Подключить Telegram' })).toBeInTheDocument()
+  })
+
+  it('shows sent only for confirmed delivery and exposes a retryable Telegram status error', async () => {
+    serverList = populatedList()
+    serverWatchEvents = [{
+      event_kind: 'applications_total_changed',
+      description: 'Количество заявлений изменилось: 5 → 6.',
+      created_at: '2026-07-15T14:25:00Z',
+      telegram_delivery_status: 'confirmed',
+      university: {
+        slug: university.slug,
+        short_name: university.short_name,
+        full_name: university.full_name,
+      },
+      program: { slug: program.slug, name: program.name },
+    }]
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    const { unmount } = renderRoute('/my-list')
+    expect(await screen.findByText('Отправлено в Telegram')).toBeInTheDocument()
+    unmount()
+
+    serverWatchEvents[0] = { ...serverWatchEvents[0], telegram_delivery_status: 'failed' }
+    failTelegramStatus = true
+    renderRoute('/my-list')
+    expect(await screen.findByText('Не удалось загрузить статус Telegram.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Повторить запрос' })).toBeInTheDocument()
+    expect(screen.queryByText('Отправлено в Telegram')).not.toBeInTheDocument()
   })
 })

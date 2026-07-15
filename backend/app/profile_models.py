@@ -8,6 +8,7 @@ from .catalog_models import Program, University, utc_now
 from .models import Base
 
 if TYPE_CHECKING:
+    from .telegram_watch_models import TelegramLinkChallenge, TelegramProfileLink
     from .watch_models import ProgramWatch
 
 
@@ -38,6 +39,12 @@ class AnonymousProfile(Base):
         back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
     )
     program_watches: Mapped[list["ProgramWatch"]] = relationship(
+        back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
+    )
+    telegram_links: Mapped[list["TelegramProfileLink"]] = relationship(
+        back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
+    )
+    telegram_link_challenges: Mapped[list["TelegramLinkChallenge"]] = relationship(
         back_populates="profile", cascade="all, delete-orphan", passive_deletes=True
     )
 

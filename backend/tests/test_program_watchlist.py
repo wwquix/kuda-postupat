@@ -346,7 +346,14 @@ def test_meaningful_events_score_semantics_deduplication_and_profile_isolation(
     }
     assert all(
         set(item)
-        == {"event_kind", "description", "created_at", "university", "program"}
+            == {
+                "event_kind",
+                "description",
+                "created_at",
+                "telegram_delivery_status",
+                "university",
+                "program",
+            }
         for item in first_events + second_events
     )
     assert all("→" in item["description"] for item in first_events + second_events)

@@ -16,6 +16,7 @@ from .parser import ParserError
 from .repository import get_or_create_specialty, save_snapshot_if_changed
 from .source_runtime import attach_run_to_source, record_source_error, record_source_success
 from .telegram import TelegramDeliveryError, build_change_message, send_once
+from .telegram_watch_delivery import deliver_watch_events_for_snapshots
 from .watch_service import evaluate_program_watches
 
 logger = logging.getLogger(__name__)
@@ -189,6 +190,17 @@ class AdmissionScraper:
                             logger.exception(
                                 "Program watch evaluation failed; persisted snapshots remain available"
                             )
+                        else:
+                            try:
+                                await deliver_watch_events_for_snapshots(
+                                    SessionLocal,
+                                    self.settings,
+                                    created_snapshot_ids,
+                                )
+                            except Exception:
+                                logger.exception(
+                                    "Telegram watch delivery failed; persisted events remain available"
+                                )
                     for message in messages:
                         try:
                             await send_once(session, self.settings, message)

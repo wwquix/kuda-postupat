@@ -35,6 +35,7 @@ revision/schema check, then serves the API without:
 - opening the BSEU source through that task;
 - creating Snapshot, ScraperRun or Notification rows;
 - invoking background Telegram delivery.
+- sending Telegram link confirmations or profile WatchEvent messages.
 
 Existing catalog, university detail, monitoring and status reads remain
 available from the main SQLite database. The health response reports
