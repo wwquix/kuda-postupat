@@ -174,7 +174,10 @@ export function UniversityDetailPage() {
         <h1 className="mt-3 break-words text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{university.full_name}</h1>
         {university.description && <p className="mt-5 break-words text-lg leading-8 text-ink/70">{university.description}</p>}
         <div className="mt-5">
-          <SaveControl kind="university" label={university.full_name} universitySlug={university.slug} />
+          <div className="flex flex-wrap items-center gap-4">
+            <Link className="inline-flex min-h-11 items-center rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss" to={`/compare?universities=${encodeURIComponent(university.slug)}`}>Сравнить вуз</Link>
+            <SaveControl kind="university" label={university.full_name} universitySlug={university.slug} />
+          </div>
         </div>
       </header>
 

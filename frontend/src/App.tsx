@@ -10,6 +10,7 @@ import { ProgramDetailPage } from './pages/ProgramDetailPage'
 import { RecommendationsPage } from './pages/RecommendationsPage'
 import { UniversityDetailPage } from './pages/UniversityDetailPage'
 import { UniversitiesPage } from './pages/UniversitiesPage'
+import { ComparePage } from './pages/ComparePage'
 
 export default function App() {
   return <ProfileProvider>
@@ -18,6 +19,7 @@ export default function App() {
         <Route index element={<HomePage />} />
         <Route path="universities" element={<UniversitiesPage />} />
         <Route path="recommendations" element={<RecommendationsPage />} />
+        <Route path="compare" element={<ComparePage />} />
         <Route path="universities/:universitySlug/programs/:programKey" element={<ProgramDetailPage />} />
         <Route path="universities/:slug" element={<UniversityDetailPage />} />
         <Route path="my-list" element={<MyListPage />} />

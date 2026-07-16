@@ -78,7 +78,7 @@
 
 ## 7. Recommendations API v1
 
-- **Status:** M-RECOMMENDATIONS-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, разделяют monitored status, catalog match и insufficient coverage, интегрированы с явным profile-score action и не создают вероятность поступления. Нормализованная совместимость предметов и расширение данных остаются отдельным будущим scope. Следующий planned user-visible milestone — M-COMPARE-01, честное сравнение сохранённых вариантов как отдельный срез раздела 8.
+- **Status:** M-RECOMMENDATIONS-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, разделяют monitored status, catalog match и insufficient coverage, интегрированы с явным profile-score action и не создают вероятность поступления. Нормализованная совместимость предметов и расширение данных остаются отдельным будущим scope. M-COMPARE-01 завершён отдельным срезом раздела 8.
 
 - **Goal:** implement a deterministic, explainable first recommendation service using canonical offerings.
 - **In scope:** request/output contract, required subject compatibility, filters/preferences, match/confidence/reasons/warnings/freshness, versioned API.
@@ -91,7 +91,7 @@
 
 ## 8. Anonymous profiles, favorites and compare
 
-- **Status:** M-MY-LIST-01 complete: первый пользовательский срез добавляет анонимный профиль, один личный балл, сохранённые University/Program и `/my-list`. Compare, cross-device merge и аккаунты не реализованы; эти части M8 остаются открытыми.
+- **Status:** M-MY-LIST-01 и M-COMPARE-01 complete: анонимный профиль хранит личный балл и сохранённые University/Program, а публичный `/compare` нейтрально сопоставляет 2–3 вуза по URL и существующему read-only catalog API без зависимости от профиля. Cross-device merge и аккаунты не реализованы; эти части M8 остаются открытыми.
 
 - **Goal:** add privacy-conscious anonymous server profiles and optional cross-device state.
 - **In scope:** signed HttpOnly cookie, public UUID, server preferences, favorites, compare decision/implementation if justified, localStorage merge contract.
@@ -104,7 +104,7 @@
 
 ## 9. Watchlists and Telegram linking
 
-- **Status:** M-WATCHLIST-01 и M-TELEGRAM-WATCH-01 complete: анонимный профиль может включить BSEU Program watch, видеть persisted event history, безопасно связать один Telegram chat и получать confirmed per-profile delivery с bounded retry/dedup status. Recommendations v1 теперь завершены отдельным M-RECOMMENDATIONS-01. Registered accounts, cross-device merge, comparison, production rehearsal и дополнительные adapters остаются незавершёнными; следующий planned user-visible milestone — M-COMPARE-01 из раздела 8.
+- **Status:** M-WATCHLIST-01 и M-TELEGRAM-WATCH-01 complete: анонимный профиль может включить BSEU Program watch, видеть persisted event history, безопасно связать один Telegram chat и получать confirmed per-profile delivery с bounded retry/dedup status. M-RECOMMENDATIONS-01 и M-COMPARE-01 также завершены. Registered accounts, cross-device merge, production rehearsal и дополнительные adapters остаются незавершёнными.
 
 - **Goal:** connect watched offerings and per-profile Telegram delivery while preserving owner mode.
 - **In scope:** one-time hashed link tokens, Telegram accounts, watchlists, notification events/status/retry, fingerprint dedup, owner compatibility.
@@ -117,7 +117,7 @@
 
 ## 10. Frontend shell and homepage
 
-- **Status:** M-MVP-PUBLIC-MONITOR-01 complete: публичный `/monitor` стал полностью read-only, показывает отдельные состояния автоматического сборщика и давности данных БГЭУ, а при отсутствии снимка предлагает только безопасный GET retry. Telegram UI теперь следует `telegram_enabled`: при выключенном feature form и challenge не создаются. Защищённый operator refresh и scheduler не менялись. Следующий planned user-visible milestone — M-COMPARE-01 из раздела 8.
+- **Status:** M-MVP-PUBLIC-MONITOR-01 complete: публичный `/monitor` стал полностью read-only, показывает отдельные состояния автоматического сборщика и давности данных БГЭУ, а при отсутствии снимка предлагает только безопасный GET retry. Telegram UI теперь следует `telegram_enabled`: при выключенном feature form и challenge не создаются. Защищённый operator refresh и scheduler не менялись. M-COMPARE-01 из раздела 8 также завершён.
 
 - **Goal:** introduce routed application shell and honest data-coverage homepage while preserving the existing monitor.
 - **In scope:** router/layout/navigation, typed API layer/query state, `/`, `/monitor`, route states, provenance components, responsive foundation.

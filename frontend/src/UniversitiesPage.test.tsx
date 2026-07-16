@@ -174,6 +174,7 @@ describe('university catalog route and cards', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Вузы Беларуси' })).toBeInTheDocument()
     expect(await screen.findByText(/Найдено в каталоге платформы/)).toHaveTextContent('47')
+    expect(screen.getAllByRole('link', { name: 'Сравнить' })[0]).toHaveAttribute('href', '/compare?universities=bseu')
     expect(screen.getByRole('link', { name: 'Вузы' })).toHaveAttribute('aria-current', 'page')
     expect(container.querySelectorAll('h1')).toHaveLength(1)
     expect(screen.getByRole('link', { name: bseu.full_name })).toHaveAttribute('href', '/universities/bseu')

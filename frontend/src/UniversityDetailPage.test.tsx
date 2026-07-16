@@ -172,6 +172,7 @@ describe('university detail states and honest rendering', () => {
     resolveDetail?.(response(bseu))
 
     expect(await screen.findByRole('heading', { level: 1, name: bseu.full_name })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Сравнить вуз' })).toHaveAttribute('href', '/compare?universities=bseu')
     expect(screen.getByRole('heading', { name: 'О вузе' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Официальные ресурсы' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Мониторинг и покрытие источников' })).toBeInTheDocument()
