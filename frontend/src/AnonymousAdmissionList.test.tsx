@@ -203,6 +203,7 @@ let failMutation = false
 let failWatchMutation = false
 let failTelegramMutation = false
 let failTelegramStatus = false
+let telegramEnabled = true
 let serverWatches: ProgramWatch[]
 let serverWatchEvents: ProgramWatchEvent[]
 let serverTelegramStatus: TelegramLinkStatus
@@ -221,6 +222,20 @@ async function handleRequest(input: RequestInfo | URL, init?: RequestInit) {
   const method = init?.method ?? 'GET'
   const authorization = new Headers(init?.headers).get('Authorization')
   if (url.pathname === '/api/catalog/meta') return response(meta)
+  if (url.pathname === '/api/config') {
+    return response({
+      university: 'БГЭУ',
+      target_specialties: ['Экономическая информатика'],
+      study_form: 'дневная',
+      funding_type: 'платная',
+      user_score: 276,
+      poll_interval_minutes: 10,
+      timezone: 'Europe/Minsk',
+      source_url: 'https://bseu.by/abiturient/',
+      stale_after_minutes: 30,
+      telegram_enabled: telegramEnabled,
+    })
+  }
   if (url.pathname === '/api/universities' && method === 'GET') {
     return response({
       items: [university],
@@ -365,6 +380,7 @@ beforeEach(() => {
   failWatchMutation = false
   failTelegramMutation = false
   failTelegramStatus = false
+  telegramEnabled = true
   serverWatches = []
   serverWatchEvents = []
   serverTelegramStatus = {
@@ -519,6 +535,7 @@ describe('/my-list behavior and truthful monitoring', () => {
       '/api/profile/saved',
       '/api/profile/watches',
       '/api/profile/watch-events',
+      '/api/config',
       '/api/profile/telegram',
     ])
     expect(requestedUrls.some((url) => url.includes('/latest') || url.includes('score-distribution'))).toBe(false)
@@ -639,6 +656,24 @@ describe('/my-list behavior and truthful monitoring', () => {
 })
 
 describe('/my-list Telegram linking and delivery states', () => {
+  it('hides linking and never loads or creates a challenge when Telegram is disabled', async () => {
+    telegramEnabled = false
+    serverList = populatedList()
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    renderRoute('/my-list')
+
+    expect(await screen.findByText('Telegram-уведомления появятся позже')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Подключить Telegram' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Открыть Telegram' })).not.toBeInTheDocument()
+    expect(fetchMock.mock.calls.some(([input]) => (
+      new URL(String(input), 'http://localhost').pathname === '/api/profile/telegram'
+    ))).toBe(false)
+    expect(fetchMock.mock.calls.some(([input, init]) => (
+      new URL(String(input), 'http://localhost').pathname === '/api/profile/telegram/challenge'
+      && init?.method === 'POST'
+    ))).toBe(false)
+  })
+
   it('creates one challenge through the established profile and renders only the safe deep link', async () => {
     serverList = populatedList()
     const { container } = renderRoute('/my-list')

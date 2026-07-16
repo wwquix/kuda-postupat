@@ -117,6 +117,8 @@
 
 ## 10. Frontend shell and homepage
 
+- **Status:** M-MVP-PUBLIC-MONITOR-01 complete: публичный `/monitor` стал полностью read-only, показывает отдельные состояния автоматического сборщика и давности данных БГЭУ, а при отсутствии снимка предлагает только безопасный GET retry. Telegram UI теперь следует `telegram_enabled`: при выключенном feature form и challenge не создаются. Защищённый operator refresh и scheduler не менялись. Следующий planned user-visible milestone — M-COMPARE-01 из раздела 8.
+
 - **Goal:** introduce routed application shell and honest data-coverage homepage while preserving the existing monitor.
 - **In scope:** router/layout/navigation, typed API layer/query state, `/`, `/monitor`, route states, provenance components, responsive foundation.
 - **Out of scope:** full university/program detail pages, recommendations UI, replacing monitor behavior.

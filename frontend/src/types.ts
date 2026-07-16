@@ -129,7 +129,38 @@ export interface Snapshot {
   source_age_seconds?: number | null;
   last_checked_at?: string;
 }
-export interface CollectorStatus { state: string; consecutive_errors: number; next_run_at: string | null; last_run: null | { status: string; error_message: string | null; finished_at: string | null; rows_found: number } }
+export interface PublicConfig {
+  university: string
+  target_specialties: string[]
+  study_form: string
+  funding_type: string
+  user_score: number
+  poll_interval_minutes: number
+  timezone: string
+  source_url: string
+  stale_after_minutes: number
+  telegram_enabled: boolean
+}
+export interface HealthStatus {
+  status: string
+  database: string
+  scheduler_running: boolean
+  refresh_in_progress: boolean
+  last_success_at: string | null
+  last_error: string | null
+}
+export interface CollectorStatus {
+  state: string
+  consecutive_errors: number
+  next_run_at: string | null
+  last_run: null | {
+    started_at?: string | null
+    status: string
+    error_message: string | null
+    finished_at: string | null
+    rows_found: number
+  }
+}
 
 export interface AnonymousProfile {
   personal_score: number | null

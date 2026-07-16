@@ -17,6 +17,7 @@ const eventTimeFormatter = new Intl.DateTimeFormat('ru-BY', {
 
 function TelegramNotifications() {
   const profile = useProfile()
+  const { loadTelegramAvailability } = profile
   const [operation, setOperation] = useState<'challenge' | 'refresh' | 'unlink' | null>(null)
   const [confirmingUnlink, setConfirmingUnlink] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +27,10 @@ function TelegramNotifications() {
   const challengeExpired = challengeExpiry !== null && Date.parse(challengeExpiry) <= clock
   const localChallengeActive = profile.telegramLinkChallenge !== null
     && Date.parse(profile.telegramLinkChallenge.expires_at) > clock
+
+  useEffect(() => {
+    void loadTelegramAvailability()
+  }, [loadTelegramAvailability])
 
   useEffect(() => {
     const interval = window.setInterval(() => setClock(Date.now()), 30_000)
@@ -78,6 +83,17 @@ function TelegramNotifications() {
   return <section aria-labelledby="telegram-notifications-title" className="panel min-w-0 p-5 sm:p-6">
     <h2 className="text-2xl font-extrabold" id="telegram-notifications-title">Уведомления в Telegram</h2>
 
+    {profile.telegramStatusState === 'ready' && profile.telegramEnabled === false && <div
+      aria-live="polite"
+      className="mt-4 rounded-2xl border border-ink/10 bg-cream/65 p-4"
+      role="status"
+    >
+      <p className="font-extrabold">Telegram-уведомления появятся позже</p>
+      <p className="mt-2 leading-7 text-ink/65">
+        Сохранённые программы, наблюдения и история изменений продолжают работать без Telegram.
+      </p>
+    </div>}
+
     {profile.telegramStatusState === 'loading' && <p
       aria-live="polite"
       className="mt-4 flex items-center gap-2 text-ink/65"
@@ -91,14 +107,16 @@ function TelegramNotifications() {
       <button
         className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss disabled:cursor-wait disabled:opacity-60"
         disabled={operation !== null}
-        onClick={() => void refreshStatus()}
+        onClick={() => void (profile.telegramEnabled === null
+          ? profile.loadTelegramAvailability()
+          : refreshStatus())}
         type="button"
       >
         <RefreshCw aria-hidden="true" size={17} />Повторить запрос
       </button>
     </div>}
 
-    {profile.telegramStatusState === 'ready' && status?.linked && <div className="mt-4">
+    {profile.telegramEnabled === true && profile.telegramStatusState === 'ready' && status?.linked && <div className="mt-4">
       <p aria-live="polite" className="inline-flex items-center gap-2 font-extrabold text-moss" role="status">
         <Send aria-hidden="true" size={18} />Telegram подключён
       </p>
@@ -130,7 +148,7 @@ function TelegramNotifications() {
         </div>}
     </div>}
 
-    {profile.telegramStatusState === 'ready' && status && !status.linked && <div className="mt-4">
+    {profile.telegramEnabled === true && profile.telegramStatusState === 'ready' && status && !status.linked && <div className="mt-4">
       <p className="max-w-3xl leading-7 text-ink/65">
         Telegram получает новые изменения из включённых наблюдений БГЭУ. Отключение Telegram не выключает наблюдения.
       </p>

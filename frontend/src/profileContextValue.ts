@@ -17,6 +17,7 @@ export interface ProfileContextValue {
   watchEvents: ProgramWatchEvent[]
   telegramLinkStatus: TelegramLinkStatus | null
   telegramLinkChallenge: TelegramLinkChallenge | null
+  telegramEnabled: boolean | null
   telegramStatusState: TelegramStatusLoadState
   status: ProfileLoadStatus
   invalidTokenRecovered: boolean
@@ -29,6 +30,7 @@ export interface ProfileContextValue {
   removeProgram: (universitySlug: string, programSlug: string) => Promise<void>
   enableWatch: (universitySlug: string, programSlug: string) => Promise<void>
   disableWatch: (universitySlug: string, programSlug: string) => Promise<void>
+  loadTelegramAvailability: () => Promise<void>
   createTelegramLinkChallenge: () => Promise<TelegramLinkChallenge>
   refreshTelegramLinkStatus: () => Promise<void>
   unlinkTelegram: () => Promise<void>

@@ -7,9 +7,11 @@ import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
-import { api } from '../api'
+import { api, ApiError } from '../api'
 import { useDocumentTitle } from '../useDocumentTitle'
-import type { CollectorStatus, Snapshot, Specialty } from '../types'
+import type { CollectorStatus, HealthStatus, PublicConfig, Snapshot, Specialty } from '../types'
+
+type SnapshotState = 'unknown' | 'available' | 'empty'
 
 const dateTime = (value?: string | null) => value
   ? new Intl.DateTimeFormat('ru-BY', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Minsk' }).format(new Date(value))
@@ -47,9 +49,12 @@ export default function MonitorPage() {
   const [latest, setLatest] = useState<Snapshot | null>(null)
   const [history, setHistory] = useState<Snapshot[]>([])
   const [collector, setCollector] = useState<CollectorStatus | null>(null)
+  const [health, setHealth] = useState<HealthStatus | null>(null)
+  const [config, setConfig] = useState<PublicConfig | null>(null)
+  const [snapshotState, setSnapshotState] = useState<SnapshotState>('unknown')
   const [score, setScore] = useState(276)
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
+  const [reloading, setReloading] = useState(false)
   const [error, setError] = useState('')
 
   const load = useCallback(async (id?: number | null) => {
@@ -58,12 +63,41 @@ export default function MonitorPage() {
       const list = specialties.length ? specialties : await api.specialties()
       if (!specialties.length) setSpecialties(list)
       const target = id ?? selectedId ?? list[0]?.id
-      if (!target) throw new Error('Данные еще не собраны. Подождите первое обновление сборщика.')
+      if (!target) throw new Error('Специальность для мониторинга пока не настроена.')
       setSelectedId(target)
-      const [current, items, status] = await Promise.all([api.latest(target), api.history(target), api.status()])
-      setLatest(current); setHistory(items); setCollector(status)
-      setScore((previous) => previous === 276 ? current.user_score : previous)
-    } catch (reason) { setError(reason instanceof Error ? reason.message : 'Не удалось загрузить данные') }
+      const [currentResult, historyResult, statusResult, healthResult, configResult] = await Promise.allSettled([
+        api.latest(target),
+        api.history(target),
+        api.status(),
+        api.health(),
+        api.config(),
+      ])
+      let partialFailure = false
+
+      if (currentResult.status === 'fulfilled') {
+        setLatest(currentResult.value)
+        setSnapshotState('available')
+        setScore((previous) => previous === 276 ? currentResult.value.user_score : previous)
+      } else if (currentResult.reason instanceof ApiError && currentResult.reason.status === 404) {
+        setSnapshotState((current) => current === 'available' ? current : 'empty')
+      } else {
+        partialFailure = true
+      }
+      if (historyResult.status === 'fulfilled') setHistory(historyResult.value)
+      else partialFailure = true
+      if (statusResult.status === 'fulfilled') setCollector(statusResult.value)
+      else partialFailure = true
+      if (healthResult.status === 'fulfilled') setHealth(healthResult.value)
+      else partialFailure = true
+      if (configResult.status === 'fulfilled') setConfig(configResult.value)
+      else partialFailure = true
+
+      if (partialFailure) {
+        setError('Не удалось загрузить часть данных мониторинга. Уже полученный корректный снимок сохранён на экране.')
+      }
+    } catch {
+      setError('Не удалось загрузить данные мониторинга. Проверьте соединение и повторите загрузку.')
+    }
     finally { setLoading(false) }
   }, [selectedId, specialties])
 
@@ -91,14 +125,29 @@ export default function MonitorPage() {
     return { position: above + 1, status }
   }, [latest, score, scoreRanges])
 
-  async function refresh() {
-    const token = window.prompt('Введите MANUAL_REFRESH_TOKEN')
-    if (!token) return
-    setRefreshing(true); setError('')
-    try { await api.refresh(token); await load(selectedId) }
-    catch (reason) { setError(reason instanceof Error ? reason.message : 'Ошибка обновления') }
-    finally { setRefreshing(false) }
+  const retryLoad = async () => {
+    setReloading(true)
+    try { await load(selectedId) }
+    finally { setReloading(false) }
   }
+
+  const collectorRefreshing = health?.refresh_in_progress === true || collector?.state === 'refreshing'
+  const lastRunStatus = collector?.last_run?.status
+    ?? (collector?.state !== 'refreshing' ? collector?.state : null)
+  const collectorFailed = lastRunStatus === 'error' || Boolean(health?.last_error)
+  const collectorLabel = collectorRefreshing
+    ? 'Проверяем данные БГЭУ'
+    : lastRunStatus === 'not_modified'
+      ? 'Источник проверен, изменений нет'
+      : lastRunStatus === 'success'
+        ? 'Получены новые данные'
+        : lastRunStatus === 'error'
+          ? 'Последняя проверка источника завершилась ошибкой'
+          : 'Ожидаем первую проверку источника'
+  const staleAfterSeconds = (config?.stale_after_minutes ?? 30) * 60
+  const sourceIsStale = latest?.source_age_seconds !== null
+    && latest?.source_age_seconds !== undefined
+    && latest.source_age_seconds > staleAfterSeconds
 
   return <div className="min-w-0 bg-[radial-gradient(circle_at_top_right,_rgba(109,190,148,0.18),_transparent_32%),linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
     <section aria-labelledby="monitor-title" className="border-b border-ink/10 bg-ink text-white">
@@ -106,16 +155,47 @@ export default function MonitorPage() {
         <div className="flex items-center gap-4"><div aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-white/10"><GraduationCap /></div><div><div className="text-xs font-bold uppercase tracking-[.2em] text-emerald-200">Вступительная кампания · БГЭУ</div><h1 id="monitor-title" className="mt-1 text-2xl font-bold">Монитор поступления</h1></div></div>
         <div className="flex flex-wrap gap-3">
           {specialties.length > 1 && <select value={selectedId ?? ''} onChange={(event) => void load(Number(event.target.value))} className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm outline-none"><option className="text-ink" value="">Специальность</option>{specialties.map((item) => <option className="text-ink" key={item.id} value={item.id}>{item.display_name}</option>)}</select>}
-          <button onClick={() => void refresh()} disabled={refreshing} className="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:bg-emerald-50 disabled:opacity-60"><RefreshCw size={16} className={refreshing ? 'animate-spin' : ''}/>Обновить</button>
         </div>
       </div>
     </section>
 
     <div className="mx-auto max-w-7xl space-y-6 px-5 py-7 lg:px-8 lg:py-10">
       {loading ? <div className="grid min-h-72 place-items-center" role="status"><div className="text-center"><RefreshCw aria-hidden="true" className="mx-auto mb-3 animate-spin text-moss"/><p>Загружаем конкурсную ситуацию…</p></div></div> : <>
-      {error && <div role="alert" className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><ShieldAlert aria-hidden="true" className="shrink-0" size={20}/><div><b>Не удалось получить свежие данные.</b><div>{error}</div>{latest && <div className="mt-1">Показан последний корректный снимок.</div>}</div></div>}
-      {latest?.is_stale && <div role="status" className="flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"><AlertTriangle aria-hidden="true" className="shrink-0" size={20}/><div><b>Источник не обновлял данные более 30 минут.</b> Последняя проверка могла пройти успешно, но время данных на стороне БГЭУ устарело.</div></div>}
-      {!latest ? <div className="panel p-8 text-center"><BookOpen className="mx-auto mb-3 text-moss"/><h2 className="text-xl font-bold">Корректных снимков пока нет</h2><p className="mt-2 text-ink/60">Запустите ручное обновление или дождитесь плановой проверки.</p></div> : <>
+      <section aria-labelledby="public-monitor-status-title" className="panel p-5 sm:p-6">
+        <div className="eyebrow">Состояние мониторинга</div>
+        <h2 className="mt-2 text-xl font-extrabold" id="public-monitor-status-title">Автоматическая проверка источника</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-ink/10 bg-cream/65 p-4">
+            <div className="text-xs font-bold uppercase tracking-wider text-ink/45">Автоматическое обновление</div>
+            <p className="mt-2 font-extrabold" role="status">
+              {health === null
+                ? 'Состояние автоматического обновления уточняется'
+                : health.scheduler_running
+                  ? 'Автоматическое обновление включено'
+                  : 'Автоматическое обновление сейчас недоступно'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-ink/10 bg-cream/65 p-4">
+            <div className="text-xs font-bold uppercase tracking-wider text-ink/45">Последний результат</div>
+            <p className="mt-2 font-extrabold" role="status">{collectorLabel}</p>
+            <p className="mt-1 text-sm text-ink/60">Последняя успешная проверка: {dateTime(health?.last_success_at ?? latest?.last_checked_at)}</p>
+          </div>
+          <div className="rounded-2xl border border-ink/10 bg-cream/65 p-4">
+            <div className="text-xs font-bold uppercase tracking-wider text-ink/45">Следующая проверка</div>
+            <p className="mt-2 font-extrabold">{dateTime(collector?.next_run_at)}</p>
+          </div>
+          <div className="rounded-2xl border border-ink/10 bg-cream/65 p-4">
+            <div className="text-xs font-bold uppercase tracking-wider text-ink/45">Текущая активность</div>
+            <p className="mt-2 font-extrabold" role="status">
+              {collectorRefreshing ? 'Проверяем данные БГЭУ' : 'Фоновая проверка не выполняется'}
+            </p>
+          </div>
+        </div>
+      </section>
+      {error && <div role="alert" className="flex flex-col gap-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 sm:flex-row sm:items-start sm:justify-between"><div className="flex min-w-0 gap-3"><ShieldAlert aria-hidden="true" className="shrink-0" size={20}/><div><b>Не удалось полностью обновить страницу.</b><div className="break-words">{error}</div>{latest && <div className="mt-1">Показан последний корректный снимок.</div>}</div></div><button className="min-h-11 shrink-0 rounded-xl border border-red-300 bg-white px-4 py-2.5 font-bold text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700" disabled={reloading} onClick={() => void retryLoad()} type="button"><RefreshCw aria-hidden="true" className={reloading ? 'mr-2 inline animate-spin' : 'mr-2 inline'} size={16}/>{reloading ? 'Загружаем…' : 'Повторить загрузку'}</button></div>}
+      {collectorFailed && <div role="alert" className="flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><ShieldAlert aria-hidden="true" className="shrink-0" size={20}/><div><b>Последняя проверка источника завершилась ошибкой.</b>{latest && <p className="mt-1">Ниже показан последний корректный снимок. Автоматическая проверка повторится, когда сборщик будет доступен.</p>}{!latest && <p className="mt-1">Первый корректный снимок пока не получен. Автоматическая проверка повторится, когда сборщик будет доступен.</p>}</div></div>}
+      {sourceIsStale && <div role="status" className="flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"><AlertTriangle aria-hidden="true" className="shrink-0" size={20}/><div><b>БГЭУ давно не обновлял данные на своей стороне.</b> Платформа могла проверить источник недавно, но timestamp внутри опубликованных БГЭУ данных остаётся старым. Это не означает сбой сборщика.</div></div>}
+      {snapshotState === 'empty' && !latest ? <div className="panel p-8 text-center"><BookOpen aria-hidden="true" className="mx-auto mb-3 text-moss"/><h2 className="text-xl font-bold">Первый корректный снимок конкурсной ситуации ещё не получен</h2><p className="mt-2 text-ink/60">Автоматическая проверка повторится, когда источник будет доступен.</p><button className="mt-5 min-h-11 rounded-xl bg-moss px-4 py-2.5 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-moss focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60" disabled={reloading} onClick={() => void retryLoad()} type="button"><RefreshCw aria-hidden="true" className={reloading ? 'mr-2 inline animate-spin' : 'mr-2 inline'} size={16}/>{reloading ? 'Загружаем…' : 'Повторить загрузку'}</button></div> : latest ? <>
         <section className="panel overflow-hidden">
           <div className="grid lg:grid-cols-[1.2fr_.8fr]">
             <div className="p-6 sm:p-8">
@@ -147,8 +227,8 @@ export default function MonitorPage() {
 
         <section className="panel overflow-hidden"><div className="flex flex-col gap-2 border-b border-ink/10 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6"><div><div className="eyebrow">Журнал наблюдений</div><h3 className="mt-2 text-xl font-bold">История обновлений</h3></div><div className="text-xs text-ink/50">Показаны только изменения данных</div></div><div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-cream/70 text-xs uppercase tracking-wider text-ink/55"><tr><th className="px-6 py-4">Получено</th><th className="px-4 py-4">Заявлений</th><th className="px-4 py-4">Конкурс</th><th className="px-4 py-4">Порог</th><th className="px-4 py-4">Место</th><th className="px-6 py-4">Статус</th></tr></thead><tbody>{history.map((item) => <tr key={item.id} className="border-t border-ink/5"><td className="px-6 py-4 font-medium">{dateTime(item.fetched_at)}</td><td className="px-4 py-4">{item.applications_total}</td><td className="px-4 py-4">{item.competition.toFixed(2)}×</td><td className="px-4 py-4">{cutoffLabel(item)}</td><td className="px-4 py-4">{item.estimated_user_position ? `≈ ${item.estimated_user_position}` : '—'}</td><td className="px-6 py-4"><span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusStyle(item.user_status)}`}>{item.user_status}</span></td></tr>)}</tbody></table></div></section>
 
-        <section className="grid gap-4 lg:grid-cols-[1fr_auto]"><div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950"><div className="flex gap-3"><AlertTriangle className="shrink-0" size={21}/><div><b>Это автоматическая оценка на основании текущих заявлений, а не официальный итоговый проходной балл.</b><p className="mt-1 text-amber-900/75">Порог может измениться; диапазоны баллов не позволяют определить точное место внутри группы.</p></div></div></div><div className="rounded-2xl border border-ink/10 bg-white p-5 text-sm"><div className="flex items-center gap-2 font-semibold"><Clock3 size={18} className="text-moss"/>Состояние сборщика</div><div className="mt-2 text-ink/60">Последняя проверка: {dateTime(latest.last_checked_at ?? latest.fetched_at)}</div><div className="text-ink/60">Источник обновлен: {dateTime(latest.source_updated_at)}</div><div className="mt-2"><span className={`inline-block size-2 rounded-full ${collector?.state === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`}/> <span className="ml-1">{collector?.state === 'error' ? 'ошибка источника' : 'работает'}</span></div></div></section>
-      </>}
+        <section className="grid gap-4 lg:grid-cols-[1fr_auto]"><div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950"><div className="flex gap-3"><AlertTriangle aria-hidden="true" className="shrink-0" size={21}/><div><b>Это автоматическая оценка на основании текущих заявлений, а не официальный итоговый проходной балл.</b><p className="mt-1 text-amber-900/75">Порог может измениться; диапазоны баллов не позволяют определить точное место внутри группы.</p></div></div></div><div className="rounded-2xl border border-ink/10 bg-white p-5 text-sm"><div className="flex items-center gap-2 font-semibold"><Clock3 aria-hidden="true" size={18} className="text-moss"/>Время данных</div><div className="mt-2 text-ink/60">Источник проверен платформой: {dateTime(health?.last_success_at ?? latest.last_checked_at ?? latest.fetched_at)}</div><div className="text-ink/60">Время данных БГЭУ: {dateTime(latest.source_updated_at)}</div></div></section>
+      </> : null}
       </>}
     </div>
   </div>

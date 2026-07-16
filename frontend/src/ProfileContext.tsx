@@ -33,6 +33,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [initialToken] = useState(readProfileToken)
   const tokenRef = useRef<string | null>(initialToken)
   const createRequest = useRef<Promise<string> | null>(null)
+  const telegramAvailabilityRequest = useRef<Promise<void> | null>(null)
   const telegramChallengeRequest = useRef<Promise<TelegramLinkChallenge> | null>(null)
   const telegramUnlinkRequest = useRef<Promise<void> | null>(null)
   const [data, setData] = useState<SavedAdmissionList | null>(null)
@@ -42,6 +43,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     initialToken ? null : notLinkedTelegramStatus,
   )
   const [telegramLinkChallenge, setTelegramLinkChallenge] = useState<TelegramLinkChallenge | null>(null)
+  const [telegramEnabled, setTelegramEnabled] = useState<boolean | null>(null)
   const [telegramStatusState, setTelegramStatusState] = useState<TelegramStatusLoadState>(
     initialToken ? 'loading' : 'ready',
   )
@@ -103,21 +105,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
           return
         }
         setStatus('error')
-      })
-    api.telegramLinkStatus(restoredToken, controller.signal)
-      .then((next) => {
-        if (!controller.signal.aborted && tokenRef.current === restoredToken) {
-          setTelegramLinkStatus(next)
-          setTelegramStatusState('ready')
-        }
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted || tokenRef.current !== restoredToken) return
-        if (error instanceof ApiError && error.status === 401) {
-          clearInvalidToken(restoredToken)
-          return
-        }
-        setTelegramStatusState('error')
       })
     return () => controller.abort()
   }, [applyLoadedProfile, clearInvalidToken, initialToken])
@@ -204,7 +191,52 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setWatchEvents(loaded.nextEvents)
   }, [withProfile])
 
+  const loadTelegramAvailability = useCallback((): Promise<void> => {
+    if (telegramAvailabilityRequest.current) return telegramAvailabilityRequest.current
+    setTelegramStatusState('loading')
+    const request = (async () => {
+      try {
+        const publicConfig = await api.config()
+        setTelegramEnabled(publicConfig.telegram_enabled)
+        if (!publicConfig.telegram_enabled) {
+          setTelegramLinkStatus(notLinkedTelegramStatus)
+          setTelegramLinkChallenge(null)
+          setTelegramStatusState('ready')
+          return
+        }
+
+        const token = tokenRef.current
+        if (!token) {
+          setTelegramLinkStatus(notLinkedTelegramStatus)
+          setTelegramStatusState('ready')
+          return
+        }
+        try {
+          const next = await api.telegramLinkStatus(token)
+          if (tokenRef.current !== token) return
+          setTelegramLinkStatus(next)
+          if (next.linked) setTelegramLinkChallenge(null)
+          setTelegramStatusState('ready')
+        } catch (error) {
+          if (error instanceof ApiError && error.status === 401) {
+            clearInvalidToken(token)
+            return
+          }
+          setTelegramStatusState('error')
+        }
+      } catch {
+        setTelegramEnabled(null)
+        setTelegramStatusState('error')
+      }
+    })().finally(() => {
+      telegramAvailabilityRequest.current = null
+    })
+    telegramAvailabilityRequest.current = request
+    return request
+  }, [clearInvalidToken])
+
   const refreshTelegramLinkStatus = useCallback(async () => {
+    if (telegramEnabled !== true) return
     const token = tokenRef.current
     if (!token) {
       setTelegramLinkStatus(notLinkedTelegramStatus)
@@ -225,9 +257,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setTelegramStatusState('error')
       throw error
     }
-  }, [clearInvalidToken])
+  }, [clearInvalidToken, telegramEnabled])
 
   const createTelegramLinkChallenge = useCallback((): Promise<TelegramLinkChallenge> => {
+    if (telegramEnabled !== true) {
+      return Promise.reject(new Error('Telegram notifications are unavailable'))
+    }
     if (telegramChallengeRequest.current) return telegramChallengeRequest.current
     const request = withProfile((token) => api.createTelegramLinkChallenge(token))
       .then((challenge) => {
@@ -245,7 +280,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       })
     telegramChallengeRequest.current = request
     return request
-  }, [withProfile])
+  }, [telegramEnabled, withProfile])
 
   const unlinkTelegram = useCallback((): Promise<void> => {
     if (telegramUnlinkRequest.current) return telegramUnlinkRequest.current
@@ -268,6 +303,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     watchEvents,
     telegramLinkStatus,
     telegramLinkChallenge,
+    telegramEnabled,
     telegramStatusState,
     status,
     invalidTokenRecovered,
@@ -288,6 +324,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     disableWatch: (universitySlug, programSlug) => mutateWatch(
       (token) => api.disableWatch(token, universitySlug, programSlug),
     ),
+    loadTelegramAvailability,
     createTelegramLinkChallenge,
     refreshTelegramLinkStatus,
     unlinkTelegram,
@@ -296,6 +333,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     data,
     hasProfileToken,
     invalidTokenRecovered,
+    loadTelegramAvailability,
     mutate,
     mutateWatch,
     retry,
@@ -305,6 +343,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     watches,
     telegramLinkChallenge,
     telegramLinkStatus,
+    telegramEnabled,
     telegramStatusState,
     unlinkTelegram,
   ])
