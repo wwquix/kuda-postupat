@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/bseu-program-import-candidates-1.0.json",
+  "title": "BSEU program import candidates audit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "university_code",
+    "source",
+    "derivation",
+    "candidates",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "university_code": { "const": "bseu" },
+    "source": { "$ref": "#/$defs/source" },
+    "derivation": { "$ref": "#/$defs/derivation" },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/candidate" }
+    },
+    "summary": { "$ref": "#/$defs/summary" }
+  },
+  "$defs": {
+    "nullableString": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "checked_at",
+        "http_status",
+        "source_updated_at",
+        "structure",
+        "scope"
+      ],
+      "properties": {
+        "url": { "const": "https://bseu.by/abiturient/xml/1.xml" },
+        "checked_at": { "type": "string", "format": "date-time" },
+        "http_status": { "const": 200 },
+        "source_updated_at": { "type": "string", "format": "date-time" },
+        "structure": { "const": "DATAPACKET/ROWDATA/ROW" },
+        "scope": { "const": "active_admission_competition_table" }
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_key_order",
+        "program_deduplication",
+        "offering_deduplication",
+        "study_form_mapping",
+        "funding_mapping"
+      ],
+      "properties": {
+        "candidate_key_order": {
+          "type": "array",
+          "minItems": 3,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "program_deduplication": { "type": "string", "minLength": 1 },
+        "offering_deduplication": { "type": "string", "minLength": 1 },
+        "study_form_mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["1", "2", "5", "6", "7"],
+          "properties": {
+            "1": { "const": "full_time" },
+            "2": { "const": "part_time" },
+            "5": { "const": "other" },
+            "6": { "const": "distance" },
+            "7": { "const": "other" }
+          }
+        },
+        "funding_mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["18", "19"],
+          "properties": {
+            "18": { "const": "budget" },
+            "19": { "const": "paid" }
+          }
+        }
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specialty_id", "faculty_id", "study_form_id", "funding_id"],
+      "properties": {
+        "specialty_id": { "type": "string", "pattern": "^[0-9]+$" },
+        "faculty_id": { "type": "string", "pattern": "^[0-9]+$" },
+        "study_form_id": { "enum": ["1", "2", "5", "6", "7"] },
+        "funding_id": { "enum": ["18", "19"] }
+      }
+    },
+    "programIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["match_key", "strategy", "source_spid"],
+      "properties": {
+        "match_key": { "$ref": "#/$defs/nullableString" },
+        "strategy": {
+          "enum": ["official_code", "university_and_normalized_name", "manual_review_required"]
+        },
+        "source_spid": { "type": "string", "pattern": "^[0-9]+$" }
+      }
+    },
+    "offeringIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "match_key",
+        "program_match_key",
+        "admission_year",
+        "study_form",
+        "funding_type"
+      ],
+      "properties": {
+        "match_key": { "$ref": "#/$defs/nullableString" },
+        "program_match_key": { "$ref": "#/$defs/nullableString" },
+        "admission_year": { "const": 2026 },
+        "study_form": { "enum": ["full_time", "part_time", "distance", "other"] },
+        "funding_type": { "enum": ["budget", "paid"] }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_key",
+        "source_identity",
+        "program_name",
+        "specialty_code",
+        "specialization_profile",
+        "faculty",
+        "study_form",
+        "funding_type",
+        "admission_year",
+        "admission_plan",
+        "official_source_url",
+        "supplemental_official_source_urls",
+        "source_checked_at",
+        "source_updated_at",
+        "status",
+        "reasons",
+        "warnings",
+        "proposed_program_identity",
+        "proposed_program_offering_identity"
+      ],
+      "properties": {
+        "candidate_key": { "type": "string", "pattern": "^bseu:2026:spid-[0-9]+:form-[0-9]+:funding-(18|19)$" },
+        "source_identity": { "$ref": "#/$defs/sourceIdentity" },
+        "program_name": { "type": "string", "minLength": 1 },
+        "specialty_code": { "$ref": "#/$defs/nullableString" },
+        "specialization_profile": { "$ref": "#/$defs/nullableString" },
+        "faculty": { "$ref": "#/$defs/nullableString" },
+        "study_form": { "type": "string", "minLength": 1 },
+        "funding_type": { "enum": ["budget", "paid"] },
+        "admission_year": { "const": 2026 },
+        "admission_plan": { "type": "integer", "minimum": 0 },
+        "official_source_url": { "const": "https://bseu.by/abiturient/xml/1.xml" },
+        "supplemental_official_source_urls": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "format": "uri", "pattern": "^https://bseu\\.by/" }
+        },
+        "source_checked_at": { "type": "string", "format": "date-time" },
+        "source_updated_at": { "type": "string", "format": "date-time" },
+        "status": { "enum": ["confirmed", "needs_review", "unavailable"] },
+        "reasons": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "warnings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "proposed_program_identity": { "$ref": "#/$defs/programIdentity" },
+        "proposed_program_offering_identity": { "$ref": "#/$defs/offeringIdentity" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_rows",
+        "unique_source_specialty_ids",
+        "unique_normalized_program_names",
+        "confirmed_program_identities",
+        "needs_review_source_specialty_ids",
+        "ambiguous_normalized_program_names",
+        "confirmed",
+        "needs_review",
+        "unavailable"
+      ],
+      "properties": {
+        "source_rows": { "type": "integer", "minimum": 0 },
+        "unique_source_specialty_ids": { "type": "integer", "minimum": 0 },
+        "unique_normalized_program_names": { "type": "integer", "minimum": 0 },
+        "confirmed_program_identities": { "type": "integer", "minimum": 0 },
+        "needs_review_source_specialty_ids": { "type": "integer", "minimum": 0 },
+        "ambiguous_normalized_program_names": { "type": "integer", "minimum": 0 },
+        "confirmed": { "type": "integer", "minimum": 0 },
+        "needs_review": { "type": "integer", "minimum": 0 },
+        "unavailable": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

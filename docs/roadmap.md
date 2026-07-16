@@ -56,6 +56,8 @@
 
 ## 5. Canonical university seed/import/audit
 
+- **Status:** M-BSEU-PROGRAM-SOURCE-AUDIT-01 complete: the active BSEU competition XML is audited as 77 offering rows, with 57 confirmed candidates across 17 unambiguous Program identities and 20 rows held for review. The next bounded milestone is M-BSEU-PROGRAM-IMPORT-01, limited to the confirmed tracked candidates in `docs/data/bseu-program-import-candidates.json`.
+
 - **Goal:** import the 47 audited canonical institutions with provenance and idempotent validation.
 - **In scope:** validated import CLI/service, codes/slugs, aliases/review flags, source provenance, repeatable seed tests.
 - **Out of scope:** deep research of unknown sources, program catalogs, new admission adapters, UI.

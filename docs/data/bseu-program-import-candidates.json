@@ -1,0 +1,3403 @@
+{
+  "schema_version": "1.0",
+  "university_code": "bseu",
+  "source": {
+    "url": "https://bseu.by/abiturient/xml/1.xml",
+    "checked_at": "2026-07-16T22:38:11+03:00",
+    "http_status": 200,
+    "source_updated_at": "2026-07-16T18:00:00+03:00",
+    "structure": "DATAPACKET/ROWDATA/ROW",
+    "scope": "active_admission_competition_table"
+  },
+  "derivation": {
+    "candidate_key_order": [
+      "source_identity.specialty_id",
+      "source_identity.study_form_id",
+      "source_identity.funding_id"
+    ],
+    "program_deduplication": "Use official code when sourced; otherwise university plus normalized name. Reject normalized-name collisions for manual review.",
+    "offering_deduplication": "Program plus admission year plus canonical study form plus funding type; retain source form and funding ids as evidence.",
+    "study_form_mapping": {
+      "1": "full_time",
+      "2": "part_time",
+      "5": "other",
+      "6": "distance",
+      "7": "other"
+    },
+    "funding_mapping": {
+      "18": "budget",
+      "19": "paid"
+    }
+  },
+  "candidates": [
+    {
+      "candidate_key": "bseu:2026:spid-5:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "5",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Государственное управление и экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=5, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|государственное управление и экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "5"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|государственное управление и экономика|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|государственное управление и экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-5:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "5",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Государственное управление и экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=5, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|государственное управление и экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "5"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|государственное управление и экономика|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|государственное управление и экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-6:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "6",
+        "faculty_id": "22",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Экономическая информатика",
+      "specialty_code": "6-05-0311-05",
+      "specialization_profile": null,
+      "faculty": "Цифровой экономики",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 25,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [
+        "https://bseu.by/russian/abiturient/tsp2026.pdf"
+      ],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=6, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture.",
+        "Official BSEU 2026 plan evidence confirms code 6-05-0311-05 for Economic Informatics."
+      ],
+      "warnings": [
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|code|6-05-0311-05",
+        "strategy": "official_code",
+        "source_spid": "6"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|code|6-05-0311-05|2026|full_time|budget",
+        "program_match_key": "bseu|code|6-05-0311-05",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-6:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "6",
+        "faculty_id": "22",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Экономическая информатика",
+      "specialty_code": "6-05-0311-05",
+      "specialization_profile": null,
+      "faculty": "Цифровой экономики",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 60,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [
+        "https://bseu.by/russian/abiturient/tsp2026.pdf"
+      ],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=6, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture.",
+        "Official BSEU 2026 plan evidence confirms code 6-05-0311-05 for Economic Informatics."
+      ],
+      "warnings": [
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|code|6-05-0311-05",
+        "strategy": "official_code",
+        "source_spid": "6"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|code|6-05-0311-05|2026|full_time|paid",
+        "program_match_key": "bseu|code|6-05-0311-05",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-17:form-6:funding-19",
+      "source_identity": {
+        "specialty_id": "17",
+        "faculty_id": "11",
+        "study_form_id": "6",
+        "funding_id": "19"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "\"Высшая школа управления и бизнеса\"",
+      "study_form": "заочная (дистанционная)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 30,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=17, frmid=6, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "17"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "distance",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-17:form-7:funding-19",
+      "source_identity": {
+        "specialty_id": "17",
+        "faculty_id": "11",
+        "study_form_id": "7",
+        "funding_id": "19"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "\"Высшая школа управления и бизнеса\"",
+      "study_form": "заочная сокращенная (на базе в/о)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=17, frmid=7, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (на базе в/о)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 7.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "17"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-18:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "18",
+        "faculty_id": "22",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Статистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Цифровой экономики",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 25,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=18, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|статистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "18"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|статистика|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|статистика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-33:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "33",
+        "faculty_id": "8",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Рекламная деятельность",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 15,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=33, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "33"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|рекламная деятельность",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-33:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "33",
+        "faculty_id": "8",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Рекламная деятельность",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 29,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=33, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "33"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|рекламная деятельность",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-33:form-2:funding-18",
+      "source_identity": {
+        "specialty_id": "33",
+        "faculty_id": "20",
+        "study_form_id": "2",
+        "funding_id": "18"
+      },
+      "program_name": "Рекламная деятельность",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=33, frmid=2, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "33"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность|2026|part_time|budget",
+        "program_match_key": "bseu|normalized-name|рекламная деятельность",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-33:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "33",
+        "faculty_id": "20",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Рекламная деятельность",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=33, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "33"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|рекламная деятельность",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-33:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "33",
+        "faculty_id": "20",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Рекламная деятельность",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=33, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "33"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|рекламная деятельность",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-33:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "33",
+        "faculty_id": "20",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Рекламная деятельность",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=33, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "33"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|рекламная деятельность|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|рекламная деятельность",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-60:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "60",
+        "faculty_id": "8",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Логистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 25,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=60, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|логистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "60"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|логистика|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|логистика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-60:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "60",
+        "faculty_id": "8",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Логистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 45,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=60, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|логистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "60"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|логистика|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|логистика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-60:form-2:funding-18",
+      "source_identity": {
+        "specialty_id": "60",
+        "faculty_id": "20",
+        "study_form_id": "2",
+        "funding_id": "18"
+      },
+      "program_name": "Логистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=60, frmid=2, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|логистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "60"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|логистика|2026|part_time|budget",
+        "program_match_key": "bseu|normalized-name|логистика",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-60:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "60",
+        "faculty_id": "20",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Логистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=60, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|логистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "60"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|логистика|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|логистика",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-60:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "60",
+        "faculty_id": "20",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Логистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 15,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=60, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|логистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "60"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|логистика|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|логистика",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-60:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "60",
+        "faculty_id": "20",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Логистика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 60,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=60, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|логистика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "60"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|логистика|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|логистика",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-64:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "64",
+        "faculty_id": "5",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Бизнес-администрирование",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=64, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|бизнес-администрирование",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "64"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|бизнес-администрирование|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|бизнес-администрирование",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-64:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "64",
+        "faculty_id": "5",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Бизнес-администрирование",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 30,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=64, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|бизнес-администрирование",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "64"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|бизнес-администрирование|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|бизнес-администрирование",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-64:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "64",
+        "faculty_id": "19",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Бизнес-администрирование",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=64, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|бизнес-администрирование",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "64"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|бизнес-администрирование|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|бизнес-администрирование",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-70:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "70",
+        "faculty_id": "5",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 25,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=70, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "70"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|экономика|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-70:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "70",
+        "faculty_id": "5",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 15,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=70, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "70"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|экономика|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-76:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "76",
+        "faculty_id": "15",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Политология",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Социально-экономический факультет",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=76, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|политология",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "76"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|политология|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|политология",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-76:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "76",
+        "faculty_id": "15",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Политология",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Социально-экономический факультет",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=76, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|политология",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "76"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|политология|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|политология",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-91:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "91",
+        "faculty_id": "5",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Мировая экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 35,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=91, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "91"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|мировая экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-91:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "91",
+        "faculty_id": "5",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Мировая экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 70,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=91, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "91"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|мировая экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-91:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "91",
+        "faculty_id": "19",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Мировая экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=91, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "91"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|мировая экономика",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-91:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "91",
+        "faculty_id": "19",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Мировая экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 9,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=91, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "91"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|мировая экономика",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-91:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "91",
+        "faculty_id": "19",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Мировая экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных экономических отношений",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 16,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=91, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "91"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|мировая экономика|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|мировая экономика",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-94:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "94",
+        "faculty_id": "2",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Финансы и кредит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Финансов и банковского дела",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 157,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=94, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "94"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|финансы и кредит",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-94:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "94",
+        "faculty_id": "2",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Финансы и кредит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Финансов и банковского дела",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 127,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=94, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "94"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|финансы и кредит",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-94:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "94",
+        "faculty_id": "17",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Финансы и кредит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Финансов и банковского дела",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 50,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=94, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "94"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|финансы и кредит",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-94:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "94",
+        "faculty_id": "17",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Финансы и кредит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Финансов и банковского дела",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 64,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=94, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "94"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|финансы и кредит",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-94:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "94",
+        "faculty_id": "17",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Финансы и кредит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Финансов и банковского дела",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 171,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=94, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "94"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|финансы и кредит|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|финансы и кредит",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-98:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "98",
+        "faculty_id": "9",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных бизнес-коммуникаций",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=98, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "98"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-98:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "98",
+        "faculty_id": "9",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Международных бизнес-коммуникаций",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 15,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=98, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "98"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-99:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "99",
+        "faculty_id": "15",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Социология",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Социально-экономический факультет",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=99, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|социология",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "99"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|социология|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|социология",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-99:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "99",
+        "faculty_id": "15",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Социология",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Социально-экономический факультет",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=99, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|социология",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "99"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|социология|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|социология",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-101:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "101",
+        "faculty_id": "6",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Правоведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Права",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 54,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=101, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 101, 143; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "101"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-101:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "101",
+        "faculty_id": "6",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Правоведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Права",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 71,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=101, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 101, 143; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "101"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-101:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "101",
+        "faculty_id": "23",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Правоведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Права",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 35,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=101, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5.",
+        "The same normalized program name occurs under source spid values 101, 143; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "101"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-101:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "101",
+        "faculty_id": "23",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Правоведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Права",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 40,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=101, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5.",
+        "The same normalized program name occurs under source spid values 101, 143; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "101"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-102:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "102",
+        "faculty_id": "8",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Маркетинг",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 60,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=102, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|маркетинг",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "102"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|маркетинг|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|маркетинг",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-102:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "102",
+        "faculty_id": "8",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Маркетинг",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 75,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=102, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|маркетинг",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "102"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|маркетинг|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|маркетинг",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-102:form-2:funding-18",
+      "source_identity": {
+        "specialty_id": "102",
+        "faculty_id": "20",
+        "study_form_id": "2",
+        "funding_id": "18"
+      },
+      "program_name": "Маркетинг",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=102, frmid=2, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|маркетинг",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "102"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|маркетинг|2026|part_time|budget",
+        "program_match_key": "bseu|normalized-name|маркетинг",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-102:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "102",
+        "faculty_id": "20",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Маркетинг",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=102, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|маркетинг",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "102"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|маркетинг|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|маркетинг",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-102:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "102",
+        "faculty_id": "20",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Маркетинг",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 30,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=102, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|маркетинг",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "102"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|маркетинг|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|маркетинг",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-102:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "102",
+        "faculty_id": "20",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Маркетинг",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Маркетинга и логистики",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 80,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=102, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|маркетинг",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "102"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|маркетинг|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|маркетинг",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-112:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "112",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Национальная экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 15,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=112, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|национальная экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "112"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|национальная экономика|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|национальная экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-112:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "112",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Национальная экономика",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 5,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=112, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|национальная экономика",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "112"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|национальная экономика|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|национальная экономика",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-119:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "119",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Менеджмент",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=119, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|менеджмент",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "119"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|менеджмент|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|менеджмент",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-119:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "119",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Менеджмент",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=119, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|менеджмент",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "119"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|менеджмент|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|менеджмент",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-133:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "133",
+        "faculty_id": "4",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Товароведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 34,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=133, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|товароведение",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "133"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|товароведение|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|товароведение",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-133:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "133",
+        "faculty_id": "4",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Товароведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=133, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|товароведение",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "133"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|товароведение|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|товароведение",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-133:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "133",
+        "faculty_id": "21",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Товароведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 10,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=133, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|товароведение",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "133"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|товароведение|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|товароведение",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-133:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "133",
+        "faculty_id": "21",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Товароведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 15,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=133, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|товароведение",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "133"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|товароведение|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|товароведение",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-134:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "134",
+        "faculty_id": "4",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Коммерция",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 48,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=134, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|коммерция",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "134"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|коммерция|2026|full_time|budget",
+        "program_match_key": "bseu|normalized-name|коммерция",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-134:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "134",
+        "faculty_id": "4",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Коммерция",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 52,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=134, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|коммерция",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "134"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|коммерция|2026|full_time|paid",
+        "program_match_key": "bseu|normalized-name|коммерция",
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-134:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "134",
+        "faculty_id": "21",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Коммерция",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 25,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=134, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|коммерция",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "134"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|коммерция|2026|part_time|paid",
+        "program_match_key": "bseu|normalized-name|коммерция",
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-134:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "134",
+        "faculty_id": "21",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Коммерция",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 35,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=134, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|коммерция",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "134"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|коммерция|2026|other|budget",
+        "program_match_key": "bseu|normalized-name|коммерция",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-134:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "134",
+        "faculty_id": "21",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Коммерция",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Коммерции и туристической индустрии",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 65,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "confirmed",
+      "reasons": [
+        "Official XML row key spid=134, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "The normalized program name occurs under exactly one source spid in the checked capture."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5."
+      ],
+      "proposed_program_identity": {
+        "match_key": "bseu|normalized-name|коммерция",
+        "strategy": "university_and_normalized_name",
+        "source_spid": "134"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": "bseu|normalized-name|коммерция|2026|other|paid",
+        "program_match_key": "bseu|normalized-name|коммерция",
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-139:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "139",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента; Коммерции и туристической индустрии",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 87,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=139, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "139"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-139:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "139",
+        "faculty_id": "1",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента; Коммерции и туристической индустрии",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 138,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=139, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "139"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-139:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "139",
+        "faculty_id": "16",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента; Коммерции и туристической индустрии",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 40,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=139, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "139"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-139:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "139",
+        "faculty_id": "16",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента; Коммерции и туристической индустрии",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 86,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=139, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "139"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-139:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "139",
+        "faculty_id": "16",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Экономики и менеджмента; Коммерции и туристической индустрии",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 138,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=139, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "139"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-140:form-1:funding-18",
+      "source_identity": {
+        "specialty_id": "140",
+        "faculty_id": "3",
+        "study_form_id": "1",
+        "funding_id": "18"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Учетно-экономический; Финансов и банковского дела",
+      "study_form": "дневная",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 155,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=140, frmid=1, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "140"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-140:form-1:funding-19",
+      "source_identity": {
+        "specialty_id": "140",
+        "faculty_id": "3",
+        "study_form_id": "1",
+        "funding_id": "19"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Учетно-экономический; Финансов и банковского дела",
+      "study_form": "дневная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 59,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=140, frmid=1, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "140"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "full_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-140:form-2:funding-19",
+      "source_identity": {
+        "specialty_id": "140",
+        "faculty_id": "18",
+        "study_form_id": "2",
+        "funding_id": "19"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Учетно-экономический",
+      "study_form": "заочная",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=140, frmid=2, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "140"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "part_time",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-140:form-5:funding-18",
+      "source_identity": {
+        "specialty_id": "140",
+        "faculty_id": "18",
+        "study_form_id": "5",
+        "funding_id": "18"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Учетно-экономический",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "budget",
+      "admission_year": 2026,
+      "admission_plan": 74,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=140, frmid=5, IDFINANCE=18 is unique in the checked capture.",
+        "Admission plan is taken from PlanBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "140"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "budget"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-140:form-5:funding-19",
+      "source_identity": {
+        "specialty_id": "140",
+        "faculty_id": "18",
+        "study_form_id": "5",
+        "funding_id": "19"
+      },
+      "program_name": "Бухгалтерский учет, анализ и аудит",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "Учетно-экономический",
+      "study_form": "заочная сокращенная (3 года)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 108,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=140, frmid=5, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (3 года)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 5.",
+        "The same normalized program name occurs under source spid values 17, 140; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "140"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-142:form-6:funding-19",
+      "source_identity": {
+        "specialty_id": "142",
+        "faculty_id": "11",
+        "study_form_id": "6",
+        "funding_id": "19"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "\"Высшая школа управления и бизнеса\"",
+      "study_form": "заочная (дистанционная)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 40,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=142, frmid=6, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "142"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "distance",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-142:form-7:funding-19",
+      "source_identity": {
+        "specialty_id": "142",
+        "faculty_id": "11",
+        "study_form_id": "7",
+        "funding_id": "19"
+      },
+      "program_name": "Экономика и управление",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "\"Высшая школа управления и бизнеса\"",
+      "study_form": "заочная сокращенная (на базе в/о)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 30,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=142, frmid=7, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (на базе в/о)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 7.",
+        "The same normalized program name occurs under source spid values 139, 142; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "142"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-143:form-6:funding-19",
+      "source_identity": {
+        "specialty_id": "143",
+        "faculty_id": "11",
+        "study_form_id": "6",
+        "funding_id": "19"
+      },
+      "program_name": "Правоведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "\"Высшая школа управления и бизнеса\"",
+      "study_form": "заочная (дистанционная)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=143, frmid=6, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The same normalized program name occurs under source spid values 101, 143; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "143"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "distance",
+        "funding_type": "paid"
+      }
+    },
+    {
+      "candidate_key": "bseu:2026:spid-143:form-7:funding-19",
+      "source_identity": {
+        "specialty_id": "143",
+        "faculty_id": "11",
+        "study_form_id": "7",
+        "funding_id": "19"
+      },
+      "program_name": "Правоведение",
+      "specialty_code": null,
+      "specialization_profile": null,
+      "faculty": "\"Высшая школа управления и бизнеса\"",
+      "study_form": "заочная сокращенная (на базе в/о)",
+      "funding_type": "paid",
+      "admission_year": 2026,
+      "admission_plan": 20,
+      "official_source_url": "https://bseu.by/abiturient/xml/1.xml",
+      "supplemental_official_source_urls": [],
+      "source_checked_at": "2026-07-16T22:38:11+03:00",
+      "source_updated_at": "2026-07-16T18:00:00+03:00",
+      "status": "needs_review",
+      "reasons": [
+        "Official XML row key spid=143, frmid=7, IDFINANCE=19 is unique in the checked capture.",
+        "Admission plan is taken from PlanVneBudj for the row's explicit funding code.",
+        "Program identity is blocked pending official evidence that resolves the normalized-name collision."
+      ],
+      "warnings": [
+        "The competition XML does not publish an official specialty code.",
+        "The competition XML does not publish a specialization or profile.",
+        "The exact official form \"заочная сокращенная (на базе в/о)\" has no dedicated canonical enum and is proposed as \"other\"; retain source form id 7.",
+        "The same normalized program name occurs under source spid values 101, 143; do not merge or split Program records without official code/profile evidence."
+      ],
+      "proposed_program_identity": {
+        "match_key": null,
+        "strategy": "manual_review_required",
+        "source_spid": "143"
+      },
+      "proposed_program_offering_identity": {
+        "match_key": null,
+        "program_match_key": null,
+        "admission_year": 2026,
+        "study_form": "other",
+        "funding_type": "paid"
+      }
+    }
+  ],
+  "summary": {
+    "source_rows": 77,
+    "unique_source_specialty_ids": 23,
+    "unique_normalized_program_names": 20,
+    "confirmed_program_identities": 17,
+    "needs_review_source_specialty_ids": 6,
+    "ambiguous_normalized_program_names": 3,
+    "confirmed": 57,
+    "needs_review": 20,
+    "unavailable": 0
+  }
+}
