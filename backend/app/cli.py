@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy.exc import SQLAlchemyError
 
 from .bseu_mapping import verify_bseu_backfill
+from .bseu_program_import import run_bseu_program_import
 from .catalog_audit_service import audit_catalog
 from .catalog_import_service import (
     CANONICAL_RESEARCH_PATH,
@@ -47,6 +48,22 @@ def _parser() -> argparse.ArgumentParser:
     import_command = commands.add_parser("import-university", help="import one verified university JSON")
     import_command.add_argument("path", type=Path, help="single-university JSON path")
     import_command.add_argument("--dry-run", action="store_true", help="validate and plan without writes")
+
+    bseu_programs = commands.add_parser(
+        "import-bseu-programs",
+        help="safely import the confirmed tracked BSEU Program and Offering audit",
+    )
+    bseu_programs.add_argument(
+        "--database",
+        type=Path,
+        required=True,
+        help="explicit path to an existing migrated SQLite database",
+    )
+    bseu_programs.add_argument(
+        "--apply",
+        action="store_true",
+        help="apply the import in one transaction (default: immutable dry-run)",
+    )
     return parser
 
 
@@ -57,6 +74,10 @@ def _print_summary(command: str, summary) -> None:  # type: ignore[no-untyped-de
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "import-bseu-programs":
+            summary = run_bseu_program_import(args.database, apply=args.apply)
+            _print_summary(args.command, summary)
+            return 0
         init_db()
         if args.command == "verify-bseu-backfill":
             with SessionLocal() as session:

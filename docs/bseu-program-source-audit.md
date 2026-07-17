@@ -151,6 +151,55 @@ Program «Экономическая информатика» и paid Offering, 
 Новые Offering не считать автоматически подключёнными к scheduler/Telegram:
 расширение мониторинга не входит в этот import milestone.
 
+## Безопасный запуск импорта
+
+Команда всегда требует явный путь к уже мигрированной SQLite. Без `--apply`
+она выполняет immutable dry-run и не изменяет файл базы:
+
+```powershell
+Set-Location backend
+..\.venv\Scripts\python.exe -m app.cli import-bseu-programs --database 'D:\backups\admission-copy.db'
+```
+
+Перед применением к production-копии нужно остановить сервис и сделать
+проверенную отдельную резервную копию SQLite вместе с актуальным WAL, если он
+существует. Запись включается только явным флагом:
+
+```powershell
+..\.venv\Scripts\python.exe -m app.cli import-bseu-programs --database 'D:\backups\admission-copy.db' --apply
+```
+
+Для production-style базы первый apply должен сообщить `confirmed_candidates=57`,
+`needs_review_skipped=20`, `program_identities_expected=17`,
+`programs_created=16`, `programs_reused=1`, `offerings_created=56`,
+`offerings_reused=1`, `conflicts=0`, `writes_applied=true`. Повторный apply
+должен показать 0 созданных, 17 переиспользованных Program и 57
+переиспользованных Offering.
+
+После apply проверяются целостность и точные итоговые количества:
+
+```powershell
+@'
+import sqlite3
+import sys
+
+with sqlite3.connect(sys.argv[1]) as connection:
+    print("integrity:", connection.execute("PRAGMA integrity_check").fetchone()[0])
+    print("foreign keys:", connection.execute("PRAGMA foreign_key_check").fetchall())
+    print("BSEU programs:", connection.execute(
+        "SELECT COUNT(*) FROM programs p JOIN universities u ON u.id=p.university_id WHERE u.code='bseu'"
+    ).fetchone()[0])
+    print("BSEU offerings:", connection.execute(
+        "SELECT COUNT(*) FROM program_offerings o JOIN programs p ON p.id=o.program_id "
+        "JOIN universities u ON u.id=p.university_id WHERE u.code='bseu'"
+    ).fetchone()[0])
+'@ | ..\.venv\Scripts\python.exe - 'D:\backups\admission-copy.db'
+```
+
+Ожидается `integrity: ok`, пустой `foreign keys: []`, 17 BSEU Program и 57
+BSEU ProgramOffering. Импортер не удаляет строки, не создаёт monitoring/source
+регистрации и откатывает всю транзакцию при любой коллизии.
+
 ## Использованные официальные свидетельства
 
 - текущий XML конкурсной ситуации: <https://bseu.by/abiturient/xml/1.xml>;
