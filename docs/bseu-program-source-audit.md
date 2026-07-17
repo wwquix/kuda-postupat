@@ -154,7 +154,7 @@ Program «Экономическая информатика» и paid Offering, 
 ## Безопасный запуск импорта
 
 Команда всегда требует явный путь к уже мигрированной SQLite. Без `--apply`
-она выполняет immutable dry-run и не изменяет файл базы:
+она выполняет read-only, WAL-aware dry-run по текущему committed-состоянию и не изменяет базу:
 
 ```powershell
 Set-Location backend

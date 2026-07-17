@@ -578,7 +578,7 @@ def _database_engine(database_path: Path, *, readonly: bool) -> Engine:
     if not resolved.is_file():
         raise CatalogValidationError(f"Database path must identify an existing SQLite file: {resolved}")
     if readonly:
-        uri = f"file:{resolved.as_posix()}?mode=ro&immutable=1"
+        uri = f"file:{resolved.as_posix()}?mode=ro"
 
         def connect_readonly() -> sqlite3.Connection:
             return sqlite3.connect(uri, uri=True, check_same_thread=False)
@@ -591,6 +591,8 @@ def _database_engine(database_path: Path, *, readonly: bool) -> Engine:
     def configure_sqlite(dbapi_connection, _connection_record):  # type: ignore[no-untyped-def]
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
+        if readonly:
+            cursor.execute("PRAGMA query_only=ON")
         cursor.close()
 
     return engine

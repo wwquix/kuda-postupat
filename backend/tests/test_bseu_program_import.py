@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from alembic import command
@@ -159,6 +160,52 @@ def production_database(tmp_path: Path) -> tuple[Path, dict[str, int]]:
     return database, _seed_preservation_relationships(database)
 
 
+@pytest.fixture
+def wal_production_database(tmp_path: Path):  # type: ignore[no-untyped-def]
+    database = tmp_path / "production-wal.db"
+    _upgrade(database)
+    keeper = sqlite3.connect(database)
+    try:
+        assert keeper.execute("PRAGMA journal_mode=WAL").fetchone() == ("wal",)
+        keeper.execute("PRAGMA wal_autocheckpoint=0")
+        program_id = keeper.execute("SELECT id FROM programs WHERE slug='economic-informatics'").fetchone()[0]
+        offering_id = keeper.execute(
+            """
+            SELECT id FROM program_offerings
+            WHERE program_id=? AND admission_year=2026
+              AND study_form='full_time' AND funding_type='paid'
+            """,
+            (program_id,),
+        ).fetchone()[0]
+        specialty_id = keeper.execute(
+            """
+            INSERT INTO specialties (
+                normalized_name, display_name, study_form, funding_type, source_url, active
+            ) VALUES (?, ?, ?, ?, ?, 1)
+            """,
+            (
+                "экономическая информатика",
+                "Экономическая информатика",
+                "дневная",
+                "платная",
+                "https://bseu.by/abiturient/xml/1.xml",
+            ),
+        ).lastrowid
+        keeper.execute(
+            """
+            INSERT INTO legacy_specialty_mappings (
+                legacy_specialty_id, program_id, program_offering_id, mapping_version, notes
+            ) VALUES (?, ?, ?, 1, 'committed WAL fixture')
+            """,
+            (specialty_id, program_id, offering_id),
+        )
+        keeper.commit()
+        assert database.with_name(f"{database.name}-wal").stat().st_size > 0
+        yield database, keeper
+    finally:
+        keeper.close()
+
+
 def _file_digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -214,6 +261,60 @@ def test_dry_run_is_default_and_performs_zero_sqlite_writes(fresh_database: Path
     assert _file_digest(fresh_database) == before_digest
     assert sorted(path.name for path in fresh_database.parent.iterdir()) == before_sidecars
     assert _counts(fresh_database) == (0, 0)
+
+
+def test_default_dry_run_reads_committed_wal_without_writes(
+    wal_production_database,  # type: ignore[no-untyped-def]
+) -> None:
+    database, keeper = wal_production_database
+    readonly_uri = f"file:{database.resolve().as_posix()}?mode=ro"
+    immutable_uri = f"{readonly_uri}&immutable=1"
+    with sqlite3.connect(immutable_uri, uri=True) as main_only:
+        assert main_only.execute(
+            "SELECT COUNT(*) FROM specialties WHERE normalized_name='экономическая информатика'"
+        ).fetchone() == (0,)
+        assert main_only.execute("SELECT COUNT(*) FROM legacy_specialty_mappings").fetchone() == (0,)
+    with sqlite3.connect(readonly_uri, uri=True) as wal_reader:
+        assert wal_reader.execute(
+            "SELECT COUNT(*) FROM specialties WHERE normalized_name='экономическая информатика'"
+        ).fetchone() == (1,)
+        assert wal_reader.execute("SELECT COUNT(*) FROM legacy_specialty_mappings").fetchone() == (1,)
+
+    before_dump = tuple(keeper.iterdump())
+    before_counts = _counts(database)
+    before_files = sorted(path.name for path in database.parent.glob(f"{database.name}*"))
+    main_digest = _file_digest(database)
+    wal_path = database.with_name(f"{database.name}-wal")
+    wal_digest = _file_digest(wal_path)
+
+    summary = run_bseu_program_import(database)
+
+    assert summary.as_dict() == {
+        "confirmed_candidates": 57,
+        "needs_review_skipped": 20,
+        "program_identities_expected": 17,
+        "programs_created": 16,
+        "programs_reused": 1,
+        "offerings_created": 56,
+        "offerings_reused": 1,
+        "conflicts": 0,
+        "writes_applied": False,
+    }
+    engine = importer._database_engine(database, readonly=True)
+    try:
+        with engine.connect() as connection:
+            assert connection.exec_driver_sql("PRAGMA query_only").scalar_one() == 1
+            assert connection.exec_driver_sql("PRAGMA foreign_keys").scalar_one() == 1
+            with pytest.raises(OperationalError, match="readonly"):
+                connection.exec_driver_sql("UPDATE programs SET name='must fail' WHERE slug='economic-informatics'")
+    finally:
+        engine.dispose()
+
+    assert tuple(keeper.iterdump()) == before_dump
+    assert _counts(database) == before_counts == (1, 1)
+    assert sorted(path.name for path in database.parent.glob(f"{database.name}*")) == before_files
+    assert _file_digest(database) == main_digest
+    assert _file_digest(wal_path) == wal_digest
 
 
 def test_fresh_database_creates_exact_scope_and_keeps_monitoring_reference_only(
