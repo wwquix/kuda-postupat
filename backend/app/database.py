@@ -3,6 +3,7 @@ from collections.abc import Generator
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
+from . import admission_requirement_models  # noqa: F401 -- register mapped tables at startup
 from .catalog_search import register_catalog_sqlite_functions
 from .config import get_settings, resolve_database_url
 from .schema import ensure_schema_current

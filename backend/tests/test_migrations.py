@@ -38,7 +38,8 @@ CORE = "0002_core_catalog_schema"
 BSEU_HEAD = "0003_backfill_bseu_catalog"
 PREVIOUS_HEAD = "0004_anonymous_admission_list"
 WATCH_HEAD = "0005_anonymous_program_watchlist"
-HEAD = "0006_telegram_watch_notifications"
+TELEGRAM_HEAD = "0006_telegram_watch_notifications"
+HEAD = "0007_admission_requirements_schema"
 LEGACY_TABLES = {
     "admission_snapshots",
     "http_cache_state",
@@ -61,6 +62,14 @@ TELEGRAM_WATCH_TABLES = {
     "telegram_profile_links",
     "telegram_link_challenges",
     "telegram_watch_deliveries",
+}
+ADMISSION_REQUIREMENT_TABLES = {
+    "admission_subjects",
+    "admission_requirement_sources",
+    "program_admission_requirement_sets",
+    "admission_requirement_subject_groups",
+    "admission_requirement_subject_options",
+    "admission_requirement_evidence_links",
 }
 LEGACY_COLUMNS = {
     "specialties": "id, normalized_name, display_name, study_form, funding_type, source_url, active",
@@ -245,6 +254,7 @@ def test_fresh_database_upgrade_head(tmp_path: Path) -> None:
         | PROFILE_TABLES
         | WATCH_TABLES
         | TELEGRAM_WATCH_TABLES
+        | ADMISSION_REQUIREMENT_TABLES
         | {"alembic_version"}
         == table_names(database)
     )
@@ -345,9 +355,9 @@ def test_upgrade_from_watch_head_adds_only_telegram_delivery_schema(tmp_path: Pa
             | WATCH_TABLES
         }
 
-    command.upgrade(config, HEAD)
+    command.upgrade(config, TELEGRAM_HEAD)
 
-    assert revision(database) == HEAD
+    assert revision(database) == TELEGRAM_HEAD
     assert table_names(database) == before_tables | TELEGRAM_WATCH_TABLES
     with sqlite3.connect(database) as connection:
         after_counts = {

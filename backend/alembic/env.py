@@ -4,6 +4,7 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 from app import (  # noqa: F401 -- registers all mapped tables
+    admission_requirement_models,
     catalog_models,
     profile_models,
     telegram_watch_models,

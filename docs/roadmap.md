@@ -80,7 +80,7 @@
 
 ## 7. Recommendations API v1
 
-- **Status:** M-RECOMMENDATIONS-01 и research-only M-BSEU-ADMISSION-SUBJECTS-AUDIT-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, а официальный аудит предметов 2026 подтверждает 17 Programs (`confirmed=17`, `needs_review=0`, `unavailable=0`) без импорта в БД. Следующий отдельный milestone — M-BSEU-ADMISSION-SUBJECTS-SCHEMA-IMPORT-DESIGN-01 для проектирования схемы и fail-closed импорта; M-COMPARE-01 завершён отдельным срезом раздела 8.
+- **Status:** M-RECOMMENDATIONS-01, research-only M-BSEU-ADMISSION-SUBJECTS-AUDIT-01 и M-ADMISSION-SUBJECTS-SCHEMA-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, официальный аудит 2026 подтверждает 17 Programs (`confirmed=17`, `needs_review=0`, `unavailable=0`), а migration `0007_admission_requirements_schema` создаёт только пустые нормализованные таблицы requirements/subjects/evidence. Audit data не импортированы, legacy `Program.admission_subjects_json` не изменён. Следующий отдельный milestone — `M-BSEU-ADMISSION-SUBJECTS-IMPORT-01`, идемпотентный fail-closed importer с dry-run; M-COMPARE-01 завершён отдельным срезом раздела 8.
 
 - **Goal:** implement a deterministic, explainable first recommendation service using canonical offerings.
 - **In scope:** request/output contract, required subject compatibility, filters/preferences, match/confidence/reasons/warnings/freshness, versioned API.

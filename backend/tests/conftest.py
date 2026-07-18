@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import Engine, create_engine, event
 
 from app import (  # noqa: F401 -- include every mapped table
+    admission_requirement_models,
     catalog_models,
     profile_models,
     telegram_watch_models,
