@@ -5,6 +5,10 @@ from pathlib import Path
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from .bseu_admission_subjects_import import (
+    AUDIT_PATH as BSEU_ADMISSION_SUBJECTS_AUDIT_PATH,
+)
+from .bseu_admission_subjects_import import run_bseu_admission_subjects_import
 from .bseu_mapping import verify_bseu_backfill
 from .bseu_program_import import run_bseu_program_import
 from .catalog_audit_service import audit_catalog
@@ -64,6 +68,26 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="apply the import in one transaction (default: immutable dry-run)",
     )
+
+    bseu_subjects = commands.add_parser(
+        "import-bseu-admission-subjects",
+        help="validate, plan or apply the audited 2026 BSEU admission requirements",
+    )
+    bseu_subjects.add_argument(
+        "--database",
+        type=Path,
+        required=True,
+        help="explicit path to an existing migration-0007 SQLite database",
+    )
+    bseu_subjects.add_argument(
+        "--audit-path",
+        type=Path,
+        default=BSEU_ADMISSION_SUBJECTS_AUDIT_PATH,
+        help="audited admission-requirements JSON path",
+    )
+    subject_mode = bseu_subjects.add_mutually_exclusive_group(required=True)
+    subject_mode.add_argument("--dry-run", action="store_true", help="show the complete read-only import plan")
+    subject_mode.add_argument("--apply", action="store_true", help="apply the complete plan in one transaction")
     return parser
 
 
@@ -74,6 +98,15 @@ def _print_summary(command: str, summary) -> None:  # type: ignore[no-untyped-de
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "import-bseu-admission-subjects":
+            mode = "apply" if args.apply else "dry-run"
+            summary = run_bseu_admission_subjects_import(
+                args.database,
+                mode=mode,
+                audit_path=args.audit_path,
+            )
+            _print_summary(args.command, summary)
+            return 0
         if args.command == "import-bseu-programs":
             summary = run_bseu_program_import(args.database, apply=args.apply)
             _print_summary(args.command, summary)
@@ -116,6 +149,10 @@ def main(argv: list[str] | None = None) -> int:
         payload: dict[str, object] = {"command": args.command, "status": "error", "error": str(exc)}
         if isinstance(exc, CatalogConflictError):
             payload["conflicts"] = exc.conflicts
+            payload["conflict_count"] = len(exc.conflicts)
+        if args.command == "import-bseu-admission-subjects":
+            payload["mode"] = "apply" if args.apply else "dry-run"
+            payload["transaction_committed"] = False
         print(json.dumps(payload, ensure_ascii=False, sort_keys=True), file=sys.stderr)
         return 2
     except SQLAlchemyError as exc:
