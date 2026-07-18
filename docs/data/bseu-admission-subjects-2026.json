@@ -1,0 +1,946 @@
+{
+  "schema_version": "1.0",
+  "university_code": "bseu",
+  "admission_year": 2026,
+  "checked_at": "2026-07-18T15:33:35+03:00",
+  "source_policy": {
+    "official_only": true,
+    "hierarchy": [
+      "Official BSEU pages and documents for the 2026 admission campaign",
+      "Official Belarusian government or education-authority documents only when BSEU relies on them or they define the applicable rule"
+    ],
+    "allowed_domains": [
+      "bseu.by"
+    ],
+    "local_scope_source": "docs/data/bseu-program-import-candidates.json",
+    "note": "The target set is derived only from the 17 confirmed imported BSEU Program identities; the 20 needs_review Offering candidates are excluded."
+  },
+  "sources": [
+    {
+      "source_id": "bseu-2026-admission-order",
+      "url": "https://bseu.by/russian/abiturient/pravila2026.pdf",
+      "title": "Порядок приема в учреждение образования «Белорусский государственный экономический университет» на 2026 год для получения общего высшего образования",
+      "publisher": "Белорусский государственный экономический университет",
+      "publication_or_admission_year": 2026,
+      "source_type": "official_regulation",
+      "checked_at": "2026-07-18T15:33:35+03:00",
+      "relevant_reference": "PDF pages 2–9: full-time, part-time full-track and shortened-track tables; page 10: targeted-training internal examination rule",
+      "evidence_note": "Defines the 2026 BSEU Program codes, applicable study tracks, profile subjects and whether assessment is ЦЭ/ЦТ or an internal written/oral examination.",
+      "content_sha256": "ee330c61eb31ea26ad7be73d037ae600fc326c0ecb08d0cd56688f2a3ac414dc"
+    },
+    {
+      "source_id": "bseu-2026-shortened-exams",
+      "url": "https://bseu.by/russian/abiturient/examslist.htm",
+      "title": "Предметы и программы вступительных испытаний для абитуриентов, поступающих в сокращенный срок заочной формы обучения",
+      "publisher": "Белорусский государственный экономический университет",
+      "publication_or_admission_year": 2026,
+      "source_type": "html",
+      "checked_at": "2026-07-18T15:33:35+03:00",
+      "relevant_reference": "Section «Перечень предметов вступительных испытаний ... в сокращенный срок в 2026 году»",
+      "evidence_note": "Corroborates the two written internal subjects for each 2026 part-time shortened-track specialty.",
+      "content_sha256": "8e71926fcadcd02028e9e223c77021c4c0c40f62df71bcff7d144c29d26ef699"
+    },
+    {
+      "source_id": "bseu-2026-target-specialties",
+      "url": "https://bseu.by/russian/abiturient/targ2026/specials.htm",
+      "title": "Перечень специальностей, по которым будет осуществляться набор абитуриентов на условиях целевой подготовки в 2026 году",
+      "publisher": "Белорусский государственный экономический университет",
+      "publication_or_admission_year": 2026,
+      "source_type": "html",
+      "checked_at": "2026-07-18T15:33:35+03:00",
+      "relevant_reference": "The nine-code BSEU target-training list for 2026",
+      "evidence_note": "Identifies which exact BSEU specialties use the targeted-training pathway in 2026; six are in the confirmed imported Program set.",
+      "content_sha256": "45b8abda5caf7c36f9a29dd84254dfbee3bc9b7df4842a1a977df2de321dc5fa"
+    }
+  ],
+  "requirement_definitions": [
+    {
+      "definition_id": "full-foreign-history-centralized",
+      "label": "Полный срок: язык по выбору, иностранный язык, история по варианту программы испытания",
+      "subject_groups": [
+        {
+          "group_key": "language",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "belarusian_language", "official_label_ru": "Белорусский язык", "official_label_be": null },
+            { "subject_key": "russian_language", "official_label_ru": "Русский язык", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": "Абитуриент выбирает один из двух языков."
+        },
+        {
+          "group_key": "profile_first",
+          "position": 2,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "foreign_language", "official_label_ru": "Иностранный язык", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": null
+        },
+        {
+          "group_key": "profile_second",
+          "position": 3,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "history_belarus", "official_label_ru": "История Беларуси", "official_label_be": null },
+            { "subject_key": "history_belarus_world_context", "official_label_ru": "История Беларуси в контексте всемирной истории", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": "Официальный порядок приводит варианты через косую черту; это одна позиция с выбором одного применимого варианта."
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"]
+    },
+    {
+      "definition_id": "full-math-foreign-centralized",
+      "label": "Полный срок: язык по выбору, математика, иностранный язык",
+      "subject_groups": [
+        {
+          "group_key": "language",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "belarusian_language", "official_label_ru": "Белорусский язык", "official_label_be": null },
+            { "subject_key": "russian_language", "official_label_ru": "Русский язык", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": "Абитуриент выбирает один из двух языков."
+        },
+        {
+          "group_key": "profile_first",
+          "position": 2,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "mathematics", "official_label_ru": "Математика", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": null
+        },
+        {
+          "group_key": "profile_second",
+          "position": 3,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "foreign_language", "official_label_ru": "Иностранный язык", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": null
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"]
+    },
+    {
+      "definition_id": "full-social-history-centralized",
+      "label": "Полный срок: язык по выбору, обществоведение, история по варианту программы испытания",
+      "subject_groups": [
+        {
+          "group_key": "language",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "belarusian_language", "official_label_ru": "Белорусский язык", "official_label_be": null },
+            { "subject_key": "russian_language", "official_label_ru": "Русский язык", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": "Абитуриент выбирает один из двух языков."
+        },
+        {
+          "group_key": "profile_first",
+          "position": 2,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "social_studies", "official_label_ru": "Обществоведение", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": null
+        },
+        {
+          "group_key": "profile_second",
+          "position": 3,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "history_belarus", "official_label_ru": "История Беларуси", "official_label_be": null },
+            { "subject_key": "history_belarus_world_context", "official_label_ru": "История Беларуси в контексте всемирной истории", "official_label_be": null }
+          ],
+          "assessment_form": "ce_or_ct",
+          "note": "Официальный порядок приводит варианты через косую черту; это одна позиция с выбором одного применимого варианта."
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"]
+    },
+    {
+      "definition_id": "shortened-economics-accounting-written",
+      "label": "Сокращенный срок: экономика организации и бухгалтерский учет",
+      "subject_groups": [
+        {
+          "group_key": "profile_first",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "organization_economics", "official_label_ru": "Экономика организации", "official_label_be": null }
+          ],
+          "assessment_form": "internal_written",
+          "note": null
+        },
+        {
+          "group_key": "profile_second",
+          "position": 2,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "accounting", "official_label_ru": "Бухгалтерский учет", "official_label_be": null }
+          ],
+          "assessment_form": "internal_written",
+          "note": null
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+    },
+    {
+      "definition_id": "shortened-economics-it-written",
+      "label": "Сокращенный срок: экономика организации и информационные технологии",
+      "subject_groups": [
+        {
+          "group_key": "profile_first",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "organization_economics", "official_label_ru": "Экономика организации", "official_label_be": null }
+          ],
+          "assessment_form": "internal_written",
+          "note": null
+        },
+        {
+          "group_key": "profile_second",
+          "position": 2,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "information_technology", "official_label_ru": "Информационные технологии", "official_label_be": null }
+          ],
+          "assessment_form": "internal_written",
+          "note": null
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+    },
+    {
+      "definition_id": "shortened-economics-management-written",
+      "label": "Сокращенный срок: экономика организации и основы менеджмента",
+      "subject_groups": [
+        {
+          "group_key": "profile_first",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "organization_economics", "official_label_ru": "Экономика организации", "official_label_be": null }
+          ],
+          "assessment_form": "internal_written",
+          "note": null
+        },
+        {
+          "group_key": "profile_second",
+          "position": 2,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "management_fundamentals", "official_label_ru": "Основы менеджмента", "official_label_be": null }
+          ],
+          "assessment_form": "internal_written",
+          "note": null
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+    },
+    {
+      "definition_id": "targeted-math-oral",
+      "label": "Целевая подготовка: одно устное внутреннее испытание по математике",
+      "subject_groups": [
+        {
+          "group_key": "profile_first",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "mathematics", "official_label_ru": "Математика", "official_label_be": null }
+          ],
+          "assessment_form": "internal_oral",
+          "note": "Для целевого приема проводится только первое профильное испытание в устной форме."
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+    },
+    {
+      "definition_id": "targeted-social-oral",
+      "label": "Целевая подготовка: одно устное внутреннее испытание по обществоведению",
+      "subject_groups": [
+        {
+          "group_key": "profile_first",
+          "position": 1,
+          "choose_count": 1,
+          "allowed_subjects": [
+            { "subject_key": "social_studies", "official_label_ru": "Обществоведение", "official_label_be": null }
+          ],
+          "assessment_form": "internal_oral",
+          "note": "Для целевого приема проводится только первое профильное испытание в устной форме."
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+    }
+  ],
+  "programs": [
+    {
+      "program_identity": "bseu|code|6-05-0311-05",
+      "source_specialty_id": "6",
+      "slug": "economic-informatics",
+      "existing_code": "6-05-0311-05",
+      "official_admission_code": "6-05-0311-05",
+      "imported_program_name": "Экономическая информатика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "economic-informatics-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"],
+      "audit_note": "Identity, imported name and existing code exactly match the 2026 BSEU admission-order row.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|бизнес-администрирование",
+      "source_specialty_id": "64",
+      "slug": "bseu-audit-19efc40dc770e97239ef",
+      "existing_code": null,
+      "official_admission_code": "6-05-0412-02",
+      "imported_program_name": "Бизнес-администрирование",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-19efc40dc770e97239ef-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-19efc40dc770e97239ef-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"],
+      "audit_note": "Exact imported name matches the 2026 admission-order row; the official code is evidence metadata and is not written to the existing Program.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|государственное управление и экономика",
+      "source_specialty_id": "5",
+      "slug": "bseu-audit-1741fba0b4b11363d345",
+      "existing_code": null,
+      "official_admission_code": "6-05-0414-03",
+      "imported_program_name": "Государственное управление и экономика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-1741fba0b4b11363d345-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"],
+      "audit_note": "Exact imported name matches the 2026 admission-order row; the official code is evidence metadata and is not written to the existing Program.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|коммерция",
+      "source_specialty_id": "134",
+      "slug": "bseu-audit-bc0d1a3d2f786f822cdd",
+      "existing_code": null,
+      "official_admission_code": "6-05-0413-01",
+      "imported_program_name": "Коммерция",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-bc0d1a3d2f786f822cdd-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-bc0d1a3d2f786f822cdd-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-bc0d1a3d2f786f822cdd-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-management-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"],
+      "audit_note": "Exact imported name matches separate full-time, part-time full-track and part-time shortened-track 2026 rows.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+      "source_specialty_id": "98",
+      "slug": "bseu-audit-f5d8350c39f06baaec18",
+      "existing_code": null,
+      "official_admission_code": "6-05-0231-03",
+      "imported_program_name": "Лингвистическое обеспечение межкультурной коммуникации (с указанием языков)",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-f5d8350c39f06baaec18-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок 4,5 года, общий конкурс.",
+          "requirement_definition_id": "full-foreign-history-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"],
+      "audit_note": "Exact imported name matches the 2026 admission-order row, including its explicitly longer 4.5-year full track.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|логистика",
+      "source_specialty_id": "60",
+      "slug": "bseu-audit-43018cb5ce021bbd2390",
+      "existing_code": null,
+      "official_admission_code": "6-05-0412-03",
+      "imported_program_name": "Логистика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-43018cb5ce021bbd2390-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-43018cb5ce021bbd2390-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-43018cb5ce021bbd2390-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-management-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"],
+      "audit_note": "Exact imported name matches separate full-time, part-time full-track and part-time shortened-track 2026 rows.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|маркетинг",
+      "source_specialty_id": "102",
+      "slug": "bseu-audit-fb1471d88f6ab5fd24e4",
+      "existing_code": null,
+      "official_admission_code": "6-05-0412-04",
+      "imported_program_name": "Маркетинг",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-fb1471d88f6ab5fd24e4-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-fb1471d88f6ab5fd24e4-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-fb1471d88f6ab5fd24e4-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-management-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"],
+      "audit_note": "Exact imported name matches separate full-time, part-time full-track and part-time shortened-track 2026 rows.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|менеджмент",
+      "source_specialty_id": "119",
+      "slug": "bseu-audit-c2be21d2bfb721221632",
+      "existing_code": null,
+      "official_admission_code": "6-05-0412-01",
+      "imported_program_name": "Менеджмент",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-c2be21d2bfb721221632-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"],
+      "audit_note": "Exact imported name matches the 2026 admission-order row; the official code is evidence metadata and is not written to the existing Program.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|мировая экономика",
+      "source_specialty_id": "91",
+      "slug": "bseu-audit-35c63d831f18ef79717f",
+      "existing_code": null,
+      "official_admission_code": "6-05-0311-03",
+      "imported_program_name": "Мировая экономика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-35c63d831f18ef79717f-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-35c63d831f18ef79717f-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-35c63d831f18ef79717f-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-management-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"],
+      "audit_note": "Exact imported name matches separate full-time, part-time full-track and part-time shortened-track 2026 rows.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|национальная экономика",
+      "source_specialty_id": "112",
+      "slug": "bseu-audit-ee77e7016f9230baa278",
+      "existing_code": null,
+      "official_admission_code": "6-05-0311-04",
+      "imported_program_name": "Национальная экономика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-ee77e7016f9230baa278-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order"],
+      "audit_note": "Exact imported name matches the 2026 admission-order row; the official code is evidence metadata and is not written to the existing Program.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|политология",
+      "source_specialty_id": "76",
+      "slug": "bseu-audit-cb1a1e8f1d37b5c4a3ef",
+      "existing_code": null,
+      "official_admission_code": "6-05-0312-01",
+      "imported_program_name": "Политология",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-cb1a1e8f1d37b5c4a3ef-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-social-history-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-cb1a1e8f1d37b5c4a3ef-2026-full-time-full-targeted",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "targeted_training",
+          "applicability": "Очная (дневная) форма, полный срок, конкурс на условиях целевой подготовки.",
+          "requirement_definition_id": "targeted-social-oral",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"],
+      "audit_note": "Exact imported name and official code occur in both the 2026 admission order and the targeted-training specialty list.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|рекламная деятельность",
+      "source_specialty_id": "33",
+      "slug": "bseu-audit-c4b1b5a787b87d6d7167",
+      "existing_code": null,
+      "official_admission_code": "6-05-0412-05",
+      "imported_program_name": "Рекламная деятельность",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-c4b1b5a787b87d6d7167-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-c4b1b5a787b87d6d7167-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-c4b1b5a787b87d6d7167-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-management-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"],
+      "audit_note": "Exact imported name matches separate full-time, part-time full-track and part-time shortened-track 2026 rows.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|социология",
+      "source_specialty_id": "99",
+      "slug": "bseu-audit-7224a03b48da1317b493",
+      "existing_code": null,
+      "official_admission_code": "6-05-0314-01",
+      "imported_program_name": "Социология",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-7224a03b48da1317b493-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-social-history-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-7224a03b48da1317b493-2026-full-time-full-targeted",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "targeted_training",
+          "applicability": "Очная (дневная) форма, полный срок, конкурс на условиях целевой подготовки.",
+          "requirement_definition_id": "targeted-social-oral",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"],
+      "audit_note": "Exact imported name and official code occur in both the 2026 admission order and the targeted-training specialty list.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|статистика",
+      "source_specialty_id": "18",
+      "slug": "bseu-audit-44913fb15a298183c9f4",
+      "existing_code": null,
+      "official_admission_code": "6-05-0541-01",
+      "imported_program_name": "Статистика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-44913fb15a298183c9f4-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-44913fb15a298183c9f4-2026-full-time-full-targeted",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "targeted_training",
+          "applicability": "Очная (дневная) форма, полный срок, конкурс на условиях целевой подготовки.",
+          "requirement_definition_id": "targeted-math-oral",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"],
+      "audit_note": "Exact imported name and official code occur in both the 2026 admission order and the targeted-training specialty list.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|товароведение",
+      "source_specialty_id": "133",
+      "slug": "bseu-audit-6696335e11964535fee1",
+      "existing_code": null,
+      "official_admission_code": "6-05-0413-02",
+      "imported_program_name": "Товароведение",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-6696335e11964535fee1-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-6696335e11964535fee1-2026-full-time-full-targeted",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "targeted_training",
+          "applicability": "Очная (дневная) форма, полный срок, конкурс на условиях целевой подготовки.",
+          "requirement_definition_id": "targeted-math-oral",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-6696335e11964535fee1-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-it-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams", "bseu-2026-target-specialties"],
+      "audit_note": "Exact imported name and official code match the full-time, shortened-track and targeted-training 2026 evidence.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|финансы и кредит",
+      "source_specialty_id": "94",
+      "slug": "bseu-audit-1c8fc360a736f58743a4",
+      "existing_code": null,
+      "official_admission_code": "6-05-0411-02",
+      "imported_program_name": "Финансы и кредит",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-1c8fc360a736f58743a4-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-1c8fc360a736f58743a4-2026-full-time-full-targeted",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "targeted_training",
+          "applicability": "Очная (дневная) форма, полный срок, конкурс на условиях целевой подготовки.",
+          "requirement_definition_id": "targeted-math-oral",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-1c8fc360a736f58743a4-2026-part-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "part_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-1c8fc360a736f58743a4-2026-part-time-shortened-standard",
+          "admission_year": 2026,
+          "education_basis": "corresponding_secondary_specialized_education",
+          "study_form": "part_time",
+          "track": "shortened",
+          "admission_pathway": "general_competition",
+          "applicability": "Заочная форма, сокращенный срок 3 года, на базе соответствующего среднего специального образования.",
+          "requirement_definition_id": "shortened-economics-accounting-written",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-shortened-exams", "bseu-2026-target-specialties"],
+      "audit_note": "Exact imported name and official code match full-time, part-time, shortened-track and targeted-training 2026 evidence.",
+      "review_reason": null
+    },
+    {
+      "program_identity": "bseu|normalized-name|экономика",
+      "source_specialty_id": "70",
+      "slug": "bseu-audit-f8e0600249e083dd93b0",
+      "existing_code": null,
+      "official_admission_code": "6-05-0311-01",
+      "imported_program_name": "Экономика",
+      "status": "confirmed",
+      "requirement_sets": [
+        {
+          "requirement_set_id": "bseu-audit-f8e0600249e083dd93b0-2026-full-time-full-standard",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "general_competition",
+          "applicability": "Очная (дневная) форма, полный срок, общий конкурс.",
+          "requirement_definition_id": "full-math-foreign-centralized",
+          "source_ids": ["bseu-2026-admission-order"]
+        },
+        {
+          "requirement_set_id": "bseu-audit-f8e0600249e083dd93b0-2026-full-time-full-targeted",
+          "admission_year": 2026,
+          "education_basis": "full_track_eligible_basis",
+          "study_form": "full_time",
+          "track": "full",
+          "admission_pathway": "targeted_training",
+          "applicability": "Очная (дневная) форма, полный срок, конкурс на условиях целевой подготовки.",
+          "requirement_definition_id": "targeted-math-oral",
+          "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"]
+        }
+      ],
+      "source_ids": ["bseu-2026-admission-order", "bseu-2026-target-specialties"],
+      "audit_note": "Exact imported name and official code occur in both the 2026 admission order and the targeted-training specialty list.",
+      "review_reason": null
+    }
+  ],
+  "summary": {
+    "target_programs": 17,
+    "confirmed": 17,
+    "needs_review": 0,
+    "unavailable": 0,
+    "requirement_sets": 37,
+    "requirement_definitions": 8,
+    "official_sources": 3
+  },
+  "review_items": []
+}

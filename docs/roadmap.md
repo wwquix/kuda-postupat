@@ -80,7 +80,7 @@
 
 ## 7. Recommendations API v1
 
-- **Status:** M-RECOMMENDATIONS-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, разделяют monitored status, catalog match и insufficient coverage, интегрированы с явным profile-score action и не создают вероятность поступления. Нормализованная совместимость предметов и расширение данных остаются отдельным будущим scope. M-COMPARE-01 завершён отдельным срезом раздела 8.
+- **Status:** M-RECOMMENDATIONS-01 и research-only M-BSEU-ADMISSION-SUBJECTS-AUDIT-01 complete: публичный `/recommendations` и `GET /api/recommendations` дают детерминированный подбор по фактически импортированным полям, а официальный аудит предметов 2026 подтверждает 17 Programs (`confirmed=17`, `needs_review=0`, `unavailable=0`) без импорта в БД. Следующий отдельный milestone — M-BSEU-ADMISSION-SUBJECTS-SCHEMA-IMPORT-DESIGN-01 для проектирования схемы и fail-closed импорта; M-COMPARE-01 завершён отдельным срезом раздела 8.
 
 - **Goal:** implement a deterministic, explainable first recommendation service using canonical offerings.
 - **In scope:** request/output contract, required subject compatibility, filters/preferences, match/confidence/reasons/warnings/freshness, versioned API.
