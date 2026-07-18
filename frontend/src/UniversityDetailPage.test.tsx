@@ -81,6 +81,78 @@ const bseu: UniversityDetail = {
   }],
 }
 
+const discoveryBseu: UniversityDetail = {
+  ...bseu,
+  program_count: 3,
+  offering_count: 5,
+  programs: [
+    {
+      ...bseu.programs[0],
+      offering_count: 2,
+      offerings: [
+        bseu.programs[0].offerings[0],
+        {
+          ...bseu.programs[0].offerings[0],
+          id: 2,
+          funding_type: 'budget',
+          places: 25,
+          monitoring_supported: false,
+          monitoring_status: 'reference_only',
+          official_url: 'https://bseu.by/programs/economic-informatics/budget',
+        },
+      ],
+    },
+    {
+      ...bseu.programs[0],
+      id: 2,
+      code: null,
+      slug: 'management',
+      name: 'Менеджмент',
+      qualification: null,
+      faculty_name: 'Факультет экономики и менеджмента',
+      official_url: 'https://bseu.by/programs/management',
+      offering_count: 2,
+      offerings: [
+        {
+          ...bseu.programs[0].offerings[0],
+          id: 3,
+          study_form: 'part_time',
+          monitoring_supported: false,
+          monitoring_status: 'reference_only',
+          official_url: 'https://bseu.by/programs/management/part-time',
+        },
+        {
+          ...bseu.programs[0].offerings[0],
+          id: 4,
+          funding_type: 'budget',
+          monitoring_supported: false,
+          monitoring_status: 'reference_only',
+          official_url: 'https://bseu.by/programs/management/budget',
+        },
+      ],
+    },
+    {
+      ...bseu.programs[0],
+      id: 3,
+      code: '6-05-0412-02',
+      slug: 'marketing',
+      name: 'Маркетинг',
+      qualification: null,
+      faculty_name: 'Факультет маркетинга и логистики',
+      official_url: 'https://bseu.by/programs/marketing',
+      offering_count: 1,
+      offerings: [{
+        ...bseu.programs[0].offerings[0],
+        id: 5,
+        study_form: 'distance',
+        monitoring_supported: false,
+        monitoring_status: 'unsupported',
+        official_url: 'https://bseu.by/programs/marketing/distance',
+      }],
+    },
+  ],
+}
+
 const noPrograms: UniversityDetail = {
   ...bseu,
   id: 2,
@@ -99,6 +171,7 @@ const noPrograms: UniversityDetail = {
 }
 
 const fetchMock = vi.fn<typeof fetch>()
+let bseuDetail = bseu
 
 function response(body: unknown, status = 200): Response {
   return {
@@ -122,8 +195,8 @@ function installApiMock() {
     const url = new URL(String(input), 'http://localhost')
     if (url.pathname === '/api/catalog/meta') return response(meta)
     if (url.pathname === '/api/universities') return response(catalogResponse(url))
-    if (url.pathname === '/api/universities/bseu') return response(bseu)
-    if (url.pathname === '/api/universities/bseu/programs/economic-informatics') return response(bseu.programs[0])
+    if (url.pathname === '/api/universities/bseu') return response(bseuDetail)
+    if (url.pathname === '/api/universities/bseu/programs/economic-informatics') return response(bseuDetail.programs[0])
     if (url.pathname === '/api/universities/brsu') return response(noPrograms)
     if (url.pathname === '/api/universities/slug-that-does-not-exist') return response({ detail: 'raw not found' }, 404)
     throw new Error(`Unexpected mocked request: ${url.pathname}`)
@@ -139,6 +212,7 @@ function SlugControls() {
   const navigate = useNavigate()
   return <div>
     <button onClick={() => navigate('/universities/bseu')} type="button">Тест: открыть БГЭУ</button>
+    <button onClick={() => navigate(-1)} type="button">Тест: назад</button>
   </div>
 }
 
@@ -151,6 +225,7 @@ function renderRoute(initialEntries: Parameters<typeof MemoryRouter>[0]['initial
 }
 
 beforeEach(() => {
+  bseuDetail = bseu
   fetchMock.mockReset()
   installApiMock()
   vi.stubGlobal('fetch', fetchMock)
@@ -181,6 +256,9 @@ describe('university detail states and honest rendering', () => {
     expect(screen.getByRole('heading', { name: /2026 · Дневная форма · Платная/ })).toBeInTheDocument()
     expect(screen.getByText('60 мест')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Live-мониторинг БГЭУ' })).toHaveAttribute('href', '/monitor')
+    expect(screen.getByRole('button', { name: `Сохранить — ${bseu.full_name}` })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: `Официальная страница программы «${bseu.programs[0].name}» (откроется в новой вкладке)` })).toHaveAttribute('href', bseu.programs[0].official_url)
+    expect(screen.getByRole('link', { name: 'Официальная страница набора 2026 (откроется в новой вкладке)' })).toHaveAttribute('href', bseu.programs[0].offerings[0].official_url)
     expect(container.querySelectorAll('h1')).toHaveLength(1)
     expect(screen.getByRole('link', { name: 'Экономическая информатика' })).toHaveAttribute(
       'href',
@@ -226,6 +304,74 @@ describe('university detail states and honest rendering', () => {
     expect(screen.queryByText('Специальностей нет')).not.toBeInTheDocument()
     expect(screen.queryByText(/Импортировано программ: 0/)).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Live-мониторинг БГЭУ' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Найти программу' })).not.toBeInTheDocument()
+  })
+})
+
+describe('program discovery URL filters', () => {
+  it('parses filters on initial load and shows only matching Programs and Offerings', async () => {
+    bseuDetail = discoveryBseu
+    renderRoute(['/universities/bseu?program_query=%D0%9C%D0%95%D0%9D%D0%95%D0%94%D0%96&study_form=part_time'])
+
+    expect(await screen.findByRole('heading', { name: 'Менеджмент' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Название или код')).toHaveValue('МЕНЕДЖ')
+    expect(screen.getByLabelText('Форма обучения')).toHaveValue('part_time')
+    expect(screen.queryByRole('heading', { name: 'Экономическая информатика' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /2026 · Заочная форма · Платная/ })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /2026 · Дневная форма · Бюджет/ })).not.toBeInTheDocument()
+    expect(screen.getByText('Показано: 1 программа из 3 · 1 вариант обучения из 5')).toBeInTheDocument()
+  })
+
+  it('updates compact URL parameters and derives only available filter options', async () => {
+    bseuDetail = discoveryBseu
+    const user = userEvent.setup()
+    renderRoute(['/universities/bseu?from=catalog'])
+    await screen.findByRole('heading', { name: 'Экономическая информатика' })
+
+    expect(screen.getByRole('option', { name: 'Дистанционная форма' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Вечерняя форма' })).not.toBeInTheDocument()
+    await user.selectOptions(screen.getByLabelText('Финансирование'), 'budget')
+    await waitFor(() => expect(screen.getByLabelText('Текущий маршрут')).toHaveTextContent(
+      '/universities/bseu?from=catalog&funding_type=budget',
+    ))
+    expect(screen.getByRole('heading', { name: 'Экономическая информатика' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Менеджмент' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Маркетинг' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Тест: назад' }))
+    await waitFor(() => expect(screen.getByLabelText('Текущий маршрут')).toHaveTextContent(
+      '/universities/bseu?from=catalog',
+    ))
+    expect(screen.getByRole('heading', { name: 'Маркетинг' })).toBeInTheDocument()
+  })
+
+  it('shows a distinct filtered empty state with one reset action and restores the full list', async () => {
+    bseuDetail = discoveryBseu
+    const user = userEvent.setup()
+    renderRoute(['/universities/bseu'])
+    await screen.findByRole('heading', { name: 'Экономическая информатика' })
+
+    await user.type(screen.getByLabelText('Название или код'), 'несуществующая программа')
+    expect(await screen.findByText('По выбранным условиям импортированные программы не найдены')).toBeInTheDocument()
+    expect(screen.queryByText('Каталог программ ещё не импортирован')).not.toBeInTheDocument()
+    const reset = screen.getByRole('button', { name: 'Сбросить фильтры' })
+    expect(screen.getAllByRole('button', { name: 'Сбросить фильтры' })).toHaveLength(1)
+    await user.click(reset)
+
+    expect(await screen.findByRole('heading', { name: 'Экономическая информатика' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Менеджмент' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Маркетинг' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Текущий маршрут')).toHaveTextContent('/universities/bseu')
+    expect(screen.getByText('Показано: 3 программы из 3 · 5 вариантов обучения из 5')).toBeInTheDocument()
+  })
+
+  it('drops unknown URL values without crashing or hiding imported Programs', async () => {
+    bseuDetail = discoveryBseu
+    renderRoute(['/universities/bseu?study_form=telepathy&funding_type=unknown&monitoring_status=missing'])
+
+    expect(await screen.findByRole('heading', { name: 'Экономическая информатика' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Менеджмент' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Маркетинг' })).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByLabelText('Текущий маршрут')).toHaveTextContent('/universities/bseu'))
   })
 })
 
