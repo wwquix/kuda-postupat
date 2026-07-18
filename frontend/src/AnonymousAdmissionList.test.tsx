@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
@@ -368,8 +368,13 @@ function installStorage() {
   return storage
 }
 
+function RouteProbe() {
+  const location = useLocation()
+  return <output aria-label="Текущий тестовый маршрут">{location.pathname}{location.search}</output>
+}
+
 function renderRoute(route: string, basename?: string) {
-  return render(<MemoryRouter basename={basename} initialEntries={[route]}><App /></MemoryRouter>)
+  return render(<MemoryRouter basename={basename} initialEntries={[route]}><App /><RouteProbe /></MemoryRouter>)
 }
 
 beforeEach(() => {
@@ -539,6 +544,81 @@ describe('/my-list behavior and truthful monitoring', () => {
       '/api/profile/telegram',
     ])
     expect(requestedUrls.some((url) => url.includes('/latest') || url.includes('score-distribution'))).toBe(false)
+  })
+
+  it('selects two saved Programs in user order and opens the canonical read-only comparison', async () => {
+    const user = userEvent.setup()
+    serverList = populatedList()
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    renderRoute('/my-list')
+
+    const compare = await screen.findByRole('button', { name: 'Сравнить выбранные программы' })
+    const economic = screen.getByRole('checkbox', { name: `Выбрать для сравнения — ${program.name} (${program.university.short_name})` })
+    const accounting = screen.getByRole('checkbox', { name: `Выбрать для сравнения — ${unsupportedProgram.name} (${unsupportedProgram.university.short_name})` })
+    expect(compare).toBeDisabled()
+    expect(screen.getByText('Выбрано 0 из 3')).toBeInTheDocument()
+
+    await user.click(accounting)
+    expect(compare).toBeDisabled()
+    expect(screen.getByText('Выбрано 1 из 3')).toBeInTheDocument()
+    await user.click(economic)
+    expect(compare).toBeEnabled()
+    expect(screen.getByText('Выбрано 2 из 3')).toBeInTheDocument()
+
+    expect(screen.getByRole('spinbutton', { name: 'Балл для поступления' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Включить наблюдение' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: `Удалить из списка — ${program.name}` })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Уведомления в Telegram' })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: program.name }).some((link) => (
+      link.getAttribute('href') === '/universities/bseu/programs/economic-informatics'
+    ))).toBe(true)
+
+    await user.click(compare)
+    await waitFor(() => expect(screen.getByLabelText('Текущий тестовый маршрут')).toHaveTextContent(
+      '/compare/programs?programs=alpha%3Aaccounting%2Cbseu%3Aeconomic-informatics',
+    ))
+  })
+
+  it('caps comparison at three Programs and re-enables controls after deselection', async () => {
+    const user = userEvent.setup()
+    const thirdProgram: ImportedProgram = {
+      ...unsupportedProgram,
+      id: 3,
+      slug: 'finance',
+      name: 'Финансы',
+    }
+    const fourthProgram: ImportedProgram = {
+      ...unsupportedProgram,
+      id: 4,
+      slug: 'marketing',
+      name: 'Маркетинг',
+    }
+    serverList = populatedList()
+    serverList = {
+      ...serverList,
+      programs: [
+        ...serverList.programs,
+        { ...serverList.programs[1], program: thirdProgram },
+        { ...serverList.programs[1], program: fourthProgram },
+      ],
+    }
+    localStorage.setItem(PROFILE_TOKEN_STORAGE_KEY, acceptedToken)
+    renderRoute('/my-list')
+
+    const first = await screen.findByRole('checkbox', { name: `Выбрать для сравнения — ${program.name} (${program.university.short_name})` })
+    const second = screen.getByRole('checkbox', { name: `Выбрать для сравнения — ${unsupportedProgram.name} (${unsupportedProgram.university.short_name})` })
+    const third = screen.getByRole('checkbox', { name: 'Выбрать для сравнения — Финансы (Альфа)' })
+    const fourth = screen.getByRole('checkbox', { name: 'Выбрать для сравнения — Маркетинг (Альфа)' })
+    await user.click(first)
+    await user.click(second)
+    await user.click(third)
+
+    expect(screen.getByText('Выбрано 3 из 3')).toBeInTheDocument()
+    expect(fourth).toBeDisabled()
+    expect(screen.getByText('Сначала снимите один из трёх выбранных вариантов.')).toBeInTheDocument()
+    await user.click(second)
+    expect(screen.getByText('Выбрано 2 из 3')).toBeInTheDocument()
+    expect(fourth).toBeEnabled()
   })
 
   it('enables and disables a watch only after confirmed backend responses', async () => {

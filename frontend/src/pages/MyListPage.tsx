@@ -1,9 +1,16 @@
-import { BellRing, LoaderCircle, RefreshCw, Send } from 'lucide-react'
+import { ArrowRightLeft, BellRing, LoaderCircle, RefreshCw, Send } from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { apiValueLabel } from '../catalogPresentation'
 import { SaveControl } from '../components/SaveControl'
+import {
+  MAX_COMPARED_PROGRAMS,
+  programComparisonPath,
+  programIdentityFor,
+  programIdentityKey,
+} from '../programComparison'
+import type { ProgramIdentity } from '../programComparison'
 import type { ProgramWatchEvent, SavedProgram, SavedUniversity } from '../types'
 import { useProfile } from '../useProfile'
 import { useDocumentTitle } from '../useDocumentTitle'
@@ -391,16 +398,36 @@ function WatchControl({
 }
 
 function SavedProgramCard({
+  comparisonDisabled,
+  comparisonSelected,
   item,
+  onComparisonChange,
   watchEnabled,
   personalScore,
 }: {
+  comparisonDisabled: boolean
+  comparisonSelected: boolean
   item: SavedProgram
+  onComparisonChange: () => void
   watchEnabled: boolean
   personalScore: number | null
 }) {
   const program = item.program
   return <article className="panel min-w-0 p-5 sm:p-6">
+    <label className={`mb-4 flex min-w-0 items-start gap-3 rounded-xl border p-3 font-bold ${comparisonSelected ? 'border-moss/35 bg-mint' : 'border-ink/10 bg-white'} ${comparisonDisabled ? 'cursor-not-allowed opacity-55' : 'cursor-pointer'}`}>
+      <input
+        aria-label={`Выбрать для сравнения — ${program.name} (${program.university.short_name})`}
+        checked={comparisonSelected}
+        className="mt-1 size-4 shrink-0 accent-moss"
+        disabled={comparisonDisabled}
+        onChange={onComparisonChange}
+        type="checkbox"
+      />
+      <span className="min-w-0 break-words">
+        {comparisonSelected ? 'Выбрано для сравнения' : 'Выбрать для сравнения'}
+        {comparisonDisabled && <span className="mt-1 block text-xs font-semibold text-ink/60">Сначала снимите один из трёх выбранных вариантов.</span>}
+      </span>
+    </label>
     <h3 className="break-words text-xl font-extrabold">
       <Link className="rounded-sm underline decoration-moss/35 decoration-2 underline-offset-4" to={`/universities/${encodeURIComponent(program.university.slug)}/programs/${encodeURIComponent(program.slug)}`}>
         {program.name}
@@ -479,6 +506,8 @@ function ChangeHistory({
 
 export function MyListPage() {
   const profile = useProfile()
+  const navigate = useNavigate()
+  const [comparisonSelectionState, setComparisonSelection] = useState<ProgramIdentity[]>([])
   useDocumentTitle('Мой список поступления · Куда поступать')
 
   const universities = profile.data?.universities ?? []
@@ -488,6 +517,22 @@ export function MyListPage() {
   const watchedPrograms = new Set(profile.watches.map((watch) => (
     `${watch.university.slug}:${watch.program.slug}`
   )))
+  const availableProgramKey = programs.map((item) => programIdentityKey(programIdentityFor(item.program))).join(',')
+  const availablePrograms = new Set(availableProgramKey.split(',').filter(Boolean))
+  const comparisonSelection = comparisonSelectionState.filter((identity) => (
+    availablePrograms.has(programIdentityKey(identity))
+  ))
+
+  const toggleComparison = (identity: ProgramIdentity) => {
+    const key = programIdentityKey(identity)
+    if (comparisonSelection.some((item) => programIdentityKey(item) === key)) {
+      setComparisonSelection(comparisonSelection.filter((item) => programIdentityKey(item) !== key))
+      return
+    }
+    if (comparisonSelection.length < MAX_COMPARED_PROGRAMS) {
+      setComparisonSelection([...comparisonSelection, identity])
+    }
+  }
 
   return <div className="min-w-0 bg-[linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
     <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
@@ -536,15 +581,37 @@ export function MyListPage() {
         <section aria-labelledby="saved-programs-title" className="min-w-0">
           <h2 className="text-3xl font-extrabold" id="saved-programs-title">Сохранённые программы</h2>
           {programs.length > 0
-            ? <div className="mt-5 grid min-w-0 gap-5">{programs.map((item) => {
-              const key = `${item.program.university.slug}:${item.program.slug}`
-              return <SavedProgramCard
-                item={item}
-                key={key}
-                personalScore={score}
-                watchEnabled={watchedPrograms.has(key)}
-              />
-            })}</div>
+            ? <>
+              <section aria-labelledby="program-comparison-selection-title" className="panel mt-5 min-w-0 p-5 sm:p-6">
+                <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <h3 className="text-xl font-extrabold" id="program-comparison-selection-title">Сравнить сохранённые программы</h3>
+                    <p aria-live="polite" className="mt-2 font-bold text-ink/65">Выбрано {comparisonSelection.length} из {MAX_COMPARED_PROGRAMS}</p>
+                  </div>
+                  <button
+                    className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={comparisonSelection.length < 2}
+                    onClick={() => navigate(programComparisonPath(comparisonSelection))}
+                    type="button"
+                  ><ArrowRightLeft aria-hidden="true" size={18} />Сравнить выбранные программы</button>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-ink/60">Выбор хранится только на этой странице до перехода; сравнение откроется по ссылке без сохранения нового состояния.</p>
+              </section>
+              <div className="mt-5 grid min-w-0 gap-5">{programs.map((item) => {
+                const identity = programIdentityFor(item.program)
+                const key = programIdentityKey(identity)
+                const selected = comparisonSelection.some((current) => programIdentityKey(current) === key)
+                return <SavedProgramCard
+                  comparisonDisabled={!selected && comparisonSelection.length >= MAX_COMPARED_PROGRAMS}
+                  comparisonSelected={selected}
+                  item={item}
+                  key={key}
+                  onComparisonChange={() => toggleComparison(identity)}
+                  personalScore={score}
+                  watchEnabled={watchedPrograms.has(key)}
+                />
+              })}</div>
+            </>
             : <p className="panel mt-5 p-5 text-ink/65">Сохранённых программ пока нет.</p>}
         </section>
 

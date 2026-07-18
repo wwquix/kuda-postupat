@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage'
 import { MyListPage } from './pages/MyListPage'
 import MonitorPage from './pages/MonitorPage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { ProgramComparePage } from './pages/ProgramComparePage'
 import { ProgramDetailPage } from './pages/ProgramDetailPage'
 import { RecommendationsPage } from './pages/RecommendationsPage'
 import { UniversityDetailPage } from './pages/UniversityDetailPage'
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="universities" element={<UniversitiesPage />} />
         <Route path="recommendations" element={<RecommendationsPage />} />
         <Route path="compare" element={<ComparePage />} />
+        <Route path="compare/programs" element={<ProgramComparePage />} />
         <Route path="universities/:universitySlug/programs/:programKey" element={<ProgramDetailPage />} />
         <Route path="universities/:slug" element={<UniversityDetailPage />} />
         <Route path="my-list" element={<MyListPage />} />
