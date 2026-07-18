@@ -143,7 +143,7 @@
 
 ## 12. University and program detail UI
 
-- **Status:** M-DETAIL-01, M-PROGRAM-DETAIL-01 and M-BSEU-PROGRAM-DISCOVERY-UI-01 are complete. University detail now provides reusable URL-backed search and Offering filters over imported Programs without changing API data, provenance, links, saved state or monitoring semantics. M-READINESS-AUDIT-01 confirmed that section 13 remains gated by missing roadmap prerequisites.
+- **Status:** M-DETAIL-01, M-PROGRAM-DETAIL-01, M-BSEU-PROGRAM-DISCOVERY-UI-01 and M-PROGRAM-OFFERING-CLARITY-UI-01 are complete. Program detail now summarizes and deterministically groups imported Offerings with per-Offering funding, monitoring and provenance clarity, using only the read-only API response; University discovery behavior remains unchanged. M-READINESS-AUDIT-01 confirmed that section 13 remains gated by missing roadmap prerequisites.
 
 - **Blocking repair:** M-DEV-SAFETY-01 is complete: `start-dev.ps1` uses an explicit side-effect-free development mode before Program detail work begins.
 

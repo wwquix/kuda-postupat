@@ -13,6 +13,15 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { api, ApiError } from '../api'
 import { apiValueLabel, formatCatalogDate } from '../catalogPresentation'
 import { SaveControl } from '../components/SaveControl'
+import {
+  formatOfferingCount,
+  formatPlaceCount,
+  formatStudyFormCount,
+  fundingTypeLabel,
+  groupOfferingsByStudyForm,
+  offeringMonitoringPresentation,
+  summarizeOfferings,
+} from '../programOfferingPresentation'
 import type { ImportedProgram, OfferingSummary } from '../types'
 import { useDocumentTitle } from '../useDocumentTitle'
 
@@ -42,21 +51,78 @@ function ExternalResourceLink({ href, label }: { href: string; label: string }) 
   >{label}<ExternalLink aria-hidden="true" size={16} /></a>
 }
 
-function OfferingCard({ offering }: { offering: OfferingSummary }) {
+function OfferingCard({
+  offering,
+  studyFormLabel,
+}: {
+  offering: OfferingSummary
+  studyFormLabel: string
+}) {
   const checkedAt = formatCatalogDate(offering.source_checked_at)
+  const fundingLabel = fundingTypeLabel(offering.funding_type)
+  const monitoring = offeringMonitoringPresentation(offering)
+  const identity = `${studyFormLabel}, ${offering.admission_year}, ${fundingLabel}`
   return <article className="min-w-0 rounded-2xl border border-ink/10 bg-cream/65 p-4 sm:p-5" aria-labelledby={`program-offering-${offering.id}`}>
-    <h3 className="break-words text-lg font-extrabold" id={`program-offering-${offering.id}`}>
-      {offering.admission_year} · {apiValueLabel(offering.study_form)} · {apiValueLabel(offering.funding_type)}
-    </h3>
-    <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-      {offering.places !== null && <div><dt className="font-semibold text-ink/50">План приёма</dt><dd className="mt-1">{offering.places} мест</dd></div>}
-      <div><dt className="font-semibold text-ink/50">Покрытие мониторинга</dt><dd className="mt-1">{apiValueLabel(offering.monitoring_status)}</dd></div>
+    <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
+      <h4 aria-label={`${studyFormLabel} · ${offering.admission_year} год`} className="min-w-0 break-words text-lg font-extrabold" id={`program-offering-${offering.id}`}>
+        {offering.admission_year} год
+      </h4>
+      <span className="max-w-full break-words rounded-full bg-moss px-3 py-1 text-sm font-extrabold text-white">{fundingLabel}</span>
+    </div>
+    <dl className="mt-4 grid min-w-0 gap-3 text-sm sm:grid-cols-2">
+      <div><dt className="font-semibold text-ink/50">Год приёма</dt><dd className="mt-1">{offering.admission_year}</dd></div>
+      <div><dt className="font-semibold text-ink/50">Финансирование</dt><dd className="mt-1 font-bold">{fundingLabel}</dd></div>
+      {offering.places !== null && <div><dt className="font-semibold text-ink/50">План приёма</dt><dd className="mt-1">{formatPlaceCount(offering.places)}</dd></div>}
       {checkedAt && <div><dt className="font-semibold text-ink/50">Источник проверен</dt><dd className="mt-1">{checkedAt}</dd></div>}
     </dl>
-    <div className="mt-4">
+    <section aria-label={`Мониторинг: ${identity}`} className={`mt-4 min-w-0 rounded-xl border p-4 ${monitoring.kind === 'live' ? 'border-moss/25 bg-moss/10' : 'border-ink/10 bg-white/70'}`}>
+      <h5 className="break-words font-extrabold">{monitoring.title}</h5>
+      <p className="mt-1 break-words text-sm leading-6 text-ink/65">{monitoring.description}</p>
+      {monitoring.kind === 'live' && <Link
+        aria-label={`Открыть live-мониторинг: ${identity}`}
+        className="mt-3 inline-flex max-w-full items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white"
+        to="/monitor"
+      ><RadioTower aria-hidden="true" className="shrink-0" size={17} /><span className="break-words">Открыть live-мониторинг</span></Link>}
+    </section>
+    <div className="mt-4 min-w-0">
       <ExternalResourceLink href={offering.official_url} label={`Официальная страница набора ${offering.admission_year}`} />
     </div>
   </article>
+}
+
+function OfferingSummary({ offerings }: { offerings: OfferingSummary[] }) {
+  const summary = summarizeOfferings(offerings)
+  return <section aria-labelledby="offering-summary-title" className="panel mt-5 min-w-0 p-5 sm:p-6">
+    <h3 className="text-xl font-extrabold" id="offering-summary-title">Кратко о вариантах</h3>
+    <dl className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="min-w-0 rounded-xl bg-cream p-4"><dt className="text-sm font-semibold text-ink/55">Импортировано</dt><dd className="mt-1 break-words text-lg font-extrabold">{formatOfferingCount(summary.total)}</dd></div>
+      {summary.budget > 0 && <div className="min-w-0 rounded-xl bg-cream p-4"><dt className="text-sm font-semibold text-ink/55">Бюджет</dt><dd className="mt-1 text-lg font-extrabold">{summary.budget}</dd></div>}
+      {summary.paid > 0 && <div className="min-w-0 rounded-xl bg-cream p-4"><dt className="text-sm font-semibold text-ink/55">Платно</dt><dd className="mt-1 text-lg font-extrabold">{summary.paid}</dd></div>}
+      <div className="min-w-0 rounded-xl bg-cream p-4">
+        <dt className="text-sm font-semibold text-ink/55">{formatStudyFormCount(summary.studyForms.length)}</dt>
+        <dd className="mt-1 break-words font-extrabold">{summary.studyForms.map(apiValueLabel).join(', ')}</dd>
+      </div>
+      {summary.live > 0 && <div className="min-w-0 rounded-xl bg-moss/10 p-4"><dt className="text-sm font-semibold text-ink/55">Live-мониторинг</dt><dd className="mt-1 text-lg font-extrabold">{summary.live}</dd></div>}
+    </dl>
+  </section>
+}
+
+function OfferingGroups({ offerings }: { offerings: OfferingSummary[] }) {
+  const groups = groupOfferingsByStudyForm(offerings)
+  return <div className="mt-5 grid min-w-0 gap-5">
+    {groups.map((group, index) => {
+      const groupId = `offering-group-${index}`
+      return <section aria-labelledby={groupId} className="panel min-w-0 p-5 sm:p-6" key={group.studyForm}>
+        <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+          <h3 className="min-w-0 break-words text-2xl font-extrabold" id={groupId}>{group.studyFormLabel}</h3>
+          <p className="shrink-0 font-bold text-ink/55">{formatOfferingCount(group.offerings.length)}</p>
+        </div>
+        <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-2">
+          {group.offerings.map((offering) => <OfferingCard key={offering.id} offering={offering} studyFormLabel={group.studyFormLabel} />)}
+        </div>
+      </section>
+    })}
+  </div>
 }
 
 function PageShell({ backTo, children }: { backTo: string; children: ReactNode }) {
@@ -133,9 +199,6 @@ export function ProgramDetailPage() {
   const program = current.data
   if (!program) return null
   const checkedAt = formatCatalogDate(program.verified_at ?? program.source_checked_at)
-  const hasLiveMonitoring = program.offerings.some(
-    (offering) => offering.monitoring_supported && offering.monitoring_status === 'online',
-  )
 
   return <div className="min-w-0 bg-[linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
     <PageShell backTo={backTo}>
@@ -172,7 +235,6 @@ export function ProgramDetailPage() {
           <div className="mt-5">
             <ExternalResourceLink href={program.official_url} label={`Официальная страница программы «${program.name}»`} />
           </div>
-          {hasLiveMonitoring && <Link className="mt-5 inline-flex items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white" to="/monitor"><RadioTower aria-hidden="true" size={18} />Live-мониторинг</Link>}
         </section>
       </div>
 
@@ -180,7 +242,7 @@ export function ProgramDetailPage() {
         <h2 className="text-3xl font-extrabold" id="offerings-title">Варианты обучения</h2>
         <p className="mt-3 max-w-3xl leading-7 text-ink/65">Показаны только варианты, уже импортированные платформой из сохранённых официальных источников.</p>
         {program.offerings.length > 0
-          ? <div className="panel mt-5 grid min-w-0 gap-4 p-5 sm:p-6">{program.offerings.map((offering) => <OfferingCard key={offering.id} offering={offering} />)}</div>
+          ? <><OfferingSummary offerings={program.offerings} /><OfferingGroups offerings={program.offerings} /></>
           : <div className="panel mt-5 p-6"><p className="font-bold">Варианты обучения ещё не импортированы</p><p className="mt-2 text-ink/65">Это описывает покрытие платформы, а не отсутствие реальных вариантов обучения.</p></div>}
       </section>
     </PageShell>

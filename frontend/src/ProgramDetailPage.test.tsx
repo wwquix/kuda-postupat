@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -52,7 +52,36 @@ const program: ImportedProgram = {
   coverage_state: 'available',
 }
 
+const multiFormProgram: ImportedProgram = {
+  ...program,
+  offering_count: 4,
+  offerings: [
+    {
+      ...program.offerings[1],
+      id: 4,
+      study_form: 'weekend',
+      funding_type: 'employer_grant',
+      monitoring_supported: false,
+      monitoring_status: 'experimental_mode',
+      official_url: 'https://bseu.by/offering-weekend',
+      source_url: 'https://bseu.by/offering-weekend',
+    },
+    {
+      ...program.offerings[1],
+      id: 3,
+      study_form: 'part_time',
+      monitoring_supported: false,
+      monitoring_status: 'reference_only',
+      official_url: 'https://bseu.by/offering-part-time',
+      source_url: 'https://bseu.by/offering-part-time',
+    },
+    program.offerings[0],
+    program.offerings[1],
+  ],
+}
+
 const fetchMock = vi.fn<typeof fetch>()
+let programDetail = program
 
 function response(body: unknown, status = 200): Response {
   return {
@@ -66,7 +95,7 @@ function response(body: unknown, status = 200): Response {
 function installApiMock() {
   fetchMock.mockImplementation(async (input) => {
     const url = new URL(String(input), 'http://localhost')
-    if (url.pathname === '/api/universities/bseu/programs/economic-informatics') return response(program)
+    if (url.pathname === '/api/universities/bseu/programs/economic-informatics') return response(programDetail)
     if (url.pathname === '/api/universities/bseu/programs/empty-program') {
       return response({ ...program, slug: 'empty-program', name: 'Программа без наборов', offering_count: 0, offerings: [] })
     }
@@ -96,6 +125,7 @@ function renderRoute(initialEntries: Parameters<typeof MemoryRouter>[0]['initial
 }
 
 beforeEach(() => {
+  programDetail = program
   fetchMock.mockReset()
   installApiMock()
   vi.stubGlobal('fetch', fetchMock)
@@ -121,10 +151,16 @@ describe('program detail states and honest rendering', () => {
     expect(await screen.findByRole('heading', { level: 1, name: program.name })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'БГЭУ' })).toHaveAttribute('href', '/universities/bseu')
     expect(screen.getByText(program.qualification as string)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '2025 · Дневная форма · Бюджет' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '2026 · Дневная форма · Платная' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Дневная форма' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Дневная форма · 2025 год' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Дневная форма · 2026 год' })).toBeInTheDocument()
     expect(screen.getByText('60 мест')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Live-мониторинг' })).toHaveAttribute('href', '/monitor')
+    expect(screen.getByRole('link', { name: 'Открыть live-мониторинг: Дневная форма, 2026, Платно' })).toHaveAttribute('href', '/monitor')
+    expect(screen.getByText('Вариант доступен в каталоге, но пока не отслеживается автоматически.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: `Сохранить — ${program.name}` })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: `Официальная страница программы «${program.name}» (откроется в новой вкладке)` })).toHaveAttribute('href', program.official_url)
+    expect(screen.getByRole('link', { name: 'Официальная страница набора 2025 (откроется в новой вкладке)' })).toHaveAttribute('href', program.offerings[0].official_url)
+    expect(screen.getByRole('link', { name: 'Официальная страница набора 2026 (откроется в новой вкладке)' })).toHaveAttribute('href', program.offerings[1].official_url)
     expect(screen.queryByText(/язык обучения/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/история/i)).not.toBeInTheDocument()
     expect(container.querySelectorAll('h1')).toHaveLength(1)
@@ -139,7 +175,8 @@ describe('program detail states and honest rendering', () => {
     expect(screen.getByText('Варианты обучения ещё не импортированы')).toBeInTheDocument()
     expect(screen.getByText(/не отсутствие реальных вариантов обучения/)).toBeInTheDocument()
     expect(screen.queryByText(/0 вариантов/)).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Live-мониторинг' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Кратко о вариантах' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /live-мониторинг/i })).not.toBeInTheDocument()
   })
 
   it('renders 404 separately from a retryable API failure', async () => {
@@ -164,6 +201,78 @@ describe('program detail states and honest rendering', () => {
     fail = false
     await user.click(screen.getByRole('button', { name: 'Повторить запрос' }))
     expect(await screen.findByRole('heading', { level: 1, name: program.name })).toBeInTheDocument()
+  })
+})
+
+describe('program offering clarity', () => {
+  it('keeps a one-Offering summary compact and omits zero-count categories', async () => {
+    programDetail = {
+      ...program,
+      offering_count: 1,
+      offerings: [program.offerings[1]],
+    }
+    renderRoute(['/universities/bseu/programs/economic-informatics'])
+
+    await screen.findByRole('heading', { level: 1, name: program.name })
+    const summary = screen.getByRole('region', { name: 'Кратко о вариантах' })
+    expect(within(summary).getByText('1 вариант')).toBeInTheDocument()
+    expect(within(summary).queryByText('Бюджет')).not.toBeInTheDocument()
+    expect(within(summary).getByText('Платно').nextElementSibling).toHaveTextContent('1')
+    expect(within(summary).getByText('1 форма').nextElementSibling).toHaveTextContent('Дневная форма')
+    expect(screen.getByRole('region', { name: 'Дневная форма' })).toHaveTextContent('1 вариант')
+  })
+
+  it('groups multiple Offerings in deterministic study-form order and keeps records distinct', async () => {
+    programDetail = multiFormProgram
+    renderRoute(['/universities/bseu/programs/economic-informatics'])
+
+    await screen.findByRole('heading', { level: 1, name: program.name })
+    const fullTime = screen.getByRole('region', { name: 'Дневная форма' })
+    const partTime = screen.getByRole('region', { name: 'Заочная форма' })
+    const weekend = screen.getByRole('region', { name: 'Weekend' })
+    expect(fullTime.compareDocumentPosition(partTime) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(partTime.compareDocumentPosition(weekend) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(within(fullTime).getAllByRole('article')).toHaveLength(2)
+    expect(within(partTime).getAllByRole('article')).toHaveLength(1)
+    expect(within(weekend).getAllByRole('article')).toHaveLength(1)
+
+    const summary = screen.getByRole('region', { name: 'Кратко о вариантах' })
+    expect(within(summary).getByText('4 варианта')).toBeInTheDocument()
+    expect(within(summary).getByText('Бюджет').nextElementSibling).toHaveTextContent('1')
+    expect(within(summary).getByText('Платно').nextElementSibling).toHaveTextContent('2')
+    expect(within(summary).getByText('Live-мониторинг').nextElementSibling).toHaveTextContent('1')
+    expect(within(summary).getByText('3 формы').nextElementSibling).toHaveTextContent('Дневная форма, Заочная форма, Weekend')
+  })
+
+  it('shows known plans only and scopes live monitoring to the matching Offering', async () => {
+    renderRoute(['/universities/bseu/programs/economic-informatics'])
+    await screen.findByRole('heading', { level: 1, name: program.name })
+
+    const referenceCard = screen.getByRole('link', {
+      name: 'Официальная страница набора 2025 (откроется в новой вкладке)',
+    }).closest('article')
+    const liveCard = screen.getByRole('link', {
+      name: 'Официальная страница набора 2026 (откроется в новой вкладке)',
+    }).closest('article')
+    expect(referenceCard).not.toBeNull()
+    expect(liveCard).not.toBeNull()
+    expect(within(referenceCard as HTMLElement).queryByText('План приёма')).not.toBeInTheDocument()
+    expect(within(referenceCard as HTMLElement).queryByText(/0 мест/)).not.toBeInTheDocument()
+    expect(within(referenceCard as HTMLElement).getByText('Только справочные данные')).toBeInTheDocument()
+    expect(within(referenceCard as HTMLElement).queryByRole('link', { name: /live-мониторинг/i })).not.toBeInTheDocument()
+    expect(within(liveCard as HTMLElement).getByText('60 мест')).toBeInTheDocument()
+    expect(within(liveCard as HTMLElement).getByRole('link', { name: /live-мониторинг/i })).toHaveAttribute('href', '/monitor')
+  })
+
+  it('uses existing labels for additional enum values and keeps their monitoring neutral', async () => {
+    programDetail = multiFormProgram
+    renderRoute(['/universities/bseu/programs/economic-informatics'])
+    await screen.findByRole('heading', { level: 1, name: program.name })
+
+    const weekendGroup = screen.getByRole('region', { name: 'Weekend' })
+    expect(within(weekendGroup).getAllByText('Employer grant').length).toBeGreaterThan(0)
+    expect(within(weekendGroup).getByText('Experimental mode')).toBeInTheDocument()
+    expect(within(weekendGroup).queryByRole('link', { name: /live-мониторинг/i })).not.toBeInTheDocument()
   })
 })
 
