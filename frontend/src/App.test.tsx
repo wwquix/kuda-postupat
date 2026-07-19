@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -12,6 +12,8 @@ import App from './App'
 import type { CollectorStatus, HealthStatus, PublicConfig, Snapshot } from './types'
 
 const liquidGlassStyles = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+const siteLayoutSource = readFileSync(resolve(process.cwd(), 'src/components/SiteLayout.tsx'), 'utf8')
+const monitorSource = readFileSync(resolve(process.cwd(), 'src/pages/MonitorPage.tsx'), 'utf8')
 
 vi.mock('recharts', () => {
   const ChartStub = ({ children }: { children?: ReactNode }) => <div>{children}</div>
@@ -316,7 +318,7 @@ describe('frontend shell routing', () => {
     expect(screen.getByRole('navigation', { name: 'Мобильная основная навигация' })).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('navigation', { name: 'Мобильная основная навигация' })).not.toBeInTheDocument()
+    await waitForElementToBeRemoved(() => screen.queryByRole('navigation', { name: 'Мобильная основная навигация' }))
     expect(screen.getByRole('button', { name: 'Открыть основную навигацию' })).toHaveFocus()
   })
 
@@ -361,14 +363,39 @@ describe('frontend shell routing', () => {
   it('defines readable glass fallbacks and independent reduced-effect modes', () => {
     expect(liquidGlassStyles).not.toContain('fonts.googleapis.com')
     expect(liquidGlassStyles).toContain('@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))')
-    expect(liquidGlassStyles).toContain('-webkit-backdrop-filter: blur(18px) saturate(150%)')
-    expect(liquidGlassStyles).toContain('backdrop-filter: blur(26px) saturate(155%)')
+    expect(liquidGlassStyles).toContain('--material-compact: rgb(255 255 255 / 0.58)')
+    expect(liquidGlassStyles).toContain('--material-strong: rgb(255 255 255 / 0.64)')
+    expect(liquidGlassStyles).toContain('-webkit-backdrop-filter: blur(22px) saturate(170%)')
+    expect(liquidGlassStyles).toContain('backdrop-filter: blur(30px) saturate(165%)')
     expect(liquidGlassStyles).toContain('@media (prefers-reduced-motion: reduce)')
     expect(liquidGlassStyles).toContain('@media (prefers-reduced-transparency: reduce)')
     expect(liquidGlassStyles).toContain('@media (prefers-contrast: more)')
-    expect(liquidGlassStyles).toMatch(/\.glass-surface--compact[\s\S]*bg-elevated\/\[0\.96\]/)
-    expect(liquidGlassStyles).toMatch(/\.pressable:active \{ transform: scale\(0\.98\); \}/)
+    expect(liquidGlassStyles).toContain('background: var(--material-solid)')
+    expect(liquidGlassStyles).toContain('background: rgb(255 255 255 / 0.98)')
+    expect(liquidGlassStyles).toContain('button, select { min-height: 2.75rem')
     expect(liquidGlassStyles).toContain('min-height: 100vh')
     expect(liquidGlassStyles).toContain('overflow-x: clip')
+  })
+
+  it('keeps active navigation distinct from focus and uses restrained motion primitives', () => {
+    expect(liquidGlassStyles).toContain('.site-nav-link--active { @apply bg-text-primary/[0.065] text-text-primary; }')
+    expect(liquidGlassStyles).toContain('outline: 3px solid var(--color-focus)')
+    expect(liquidGlassStyles).toContain('--ease-out: cubic-bezier(0.23, 1, 0.32, 1)')
+    expect(liquidGlassStyles).toContain('--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)')
+    expect(liquidGlassStyles).toContain('--ease-drawer: cubic-bezier(0.32, 0.72, 0, 1)')
+    expect(liquidGlassStyles).not.toContain('transition: all')
+    expect(liquidGlassStyles).not.toMatch(/\bease-in\b(?!-out)/)
+    expect(liquidGlassStyles).not.toContain('scale(0)')
+    expect(siteLayoutSource).toContain("from 'motion/react'")
+    expect(siteLayoutSource).toContain("'scale(0.985)'")
+    expect(siteLayoutSource).toContain('useReducedMotion()')
+  })
+
+  it('keeps chart data static and uses semantic neutral chart colors', () => {
+    expect(monitorSource.match(/isAnimationActive=\{false\}/g)).toHaveLength(4)
+    expect(monitorSource).toContain("observed: 'var(--chart-observed)'")
+    expect(monitorSource).toContain("projected: 'var(--chart-projected)'")
+    expect(monitorSource).not.toContain('#19664a')
+    expect(monitorSource).not.toContain('#d99b35')
   })
 })

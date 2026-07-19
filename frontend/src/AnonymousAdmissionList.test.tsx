@@ -535,15 +535,17 @@ describe('/my-list behavior and truthful monitoring', () => {
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getAllByText('Мониторинг пока недоступен').length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: 'Подробнее в мониторе' })).toHaveAttribute('href', '/monitor')
-    const requestedUrls = fetchMock.mock.calls.map(([input]) => String(input))
-    expect(requestedUrls).toEqual([
-      '/api/profile/saved',
-      '/api/profile/watches',
-      '/api/profile/watch-events',
-      '/api/config',
-      '/api/profile/telegram',
-    ])
-    expect(requestedUrls.some((url) => url.includes('/latest') || url.includes('score-distribution'))).toBe(false)
+    await waitFor(() => {
+      const requestedUrls = fetchMock.mock.calls.map(([input]) => String(input))
+      expect(requestedUrls).toEqual([
+        '/api/profile/saved',
+        '/api/profile/watches',
+        '/api/profile/watch-events',
+        '/api/config',
+        '/api/profile/telegram',
+      ])
+      expect(requestedUrls.some((url) => url.includes('/latest') || url.includes('score-distribution'))).toBe(false)
+    })
   })
 
   it('selects two saved Programs in user order and opens the canonical read-only comparison', async () => {

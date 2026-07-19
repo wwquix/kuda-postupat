@@ -46,7 +46,7 @@ function catalogReturnDestination(state: unknown) {
 function ExternalResourceLink({ href, label }: { href: string; label: string }) {
   return <a
     aria-label={`${label} (откроется в новой вкладке)`}
-    className="inline-flex items-center gap-1.5 rounded-sm font-bold text-moss underline decoration-moss/30 underline-offset-4 hover:decoration-moss"
+    className="inline-flex items-center gap-1.5 rounded-sm font-bold text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent"
     href={href}
     rel="noreferrer"
     target="_blank"
@@ -55,14 +55,14 @@ function ExternalResourceLink({ href, label }: { href: string; label: string }) 
 
 function OfferingCard({ offering }: { offering: OfferingSummary }) {
   const checkedAt = formatCatalogDate(offering.source_checked_at)
-  return <section className="min-w-0 rounded-2xl border border-ink/10 bg-cream/65 p-4" aria-labelledby={`offering-${offering.id}`}>
-    <h4 className="break-words font-extrabold" id={`offering-${offering.id}`}>
+  return <section className="min-w-0 rounded-2xl border border-text-primary/10 bg-background/65 p-4" aria-labelledby={`offering-${offering.id}`}>
+    <h4 className="break-words font-semibold" id={`offering-${offering.id}`}>
       {offering.admission_year} · {apiValueLabel(offering.study_form)} · {apiValueLabel(offering.funding_type)}
     </h4>
-    <dl className="mt-3 grid gap-2 text-sm text-ink/70 sm:grid-cols-2">
-      {offering.places !== null && <div><dt className="font-semibold text-ink/50">План приёма</dt><dd>{offering.places} мест</dd></div>}
-      <div><dt className="font-semibold text-ink/50">Статус платформы</dt><dd>{apiValueLabel(offering.monitoring_status)}</dd></div>
-      {checkedAt && <div><dt className="font-semibold text-ink/50">Источник проверен</dt><dd>{checkedAt}</dd></div>}
+    <dl className="mt-3 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
+      {offering.places !== null && <div><dt className="font-semibold text-text-tertiary">План приёма</dt><dd>{offering.places} мест</dd></div>}
+      <div><dt className="font-semibold text-text-tertiary">Статус платформы</dt><dd>{apiValueLabel(offering.monitoring_status)}</dd></div>
+      {checkedAt && <div><dt className="font-semibold text-text-tertiary">Источник проверен</dt><dd>{checkedAt}</dd></div>}
     </dl>
     <div className="mt-4">
       <ExternalResourceLink href={offering.official_url} label={`Официальная страница набора ${offering.admission_year}`} />
@@ -87,10 +87,10 @@ function ProgramCard({
     <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         {program.code && <div className="eyebrow">{program.code}</div>}
-        <h3 className="mt-2 break-words text-xl font-extrabold" id={`program-${program.id}`}>
+        <h3 className="mt-2 break-words text-xl font-semibold" id={`program-${program.id}`}>
           {programSlug
             ? <Link
-              className="rounded-sm text-moss underline decoration-moss/25 underline-offset-4 hover:decoration-moss"
+              className="rounded-sm text-accent underline decoration-accent/25 underline-offset-4 hover:decoration-accent"
               state={{ universityReturnTo }}
               to={`/universities/${encodeURIComponent(universitySlug)}/programs/${encodeURIComponent(programSlug)}`}
             >{program.name}</Link>
@@ -100,15 +100,15 @@ function ProgramCard({
       <ExternalResourceLink href={program.official_url} label={`Официальная страница программы «${program.name}»`} />
     </div>
     <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-      {program.qualification && <div><dt className="font-semibold text-ink/50">Квалификация</dt><dd className="mt-1 break-words">{program.qualification}</dd></div>}
-      {program.faculty_name && <div><dt className="font-semibold text-ink/50">Подразделение</dt><dd className="mt-1 break-words">{program.faculty_name}</dd></div>}
-      {program.education_level && <div><dt className="font-semibold text-ink/50">Уровень образования</dt><dd className="mt-1">{program.education_level}</dd></div>}
-      {program.duration_years !== null && <div><dt className="font-semibold text-ink/50">Продолжительность</dt><dd className="mt-1">{program.duration_years} года</dd></div>}
-      {checkedAt && <div><dt className="font-semibold text-ink/50">Данные проверены</dt><dd className="mt-1">{checkedAt}</dd></div>}
+      {program.qualification && <div><dt className="font-semibold text-text-tertiary">Квалификация</dt><dd className="mt-1 break-words">{program.qualification}</dd></div>}
+      {program.faculty_name && <div><dt className="font-semibold text-text-tertiary">Подразделение</dt><dd className="mt-1 break-words">{program.faculty_name}</dd></div>}
+      {program.education_level && <div><dt className="font-semibold text-text-tertiary">Уровень образования</dt><dd className="mt-1">{program.education_level}</dd></div>}
+      {program.duration_years !== null && <div><dt className="font-semibold text-text-tertiary">Продолжительность</dt><dd className="mt-1">{program.duration_years} года</dd></div>}
+      {checkedAt && <div><dt className="font-semibold text-text-tertiary">Данные проверены</dt><dd className="mt-1">{checkedAt}</dd></div>}
     </dl>
     {offerings.length > 0
-      ? <div className="mt-5 grid gap-3"><h4 className="text-lg font-extrabold">Импортированные наборы</h4>{offerings.map((offering) => <OfferingCard key={offering.id} offering={offering} />)}</div>
-      : <p className="mt-5 rounded-2xl bg-cream p-4 font-semibold text-ink/70">Наборы для этой программы ещё не импортированы платформой.</p>}
+      ? <div className="mt-5 grid gap-3"><h4 className="text-lg font-semibold">Импортированные наборы</h4>{offerings.map((offering) => <OfferingCard key={offering.id} offering={offering} />)}</div>
+      : <p className="mt-5 rounded-2xl bg-background p-4 font-semibold text-text-secondary">Наборы для этой программы ещё не импортированы платформой.</p>}
   </article>
 }
 
@@ -128,15 +128,15 @@ function ProgramDiscoveryPanel({
   onReset: () => void
 }) {
   const active = hasProgramDiscoveryFilters(query)
-  const selectClassName = 'mt-2 min-h-11 w-full min-w-0 rounded-xl border border-ink/15 bg-white px-3 py-2.5 text-ink'
+  const selectClassName = 'field-control mt-2 w-full'
   return <section aria-labelledby="program-discovery-title" className="panel mt-5 min-w-0 p-5 sm:p-6">
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
-        <h3 className="text-xl font-extrabold" id="program-discovery-title">Найти программу</h3>
-        <p className="mt-1 text-sm leading-6 text-ink/65">Поиск работает по названию и коду специальности; фильтры применяются к вариантам обучения.</p>
+        <h3 className="text-xl font-semibold" id="program-discovery-title">Найти программу</h3>
+        <p className="mt-1 text-sm leading-6 text-text-secondary">Поиск работает по названию и коду специальности; фильтры применяются к вариантам обучения.</p>
       </div>
       {hasResults && <button
-        className="min-h-11 shrink-0 rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss disabled:cursor-not-allowed disabled:opacity-45"
+        className="min-h-11 shrink-0 rounded-xl border border-accent/25 bg-white px-4 py-2.5 font-bold text-accent disabled:cursor-not-allowed disabled:opacity-45"
         disabled={!active}
         onClick={onReset}
         type="button"
@@ -177,16 +177,16 @@ function ProgramDiscoveryPanel({
         </select>
       </label>
     </div>
-    <p aria-live="polite" className="mt-5 break-words font-bold text-ink/70">{resultSummary}</p>
+    <p aria-live="polite" className="mt-5 break-words font-bold text-text-secondary">{resultSummary}</p>
   </section>
 }
 
 function LoadingState({ returnTo }: { returnTo: string }) {
-  return <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
-    <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-moss" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
+  return <div className="page-container py-10 lg:py-14">
+    <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-accent" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
     <div aria-labelledby="detail-loading-title" aria-live="polite" className="panel mt-6 p-7" role="status">
-      <h1 className="text-2xl font-extrabold" id="detail-loading-title">Загружаем страницу вуза…</h1>
-      <p className="mt-2 text-ink/65">Получаем сохранённые сведения и покрытие платформы.</p>
+      <h1 className="text-2xl font-semibold" id="detail-loading-title">Загружаем страницу вуза…</h1>
+      <p className="mt-2 text-text-secondary">Получаем сохранённые сведения и покрытие платформы.</p>
     </div>
   </div>
 }
@@ -242,19 +242,19 @@ export function UniversityDetailPage() {
   if (current.status === 'loading') return <LoadingState returnTo={returnTo} />
 
   if (current.status === 'not_found') return <div className="mx-auto max-w-4xl px-5 py-10 lg:px-8 lg:py-14">
-    <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-moss" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
+    <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-accent" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
     <section aria-labelledby="university-not-found-title" className="panel mt-6 p-7" role="status">
-      <h1 className="text-3xl font-extrabold" id="university-not-found-title">Университет не найден</h1>
-      <p className="mt-3 text-ink/65">Проверьте адрес или вернитесь к подтверждённому каталогу вузов.</p>
+      <h1 className="text-3xl font-semibold" id="university-not-found-title">Университет не найден</h1>
+      <p className="mt-3 text-text-secondary">Проверьте адрес или вернитесь к подтверждённому каталогу вузов.</p>
     </section>
   </div>
 
   if (current.status === 'error') return <div className="mx-auto max-w-4xl px-5 py-10 lg:px-8 lg:py-14">
-    <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-moss" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
-    <section aria-labelledby="university-error-title" className="panel mt-6 border-red-200 p-7" role="alert">
-      <h1 className="text-3xl font-extrabold" id="university-error-title">Не удалось загрузить страницу вуза</h1>
-      <p className="mt-3 text-ink/65">Сервис временно недоступен. Попробуйте повторить запрос.</p>
-      <button className="mt-5 inline-flex items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white" onClick={() => {
+    <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-accent" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
+    <section aria-labelledby="university-error-title" className="panel mt-6 border-danger/30 p-7" role="alert">
+      <h1 className="text-3xl font-semibold" id="university-error-title">Не удалось загрузить страницу вуза</h1>
+      <p className="mt-3 text-text-secondary">Сервис временно недоступен. Попробуйте повторить запрос.</p>
+      <button className="mt-5 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-bold text-white" onClick={() => {
         setRequest({ slug, data: null, status: 'loading' })
         setRetry((value) => value + 1)
       }} type="button"><RefreshCw aria-hidden="true" size={17} />Повторить запрос</button>
@@ -286,17 +286,17 @@ export function UniversityDetailPage() {
     )
   }
 
-  return <div className="min-w-0 bg-[linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
-    <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
-      <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-moss" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
+  return <div className="page-shell">
+    <div className="page-container py-10 lg:py-14">
+      <Link className="inline-flex items-center gap-2 rounded-xl font-bold text-accent" to={returnTo}><ArrowLeft aria-hidden="true" size={18} />Назад к каталогу</Link>
 
-      <header className="mt-7 max-w-4xl">
+      <header className="glass-surface--strong mt-7 max-w-4xl p-6 sm:p-8">
         <div className="eyebrow">{university.short_name}</div>
-        <h1 className="mt-3 break-words text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">{university.full_name}</h1>
-        {university.description && <p className="mt-5 break-words text-lg leading-8 text-ink/70">{university.description}</p>}
+        <h1 className="page-heading">{university.full_name}</h1>
+        {university.description && <p className="mt-5 break-words text-lg leading-8 text-text-secondary">{university.description}</p>}
         <div className="mt-5">
           <div className="flex flex-wrap items-center gap-4">
-            <Link className="inline-flex min-h-11 items-center rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss" to={`/compare?universities=${encodeURIComponent(university.slug)}`}>Сравнить вуз</Link>
+            <Link className="inline-flex min-h-11 items-center rounded-xl border border-accent/25 bg-white px-4 py-2.5 font-bold text-accent" to={`/compare?universities=${encodeURIComponent(university.slug)}`}>Сравнить вуз</Link>
             <SaveControl kind="university" label={university.full_name} universitySlug={university.slug} />
           </div>
         </div>
@@ -304,50 +304,50 @@ export function UniversityDetailPage() {
 
       <div className="mt-8 grid min-w-0 gap-5 lg:grid-cols-2">
         <section aria-labelledby="identity-title" className="panel min-w-0 p-5 sm:p-6">
-          <h2 className="text-2xl font-extrabold" id="identity-title">О вузе</h2>
+          <h2 className="text-2xl font-semibold" id="identity-title">О вузе</h2>
           <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
-            {(university.city || university.region) && <div><dt className="flex items-center gap-2 font-semibold text-ink/50"><MapPin aria-hidden="true" size={16} />Местоположение</dt><dd className="mt-1 break-words">{[university.city, university.region].filter(Boolean).join(' · ')}</dd></div>}
-            <div><dt className="flex items-center gap-2 font-semibold text-ink/50"><Building2 aria-hidden="true" size={16} />Тип учреждения</dt><dd className="mt-1">{apiValueLabel(university.institution_kind)}</dd></div>
-            <div><dt className="font-semibold text-ink/50">Форма собственности</dt><dd className="mt-1">{apiValueLabel(university.ownership_type)}</dd></div>
+            {(university.city || university.region) && <div><dt className="flex items-center gap-2 font-semibold text-text-tertiary"><MapPin aria-hidden="true" size={16} />Местоположение</dt><dd className="mt-1 break-words">{[university.city, university.region].filter(Boolean).join(' · ')}</dd></div>}
+            <div><dt className="flex items-center gap-2 font-semibold text-text-tertiary"><Building2 aria-hidden="true" size={16} />Тип учреждения</dt><dd className="mt-1">{apiValueLabel(university.institution_kind)}</dd></div>
+            <div><dt className="font-semibold text-text-tertiary">Форма собственности</dt><dd className="mt-1">{apiValueLabel(university.ownership_type)}</dd></div>
           </dl>
-          {university.categories.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{university.categories.map((category) => <span className="rounded-full border border-moss/15 bg-mint px-3 py-1.5 text-sm font-semibold text-moss" key={category.code}>{category.label_ru}</span>)}</div>}
+          {university.categories.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{university.categories.map((category) => <span className="rounded-full border border-accent/15 bg-accent-soft px-3 py-1.5 text-sm font-semibold text-accent" key={category.code}>{category.label_ru}</span>)}</div>}
         </section>
 
         <section aria-labelledby="resources-title" className="panel min-w-0 p-5 sm:p-6">
-          <h2 className="text-2xl font-extrabold" id="resources-title">Официальные ресурсы</h2>
+          <h2 className="text-2xl font-semibold" id="resources-title">Официальные ресурсы</h2>
           <div className="mt-5 grid gap-4">
             <ExternalResourceLink href={university.official_site_url} label={`Официальный сайт — ${university.short_name}`} />
             {university.admissions_url
               ? <ExternalResourceLink href={university.admissions_url} label={`Страница для абитуриентов — ${university.short_name}`} />
-              : <p className="font-semibold text-ink/70">Ссылка для абитуриентов пока не добавлена</p>}
+              : <p className="font-semibold text-text-secondary">Ссылка для абитуриентов пока не добавлена</p>}
           </div>
         </section>
       </div>
 
       <section aria-labelledby="coverage-title" className="panel mt-5 min-w-0 p-5 sm:p-6">
-        <h2 className="text-2xl font-extrabold" id="coverage-title">Мониторинг и покрытие источников</h2>
+        <h2 className="text-2xl font-semibold" id="coverage-title">Мониторинг и покрытие источников</h2>
         <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <div><dt className="font-semibold text-ink/50">Статус мониторинга</dt><dd className="mt-1">{apiValueLabel(university.monitoring_status)}</dd></div>
-          <div><dt className="font-semibold text-ink/50">Live-покрытие платформы</dt><dd className="mt-1">{hasLiveMonitoring ? 'Доступно' : 'Пока не реализовано'}</dd></div>
-          {verifiedAt && <div><dt className="font-semibold text-ink/50">Данные вуза проверены</dt><dd className="mt-1">{verifiedAt}</dd></div>}
-          {sourceCheckedAt && <div><dt className="font-semibold text-ink/50">Основной источник проверен</dt><dd className="mt-1">{sourceCheckedAt}</dd></div>}
-          <div><dt className="font-semibold text-ink/50">Покрытие программ</dt><dd className="mt-1">{university.programs.length > 0 ? `Импортировано программ: ${university.programs.length}` : 'Каталог программ ещё не импортирован'}</dd></div>
+          <div><dt className="font-semibold text-text-tertiary">Статус мониторинга</dt><dd className="mt-1">{apiValueLabel(university.monitoring_status)}</dd></div>
+          <div><dt className="font-semibold text-text-tertiary">Live-покрытие платформы</dt><dd className="mt-1">{hasLiveMonitoring ? 'Доступно' : 'Пока не реализовано'}</dd></div>
+          {verifiedAt && <div><dt className="font-semibold text-text-tertiary">Данные вуза проверены</dt><dd className="mt-1">{verifiedAt}</dd></div>}
+          {sourceCheckedAt && <div><dt className="font-semibold text-text-tertiary">Основной источник проверен</dt><dd className="mt-1">{sourceCheckedAt}</dd></div>}
+          <div><dt className="font-semibold text-text-tertiary">Покрытие программ</dt><dd className="mt-1">{university.programs.length > 0 ? `Импортировано программ: ${university.programs.length}` : 'Каталог программ ещё не импортирован'}</dd></div>
         </dl>
-        {hasLiveMonitoring && <Link className="mt-5 inline-flex items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white" to="/monitor"><RadioTower aria-hidden="true" size={18} />Live-мониторинг БГЭУ</Link>}
-        {university.sources.length > 0 && <div className="mt-6 border-t border-ink/10 pt-5">
-          <h3 className="text-lg font-extrabold">Сохранённые источники</h3>
+        {hasLiveMonitoring && <Link className="mt-5 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-bold text-white" to="/monitor"><RadioTower aria-hidden="true" size={18} />Live-мониторинг БГЭУ</Link>}
+        {university.sources.length > 0 && <div className="mt-6 border-t border-text-primary/10 pt-5">
+          <h3 className="text-lg font-semibold">Сохранённые источники</h3>
           <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-            {university.sources.map((source) => <li className="min-w-0 rounded-2xl bg-cream/65 p-4" key={`${source.source_type}:${source.source_url}`}>
+            {university.sources.map((source) => <li className="min-w-0 rounded-2xl bg-background/65 p-4" key={`${source.source_type}:${source.source_url}`}>
               <ExternalResourceLink href={source.source_url} label={sourceTypeLabel(source.source_type)} />
-              {formatCatalogDate(source.checked_at) && <p className="mt-2 flex items-center gap-2 text-sm text-ink/60"><CalendarDays aria-hidden="true" size={15} />Проверено: {formatCatalogDate(source.checked_at)}</p>}
+              {formatCatalogDate(source.checked_at) && <p className="mt-2 flex items-center gap-2 text-sm text-text-secondary"><CalendarDays aria-hidden="true" size={15} />Проверено: {formatCatalogDate(source.checked_at)}</p>}
             </li>)}
           </ul>
         </div>}
       </section>
 
       <section aria-labelledby="programs-title" className="mt-10 min-w-0">
-        <h2 className="text-3xl font-extrabold" id="programs-title">Импортированные программы</h2>
-        <p className="mt-3 max-w-3xl leading-7 text-ink/65">Здесь показаны только программы и наборы, уже импортированные этой платформой из сохранённых официальных источников.</p>
+        <h2 className="section-heading" id="programs-title">Импортированные программы</h2>
+        <p className="mt-3 max-w-3xl leading-7 text-text-secondary">Здесь показаны только программы и наборы, уже импортированные этой платформой из сохранённых официальных источников.</p>
         {university.programs.length > 0
           ? <>
             <ProgramDiscoveryPanel
@@ -362,11 +362,11 @@ export function UniversityDetailPage() {
               ? <div className="mt-5 grid min-w-0 gap-5" id="program-results">{discoveryResult.items.map(({ program, offerings }) => <ProgramCard key={program.id} offerings={offerings} program={program} universitySlug={university.slug} universityReturnTo={universityReturnTo} />)}</div>
               : <div className="panel mt-5 p-6" id="program-results" role="status">
                 <p className="font-bold">По выбранным условиям импортированные программы не найдены</p>
-                <p className="mt-2 text-ink/65">В каталоге вуза есть программы, но ни одна из них не соответствует текущему поиску и фильтрам.</p>
-                <button className="mt-5 min-h-11 rounded-xl bg-moss px-4 py-2.5 font-bold text-white" onClick={resetDiscoveryQuery} type="button">Сбросить фильтры</button>
+                <p className="mt-2 text-text-secondary">В каталоге вуза есть программы, но ни одна из них не соответствует текущему поиску и фильтрам.</p>
+                <button className="mt-5 min-h-11 rounded-xl bg-accent px-4 py-2.5 font-bold text-white" onClick={resetDiscoveryQuery} type="button">Сбросить фильтры</button>
               </div>}
           </>
-          : <div className="panel mt-5 p-6"><p className="font-bold">Каталог программ ещё не импортирован</p><p className="mt-2 text-ink/65">Это не означает, что у университета нет реальных программ.</p></div>}
+          : <div className="panel mt-5 p-6"><p className="font-bold">Каталог программ ещё не импортирован</p><p className="mt-2 text-text-secondary">Это не означает, что у университета нет реальных программ.</p></div>}
       </section>
     </div>
   </div>

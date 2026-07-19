@@ -78,38 +78,38 @@ function ComparisonCard({
     <div className="flex min-w-0 items-start justify-between gap-3">
       <div className="min-w-0">
         <div className="eyebrow">{university.short_name}</div>
-        <h2 className="mt-2 break-words text-xl font-extrabold leading-snug" id={`compare-${university.slug}`}>
+        <h2 className="mt-2 break-words text-xl font-semibold leading-snug" id={`compare-${university.slug}`}>
           {university.full_name}
         </h2>
       </div>
       <button
         aria-label={`Убрать из сравнения — ${university.short_name}`}
-        className="shrink-0 rounded-xl border border-ink/10 p-2 text-ink/55 hover:bg-ink/5 hover:text-ink"
+        className="icon-button"
         onClick={onRemove}
         type="button"
       ><X aria-hidden="true" size={18} /></button>
     </div>
 
     <dl className="mt-5 grid gap-4 text-sm">
-      <div><dt className="font-semibold text-ink/50">Город и регион</dt><dd className="mt-1 break-words">{[university.city, university.region].filter(Boolean).join(' · ') || MISSING_VALUE}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Форма собственности</dt><dd className="mt-1">{catalogValueOrMissing(university.ownership_type)}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Тип учреждения</dt><dd className="mt-1">{catalogValueOrMissing(university.institution_kind)}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Категории</dt><dd className="mt-1">{university.categories.length > 0 ? university.categories.map((item) => item.label_ru).join(', ') : MISSING_VALUE}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Покрытие программ</dt><dd className="mt-1 font-semibold">{university.program_count > 0 ? `Импортировано программ: ${university.program_count}` : 'Каталог программ ещё не импортирован'}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Статус мониторинга</dt><dd className="mt-1">{monitoringLabel}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Онлайн-мониторинг платформы</dt><dd className="mt-1">{liveMonitoring ? 'Доступен' : 'Пока не реализован'}</dd></div>
-      <div><dt className="font-semibold text-ink/50">Данные вуза проверены</dt><dd className="mt-1">{verifiedAt ?? MISSING_VALUE}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Город и регион</dt><dd className="mt-1 break-words">{[university.city, university.region].filter(Boolean).join(' · ') || MISSING_VALUE}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Форма собственности</dt><dd className="mt-1">{catalogValueOrMissing(university.ownership_type)}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Тип учреждения</dt><dd className="mt-1">{catalogValueOrMissing(university.institution_kind)}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Категории</dt><dd className="mt-1">{university.categories.length > 0 ? university.categories.map((item) => item.label_ru).join(', ') : MISSING_VALUE}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Покрытие программ</dt><dd className="mt-1 font-semibold">{university.program_count > 0 ? `Импортировано программ: ${university.program_count}` : 'Каталог программ ещё не импортирован'}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Статус мониторинга</dt><dd className="mt-1">{monitoringLabel}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Онлайн-мониторинг платформы</dt><dd className="mt-1">{liveMonitoring ? 'Доступен' : 'Пока не реализован'}</dd></div>
+      <div><dt className="font-semibold text-text-tertiary">Данные вуза проверены</dt><dd className="mt-1">{verifiedAt ?? MISSING_VALUE}</dd></div>
     </dl>
 
-    <div className="mt-6 grid gap-3 border-t border-ink/10 pt-5 text-sm">
+    <div className="mt-6 grid gap-3 border-t border-text-primary/10 pt-5 text-sm">
       {university.official_site_url
-        ? <a className="inline-flex w-fit items-center gap-1.5 font-semibold text-moss hover:underline" href={university.official_site_url} rel="noreferrer" target="_blank">Официальный сайт <ExternalLink aria-hidden="true" size={15} /></a>
+        ? <a className="inline-flex w-fit items-center gap-1.5 font-semibold text-accent hover:underline" href={university.official_site_url} rel="noreferrer" target="_blank">Официальный сайт <ExternalLink aria-hidden="true" size={15} /></a>
         : <p><span className="font-semibold">Официальный сайт:</span> {MISSING_VALUE}</p>}
       {university.admissions_url
-        ? <a className="inline-flex w-fit items-center gap-1.5 font-semibold text-moss hover:underline" href={university.admissions_url} rel="noreferrer" target="_blank">Страница для абитуриентов <ExternalLink aria-hidden="true" size={15} /></a>
+        ? <a className="inline-flex w-fit items-center gap-1.5 font-semibold text-accent hover:underline" href={university.admissions_url} rel="noreferrer" target="_blank">Страница для абитуриентов <ExternalLink aria-hidden="true" size={15} /></a>
         : <p><span className="font-semibold">Страница для абитуриентов:</span> {MISSING_VALUE}</p>}
-      <Link className="inline-flex w-fit items-center gap-1.5 font-semibold text-moss hover:underline" to={`/universities/${encodeURIComponent(university.slug)}`}>Подробнее о вузе</Link>
-      {hasMonitorRoute && <Link className="inline-flex w-fit items-center gap-1.5 font-semibold text-moss hover:underline" to="/monitor"><RadioTower aria-hidden="true" size={16} />Монитор поступления</Link>}
+      <Link className="inline-flex w-fit items-center gap-1.5 font-semibold text-accent hover:underline" to={`/universities/${encodeURIComponent(university.slug)}`}>Подробнее о вузе</Link>
+      {hasMonitorRoute && <Link className="inline-flex w-fit items-center gap-1.5 font-semibold text-accent hover:underline" to="/monitor"><RadioTower aria-hidden="true" size={16} />Монитор поступления</Link>}
     </div>
   </article>
 }
@@ -158,43 +158,43 @@ function UniversitySearch({
   }
 
   return <section aria-labelledby="compare-search-title" className="panel mt-7 p-5 sm:p-6">
-    <h2 className="text-2xl font-extrabold" id="compare-search-title">Добавить вуз</h2>
-    <p className="mt-2 text-ink/65">Поиск выполняется по серверному каталогу платформы.</p>
+    <h2 className="text-2xl font-semibold" id="compare-search-title">Добавить вуз</h2>
+    <p className="mt-2 text-text-secondary">Поиск выполняется по серверному каталогу платформы.</p>
     <form className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row" onSubmit={(event) => void submit(event)} role="search">
       <label className="min-w-0 flex-1">
         <span className="sr-only">Поиск вуза для сравнения</span>
-        <span className="flex min-w-0 items-center gap-2 rounded-xl border border-ink/15 bg-white px-3 focus-within:border-moss/40">
-          <Search aria-hidden="true" className="shrink-0 text-moss" size={18} />
+        <span className="surface-sunken flex min-h-11 min-w-0 items-center gap-2 bg-elevated px-3">
+          <Search aria-hidden="true" className="shrink-0 text-accent" size={18} />
           <input className="min-w-0 flex-1 bg-transparent py-3 outline-none" maxLength={200} onChange={(event) => setQuery(event.target.value)} placeholder="Название, город или категория…" type="search" value={query} />
         </span>
       </label>
-      <button className="min-h-11 rounded-xl bg-moss px-5 py-3 font-bold text-white disabled:cursor-wait disabled:opacity-60" disabled={search.status === 'loading'} type="submit">
+      <button className="button-primary disabled:cursor-wait disabled:opacity-60" disabled={search.status === 'loading'} type="submit">
         {search.status === 'loading' ? 'Ищем…' : 'Найти'}
       </button>
     </form>
 
     {selection.length === MAX_UNIVERSITIES && <label className="mt-5 grid max-w-md gap-2 text-sm font-semibold" htmlFor="compare-replace">
       Кого заменить
-      <select className="rounded-xl border border-ink/15 bg-white px-3 py-2.5 font-normal" id="compare-replace" onChange={(event) => setReplaceSlug(event.target.value)} value={effectiveReplaceSlug}>
+      <select className="field-control font-normal" id="compare-replace" onChange={(event) => setReplaceSlug(event.target.value)} value={effectiveReplaceSlug}>
         {selection.map((slug) => <option key={slug} value={slug}>{slug}</option>)}
       </select>
     </label>}
 
-    {search.status === 'error' && <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800" role="alert">
+    {search.status === 'error' && <div className="mt-5 rounded-2xl border border-danger/30 bg-danger/10 p-4 text-danger" role="alert">
       <p className="font-bold">Не удалось выполнить поиск вузов</p>
       <button className="mt-3 inline-flex items-center gap-2 font-bold underline" onClick={() => void submit()} type="button"><RefreshCw aria-hidden="true" size={16} />Повторить поиск</button>
     </div>}
-    {search.status === 'success' && search.items.length === 0 && <p className="mt-5 rounded-2xl bg-cream p-4 font-semibold">По запросу ничего не найдено в каталоге платформы.</p>}
+    {search.status === 'success' && search.items.length === 0 && <p className="mt-5 rounded-2xl bg-background p-4 font-semibold">По запросу ничего не найдено в каталоге платформы.</p>}
     {search.status === 'success' && search.items.length > 0 && <ul className="mt-5 grid gap-3">
       {search.items.map((university) => {
         const selected = selection.includes(university.slug)
-        return <li className="flex min-w-0 flex-col gap-3 rounded-2xl border border-ink/10 bg-cream/60 p-4 sm:flex-row sm:items-center sm:justify-between" key={university.slug}>
-          <div className="min-w-0"><div className="font-extrabold">{university.short_name}</div><div className="break-words text-sm text-ink/65">{university.full_name}</div></div>
+        return <li className="flex min-w-0 flex-col gap-3 rounded-2xl border border-text-primary/10 bg-background/60 p-4 sm:flex-row sm:items-center sm:justify-between" key={university.slug}>
+          <div className="min-w-0"><div className="font-semibold">{university.short_name}</div><div className="break-words text-sm text-text-secondary">{university.full_name}</div></div>
           {selected
-            ? <span className="shrink-0 text-sm font-bold text-ink/55">Уже выбрано</span>
+            ? <span className="shrink-0 text-sm font-bold text-text-tertiary">Уже выбрано</span>
             : selection.length < MAX_UNIVERSITIES
-              ? <button className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss" onClick={() => onAdd(university.slug)} type="button"><Plus aria-hidden="true" size={17} />Добавить {university.short_name}</button>
-              : <button className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-moss/25 bg-white px-4 py-2.5 font-bold text-moss" onClick={() => onReplace(effectiveReplaceSlug, university.slug)} type="button"><ArrowRightLeft aria-hidden="true" size={17} />Заменить на {university.short_name}</button>}
+              ? <button className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-accent/25 bg-white px-4 py-2.5 font-bold text-accent" onClick={() => onAdd(university.slug)} type="button"><Plus aria-hidden="true" size={17} />Добавить {university.short_name}</button>
+              : <button className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-accent/25 bg-white px-4 py-2.5 font-bold text-accent" onClick={() => onReplace(effectiveReplaceSlug, university.slug)} type="button"><ArrowRightLeft aria-hidden="true" size={17} />Заменить на {university.short_name}</button>}
         </li>
       })}
     </ul>}
@@ -255,41 +255,41 @@ export function ComparePage() {
   const failed = current.items.filter((item) => item.status === 'error')
   const unknown = current.items.filter((item) => item.status === 'not_found')
 
-  return <div className="min-w-0 bg-[linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
-    <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
+  return <div className="page-shell">
+    <div className="page-container py-10 lg:py-14">
       <header className="max-w-4xl">
         <div className="eyebrow">Каталог платформы</div>
-        <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">Сравнение вузов</h1>
-        <p className="mt-4 text-lg leading-8 text-ink/70">Сопоставьте 2–3 вуза по уже сохранённым данным платформы. Сравнение не ранжирует вузы и не оценивает шансы поступления.</p>
+        <h1 className="page-heading">Сравнение вузов</h1>
+        <p className="body-copy mt-4">Сопоставьте 2–3 вуза по уже сохранённым данным платформы. Сравнение не ранжирует вузы и не оценивает шансы поступления.</p>
       </header>
 
       {selection.length === 0 && <section className="panel mt-8 p-6" aria-labelledby="compare-empty-title">
-        <h2 className="text-2xl font-extrabold" id="compare-empty-title">Выберите вузы для сравнения</h2>
-        <p className="mt-3 max-w-3xl leading-7 text-ink/65">Начните с поиска по каталогу. Выбор хранится только в URL, поэтому ссылку можно скопировать и открыть без профиля.</p>
+        <h2 className="text-2xl font-semibold" id="compare-empty-title">Выберите вузы для сравнения</h2>
+        <p className="mt-3 max-w-3xl leading-7 text-text-secondary">Начните с поиска по каталогу. Выбор хранится только в URL, поэтому ссылку можно скопировать и открыть без профиля.</p>
       </section>}
 
-      {current.loading && <div className="panel mt-8 flex items-center gap-3 p-6" role="status"><RefreshCw aria-hidden="true" className="animate-spin text-moss" size={20} /><span className="font-bold">Загружаем данные для сравнения…</span></div>}
+      {current.loading && <div className="panel mt-8 flex items-center gap-3 p-6" role="status"><RefreshCw aria-hidden="true" className="animate-spin text-accent" size={20} /><span className="font-bold">Загружаем данные для сравнения…</span></div>}
 
-      {!current.loading && failed.length > 0 && <section className="panel mt-8 border-red-200 p-6" role="alert">
-        <h2 className="text-xl font-extrabold">Не удалось загрузить данные для сравнения</h2>
-        <p className="mt-2 text-ink/65">Ранее выбранные вузы остаются в URL. Повторите безопасный GET-запрос.</p>
-        <button className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white" onClick={() => setRetry((value) => value + 1)} type="button"><RefreshCw aria-hidden="true" size={17} />Повторить запрос</button>
+      {!current.loading && failed.length > 0 && <section className="panel mt-8 border-danger/30 p-6" role="alert">
+        <h2 className="text-xl font-semibold">Не удалось загрузить данные для сравнения</h2>
+        <p className="mt-2 text-text-secondary">Ранее выбранные вузы остаются в URL. Повторите безопасный GET-запрос.</p>
+        <button className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-bold text-white" onClick={() => setRetry((value) => value + 1)} type="button"><RefreshCw aria-hidden="true" size={17} />Повторить запрос</button>
       </section>}
 
       {!current.loading && unknown.length > 0 && <section className="mt-8 grid gap-3" aria-label="Неизвестные вузы">
-        {unknown.map((item) => <div className="panel border-amber-300 p-5" key={item.slug} role="status">
-          <h2 className="text-xl font-extrabold">Университет не найден: {item.slug}</h2>
-          <p className="mt-2 text-ink/65">Этот slug отсутствует в публичном каталоге платформы.</p>
-          <button className="mt-3 inline-flex items-center gap-2 font-bold text-moss underline" onClick={() => remove(item.slug)} type="button"><X aria-hidden="true" size={16} />Убрать из сравнения</button>
+        {unknown.map((item) => <div className="panel border-warning/30 p-5" key={item.slug} role="status">
+          <h2 className="text-xl font-semibold">Университет не найден: {item.slug}</h2>
+          <p className="mt-2 text-text-secondary">Этот slug отсутствует в публичном каталоге платформы.</p>
+          <button className="mt-3 inline-flex items-center gap-2 font-bold text-accent underline" onClick={() => remove(item.slug)} type="button"><X aria-hidden="true" size={16} />Убрать из сравнения</button>
         </div>)}
       </section>}
 
       {!current.loading && successful.length > 0 && <section aria-labelledby="comparison-results-title" className="mt-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div><h2 className="text-3xl font-extrabold" id="comparison-results-title">Выбранные вузы</h2><p className="mt-2 text-ink/65">Порядок соответствует ссылке сравнения.</p></div>
-          <p className="font-bold text-ink/60">Выбрано: {selection.length} из {MAX_UNIVERSITIES}</p>
+          <div><h2 className="text-3xl font-semibold" id="comparison-results-title">Выбранные вузы</h2><p className="mt-2 text-text-secondary">Порядок соответствует ссылке сравнения.</p></div>
+          <p className="font-bold text-text-secondary">Выбрано: {selection.length} из {MAX_UNIVERSITIES}</p>
         </div>
-        {selection.length === 1 && <p className="mt-5 rounded-2xl border border-amber-300 bg-amber-50 p-4 font-semibold text-amber-950">Добавьте ещё один вуз, чтобы перейти к сравнению.</p>}
+        {selection.length === 1 && <p className="mt-5 rounded-2xl border border-warning/30 bg-warning/10 p-4 font-semibold text-warning">Добавьте ещё один вуз, чтобы перейти к сравнению.</p>}
         <div className="mt-5 grid min-w-0 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {successful.map((item) => <ComparisonCard key={item.slug} onRemove={() => remove(item.slug)} university={item.data} />)}
         </div>

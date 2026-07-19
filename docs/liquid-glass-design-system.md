@@ -1,45 +1,129 @@
-# Liquid Glass design foundation
+# Liquid Glass design system
 
-`M-APPLE-LIQUID-GLASS-FOUNDATION-01` establishes the light visual foundation for «Куда поступать». It changes the global shell and HomePage; internal catalog, comparison, monitor, recommendation and profile pages keep their detailed layouts until `M-APPLE-LIQUID-GLASS-PAGES-01`.
+This is the presentation contract for every public frontend page. It keeps the
+product quiet, factual and dense enough for admission decisions while making
+depth and interaction state easy to read.
 
-## Semantic tokens
+## Semantic colour and type
 
-- `background` and `elevated` provide the cool near-white page and solid content layers.
-- `text-primary` and `text-secondary` provide near-black body hierarchy with sufficient contrast.
-- `accent` and `focus` use a restrained system blue for actions, active navigation and focus.
-- `border` separates surfaces without a decorative outline.
-- `success`, `warning` and `danger` are reserved for data and system meaning.
-- `glass-compact` and `glass-strong` identify the two supported translucent material levels.
-- `shadow-elevated`, `shadow-glass-compact` and `shadow-glass-strong` encode elevation consistently.
+The neutral light palette is defined once in `frontend/src/index.css`:
 
-Legacy Tailwind names remain aliases for these semantic tokens so internal pages inherit the neutral palette without a detailed redesign in this milestone.
+- page `#f2f3f5` and elevated page `#f7f7f8`;
+- primary text `#1d1d1f`, secondary `#5f6065`, tertiary `#76777d`;
+- action blue `#0071e3`, hover blue `#005bb8`, focus blue `#006edb`;
+- success `#237a3b`, warning `#9a5c00`, danger `#be2a31`;
+- observed chart data `#2c2c2e`, projected values `#b06a00` and
+  `#d39a3a`, neutral grid `#d8d9dd`.
 
-## Typography
+Blue means an action, navigation target or focus. Green is reserved for a
+confirmed successful state. Warning and danger colours are not decorative.
+Tailwind utilities map to these semantic names; page code must not reintroduce
+the former `ink`, `moss`, `mint` or `cream` aliases.
 
-The application uses the local system stack: `-apple-system`, `BlinkMacSystemFont`, optional locally available `SF Pro Display`, `Segoe UI`, Roboto, Helvetica, Arial and `sans-serif`. No external font request or proprietary font file is used. Display text has tighter tracking and leading; body copy keeps a comfortable line height; compact uppercase labels use slightly wider tracking.
+The font stack is `-apple-system`, `BlinkMacSystemFont`, optional locally
+available `SF Pro Display`, `Segoe UI`, Roboto, Helvetica, Arial and sans-serif.
+No Apple font is downloaded or bundled. Display, page and section headings use
+semibold weight, compact leading and restrained negative tracking. Body copy
+uses 1.6 line height and semantic secondary text.
 
-## Materials
+## Surfaces and hierarchy
 
-- Compact glass is for the floating site header, navigation and similarly small controls. It uses an 18 px blur, restrained saturation, a light edge and the compact shadow.
-- Strong glass is for the two major HomePage information surfaces. It uses a 26 px blur, a more opaque fill and the deeper strong shadow.
-- `.panel` remains a solid elevated surface for dense internal content.
+Use translucent material only where it communicates layering:
 
-Never place a large translucent glass surface inside another glass surface. Plain text, solid or lightly tinted controls, separators and non-glass status pills may sit inside glass. Warnings, errors, long reading sections, tables and dense lists stay solid.
+1. **Compact glass** — sticky application chrome and compact toolbars. It is
+   white at 58% opacity with `blur(22px) saturate(170%)`, a fine white border
+   and compact shadow.
+2. **Strong glass** — a small number of high-emphasis summary surfaces. It is
+   white at 64% opacity with `blur(30px) saturate(165%)`, a stronger shadow and
+   a slightly larger radius.
+3. **Solid panel** — dense data, forms, tables, repeated cards, warnings and
+   long reading surfaces. It is effectively opaque and uses a quiet border and
+   low shadow.
+4. **Sunken surface** — secondary groups inside a solid panel. It uses a faint
+   graphite tint, not another layer of glass.
 
-## Interaction and motion
+The no-glass-on-glass rule is strict: children of glass surfaces use solid or
+sunken treatment. Repeated list items and dense data never become translucent
+just to look decorative. Without backdrop-filter support, both materials fall
+back to the 97% solid material.
 
-Interactive controls respond on pointer-down through a short opacity response. Important buttons, navigation and text controls also scale to `0.98` over roughly 100 ms; click behavior is never delayed. Hover treatments are limited to hover-capable fine pointers. New primary controls and navigation targets are at least approximately 44 px high.
+The page background is a static cool-gray, low-chroma blue composition. It
+provides enough spatial variation for blur to be visible without gradients that
+imply status or compete with content.
 
-Only key HomePage materials use the one-time `materialize` effect: a short opacity, tiny scale and subtle blur transition. There are no loops, parallax, decorative springs or layout-dimension animations.
+## Motion
 
-## Accessibility and fallbacks
+Shared curves and durations are exact:
 
-- `prefers-reduced-motion: reduce` removes material movement and scale response while preserving immediate opacity feedback.
-- `prefers-reduced-transparency: reduce` disables both backdrop filters and makes glass opaque.
-- `prefers-contrast: more` strengthens text, borders, active navigation and material opacity.
-- Browsers without `backdrop-filter` receive the default 96–97% opaque surfaces, with the same border, shadow and hierarchy.
-- Keyboard focus uses the semantic blue focus ring. The skip link, landmarks, active-route state, mobile disclosure labels, `aria-expanded` state and Escape-to-close behavior remain explicit.
+| Purpose | Duration | Easing |
+| --- | ---: | --- |
+| press feedback | 120 ms | `cubic-bezier(0.23, 1, 0.32, 1)` |
+| colour/focus state | 160 ms | `cubic-bezier(0.23, 1, 0.32, 1)` |
+| occasional state crossfade | 200 ms | `cubic-bezier(0.23, 1, 0.32, 1)` |
+| initial materialisation | 220 ms | `cubic-bezier(0.23, 1, 0.32, 1)` |
+| mobile drawer | 240 ms | `cubic-bezier(0.32, 0.72, 0, 1)` |
 
-## Migrating internal pages
+Use motion only when it explains an appearance, disappearance, state change or
+direct manipulation. Every pressable gets immediate opacity and 0.98 scale
+feedback. Home's two explanatory glass surfaces materialise once with opacity
+and a very small 0.985-to-1 scale. The mobile navigation uses the same small
+scale with opacity. Save feedback and errors crossfade. Monitor state changes
+may crossfade, but chart data itself never animates.
 
-Use glass only when a surface floats above the page and the material communicates hierarchy or interaction. Keep dense `.panel` content solid. Do not replace all cards mechanically, nest glass, put critical alerts on translucent surfaces or create one-off blur values. The next milestone should migrate internal pages deliberately and verify data semantics, readability and responsive behavior page by page.
+Frequency matters more than novelty: navigation motion may occur on explicit
+open/close, press feedback only during a press, entrance motion once per mount,
+and data feedback only when its state changes. No animation is allowed merely
+because an element is visible or hovered.
+
+Rejected categories are bouncing, floating, pulsing skeletons, looping
+decoration, animated ranks or recommendation results, large translation,
+spring overshoot, scale from zero, cursor-following effects, scroll hijacking,
+blur/filter animation, layout-property animation and hover movement.
+
+CSS transitions and `@starting-style` are preferred for predetermined motion.
+`motion/react` is reserved for React lifecycle transitions that need presence
+coordination: the mobile navigation and save feedback. WAAPI is reserved for a
+future imperative sequence that cannot be expressed clearly in CSS; this
+milestone needs none.
+
+The React Bits `GlassSurface`, `FluidGlass`, `GradualBlur`, `FadeContent` and
+`AnimatedContent` implementations were inspected. Only the general material and
+edge-separation ideas were retained. SVG displacement, WebGL/Three scenes,
+continuous effects, GSAP wrappers and copied components were rejected as too
+expensive or unnecessary for a low-resource information product.
+
+## Preferences, accessibility and performance
+
+- `prefers-reduced-motion` removes transforms and delays while retaining short
+  opacity and colour feedback; loading spinners and pulse effects stop.
+- `prefers-reduced-transparency` replaces glass with a 98% solid surface and
+  disables backdrop filters.
+- `prefers-contrast: more` strengthens text, dividers, borders and active
+  navigation without turning focus blue into selection state.
+- Keyboard focus is a separate 3 px blue outline. Active navigation uses a
+  neutral fill and graphite underline.
+- Buttons, selects and icon controls have at least 44 px targets. Focus order,
+  native semantics, headings, labels and live regions remain intact.
+- Only `opacity` and `transform` may animate geometrically. Backdrop blur is
+  static. Charts opt out of Recharts animation and expose an accessibility
+  layer.
+- No font payload, image payload, WebGL scene or animation library other than
+  `motion` is added.
+
+## Page guidance
+
+- Home: limited strong glass for the two coverage explanations; one clear
+  primary action and one secondary action; solid disclaimer.
+- Universities: compact glass may hold the search toolbar; filters, results and
+  pagination stay solid and dense.
+- University and Program detail: one strong-glass summary header; all offering,
+  provenance and fact groups are solid or sunken.
+- University and Program comparison: solid columns and tables, neutral facts,
+  no winner colour or animated ranking.
+- Recommendations: inputs are visually separate from results; explanations and
+  uncertainty stay primary; results do not animate.
+- My List: saved entries, score and Telegram controls use solid panels; only
+  confirmed states use success colour.
+- Monitor: graphite is observed data, amber is cutoff/projected data, and the
+  grid is neutral. Data keys, calculations and series meaning must not change
+  during presentation work.

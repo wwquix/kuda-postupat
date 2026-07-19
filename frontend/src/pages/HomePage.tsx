@@ -30,7 +30,7 @@ export function HomePage() {
     return () => { active = false }
   }, [])
 
-  return <div className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_88%_12%,_rgba(0,102,204,0.13),_transparent_30%),radial-gradient(circle_at_12%_38%,_rgba(92,172,238,0.10),_transparent_26%),linear-gradient(180deg,#f8fafc_0%,#f1f4f8_100%)]">
+  return <div className="page-shell page-shell--home">
     <div className="page-container section-space">
       <section aria-labelledby="home-title" className="grid gap-12 lg:grid-cols-[1.04fr_.96fr] lg:items-center lg:gap-16">
         <div className="min-w-0 py-2 lg:py-8">
@@ -69,9 +69,9 @@ export function HomePage() {
         </div>
       </section>
 
-      <section aria-labelledby="data-notice-title" className="mt-12 rounded-3xl border border-amber-300 bg-amber-50 p-6 text-amber-950 sm:mt-16 sm:p-8">
+      <section aria-labelledby="data-notice-title" className="mt-12 rounded-3xl border border-warning/30 bg-warning/10 p-6 text-warning sm:mt-16 sm:p-8">
         <h2 className="text-lg font-semibold tracking-[-0.01em]" id="data-notice-title">Как читать данные</h2>
-        <p className="mt-2 max-w-4xl leading-7 text-amber-950/85">Сведения сверяются с официальными источниками, но покрытие платформы пока неполное. Отсутствие импортированной программы или значения не означает, что их нет в реальности. Финальные условия поступления всегда проверяйте на сайте выбранного вуза.</p>
+        <p className="mt-2 max-w-4xl leading-7 text-warning/85">Сведения сверяются с официальными источниками, но покрытие платформы пока неполное. Отсутствие импортированной программы или значения не означает, что их нет в реальности. Финальные условия поступления всегда проверяйте на сайте выбранного вуза.</p>
       </section>
     </div>
   </div>

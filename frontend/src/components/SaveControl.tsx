@@ -1,4 +1,5 @@
 import { Bookmark, LoaderCircle, Trash2 } from 'lucide-react'
+import { AnimatePresence, LazyMotion, domAnimation, m } from 'motion/react'
 import { useState } from 'react'
 
 import { useProfile } from '../useProfile'
@@ -38,14 +39,25 @@ export function SaveControl(props: SaveControlProps) {
     }
   }
 
-  return <div className="min-w-0">
+  return <LazyMotion features={domAnimation}>
+    <div className="min-w-0">
     <div className="flex flex-wrap items-center gap-3">
-      {saved && <span aria-live="polite" className="inline-flex items-center gap-1.5 text-sm font-bold text-moss">
-        <Bookmark aria-hidden="true" fill="currentColor" size={16} />Сохранено
-      </span>}
+      <AnimatePresence initial={false}>
+        {saved && <m.span
+          animate={{ opacity: 1 }}
+          aria-live="polite"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-success"
+          exit={{ opacity: 0 }}
+          initial={{ opacity: 0 }}
+          key="saved-status"
+          transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+        >
+          <Bookmark aria-hidden="true" fill="currentColor" size={16} />Сохранено
+        </m.span>}
+      </AnimatePresence>
       <button
         aria-label={`${saved ? 'Удалить из списка' : 'Сохранить'} — ${props.label}`}
-        className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-moss/25 bg-white px-4 py-2 text-sm font-bold text-moss transition hover:bg-mint disabled:cursor-wait disabled:opacity-60"
+        className="button-secondary min-h-11 text-accent disabled:cursor-wait disabled:opacity-60"
         disabled={pending}
         onClick={change}
         type="button"
@@ -58,8 +70,18 @@ export function SaveControl(props: SaveControlProps) {
         {pending ? 'Сохраняем…' : saved ? 'Удалить из списка' : 'Сохранить'}
       </button>
     </div>
-    {error && <p aria-live="assertive" className="mt-2 text-sm font-semibold text-red-700" role="alert">
-      Не удалось изменить список. Попробуйте ещё раз.
-    </p>}
-  </div>
+    <AnimatePresence initial={false}>
+      {error && <m.p
+        animate={{ opacity: 1 }}
+        aria-live="assertive"
+        className="mt-2 text-sm font-semibold text-danger"
+        exit={{ opacity: 0 }}
+        initial={{ opacity: 0 }}
+        key="save-error"
+        role="alert"
+        transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
+      >Не удалось изменить список. Попробуйте ещё раз.</m.p>}
+    </AnimatePresence>
+    </div>
+  </LazyMotion>
 }

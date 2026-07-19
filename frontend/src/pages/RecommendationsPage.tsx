@@ -59,9 +59,9 @@ const reasonLabels: Record<string, string> = {
 }
 
 const classStyles: Record<RecommendationResultClass, string> = {
-  MONITORED_STATUS: 'border-moss/30 bg-mint text-moss',
-  PARAMETER_MATCH: 'border-amber-300 bg-amber-50 text-amber-900',
-  INSUFFICIENT_COVERAGE: 'border-ink/15 bg-cream text-ink/70',
+  MONITORED_STATUS: 'border-success/30 bg-success/10 text-success',
+  PARAMETER_MATCH: 'border-warning/30 bg-warning/10 text-warning',
+  INSUFFICIENT_COVERAGE: 'border-text-primary/15 bg-background text-text-secondary',
 }
 
 const formFromQuery = (
@@ -110,10 +110,10 @@ function SelectControl({
   onChange: (value: string) => void
   children: ReactNode
 }) {
-  return <label className="grid min-w-0 gap-2 text-sm font-bold text-ink/75" htmlFor={id}>
+  return <label className="grid min-w-0 gap-2 text-sm font-bold text-text-secondary" htmlFor={id}>
     {label}
     <select
-      className="min-w-0 rounded-xl border border-ink/15 bg-white px-3 py-2.5 font-normal text-ink"
+      className="field-control font-normal"
       id={id}
       onChange={(event) => onChange(event.target.value)}
       value={value}
@@ -124,10 +124,10 @@ function SelectControl({
 function MatchReasons({ reasons }: { reasons: RecommendationReason[] }) {
   return <dl className="flex flex-wrap gap-2 text-xs">
     {reasons.map((reason) => <div
-      className="rounded-full border border-ink/10 bg-white px-3 py-1.5"
+      className="rounded-full border border-text-primary/10 bg-white px-3 py-1.5"
       key={`${reason.parameter}-${reason.value}`}
     >
-      <dt className="inline font-bold text-ink/55">{reasonLabels[reason.parameter] ?? reason.parameter}: </dt>
+      <dt className="inline font-bold text-text-tertiary">{reasonLabels[reason.parameter] ?? reason.parameter}: </dt>
       <dd className="inline font-semibold">
         {reason.parameter === 'online_monitoring'
           ? reason.value === 'true' ? 'доступен' : 'не реализован на платформе'
@@ -141,7 +141,7 @@ function MatchReasons({ reasons }: { reasons: RecommendationReason[] }) {
 
 function ResultClass({ item }: { item: ProgramRecommendation | UniversityRecommendation }) {
   return <div>
-    <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-extrabold ${classStyles[item.result_class]}`}>
+    <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold ${classStyles[item.result_class]}`}>
       {item.result_label}
     </span>
     <p className="mt-3 font-bold leading-6">{item.admission_evaluation}</p>
@@ -156,36 +156,36 @@ function ProgramCard({ item, returnTo }: { item: ProgramRecommendation; returnTo
   return <article className="panel flex min-w-0 flex-col gap-5 p-5 sm:p-6">
     <header className="min-w-0">
       <div className="eyebrow">{program.university.short_name}</div>
-      <h3 className="mt-2 break-words text-xl font-extrabold leading-snug">
+      <h3 className="mt-2 break-words text-xl font-semibold leading-snug">
         <Link
-          className="underline decoration-moss/35 decoration-2 underline-offset-4 hover:decoration-moss"
+          className="underline decoration-accent/35 decoration-2 underline-offset-4 hover:decoration-accent"
           state={{ universityReturnTo: returnTo }}
           to={`/universities/${encodeURIComponent(program.university.slug)}/programs/${encodeURIComponent(program.slug)}`}
         >{program.name}</Link>
       </h3>
       <Link
-        className="mt-2 inline-block break-words font-semibold text-moss hover:underline"
+        className="mt-2 inline-block break-words font-semibold text-accent hover:underline"
         to={`/universities/${encodeURIComponent(program.university.slug)}`}
       >{program.university.short_name} — страница вуза</Link>
     </header>
     <ResultClass item={item} />
     <MatchReasons reasons={item.match_reasons} />
-    {item.coverage_notes.length > 0 && <ul className="grid gap-2 text-sm leading-6 text-ink/65">
+    {item.coverage_notes.length > 0 && <ul className="grid gap-2 text-sm leading-6 text-text-secondary">
       {item.coverage_notes.map((note) => <li key={note}>{note}</li>)}
     </ul>}
     <section aria-label={`Варианты обучения — ${program.name}`}>
-      <h4 className="text-sm font-extrabold">Импортированные варианты обучения</h4>
+      <h4 className="text-sm font-semibold">Импортированные варианты обучения</h4>
       {program.offerings.length > 0
         ? <ul className="mt-2 grid gap-2 text-sm">
-          {program.offerings.map((offering) => <li className="rounded-xl bg-cream/75 px-3 py-2" key={offering.id}>
+          {program.offerings.map((offering) => <li className="rounded-xl bg-background/75 px-3 py-2" key={offering.id}>
             {offering.admission_year} · {apiValueLabel(offering.study_form)} · {apiValueLabel(offering.funding_type)}
             {offering.places !== null ? ` · ${offering.places} мест` : ''}
           </li>)}
         </ul>
-        : <p className="mt-2 text-sm text-ink/60">Варианты ещё не импортированы платформой.</p>}
+        : <p className="mt-2 text-sm text-text-secondary">Варианты ещё не импортированы платформой.</p>}
     </section>
-    <div className="mt-auto flex flex-wrap items-center gap-4 border-t border-ink/10 pt-4">
-      {monitorSupported && <Link className="inline-flex items-center gap-2 font-bold text-moss" to="/monitor">
+    <div className="mt-auto flex flex-wrap items-center gap-4 border-t border-text-primary/10 pt-4">
+      {monitorSupported && <Link className="inline-flex items-center gap-2 font-bold text-accent" to="/monitor">
         <RadioTower aria-hidden="true" size={17} />Монитор
       </Link>}
       <SaveControl
@@ -203,34 +203,34 @@ function UniversityCard({ item }: { item: UniversityRecommendation }) {
   return <article className="panel flex min-w-0 flex-col gap-5 p-5 sm:p-6">
     <header className="min-w-0">
       <div className="eyebrow">{university.short_name}</div>
-      <h3 className="mt-2 break-words text-xl font-extrabold leading-snug">
+      <h3 className="mt-2 break-words text-xl font-semibold leading-snug">
         <Link
-          className="underline decoration-moss/35 decoration-2 underline-offset-4 hover:decoration-moss"
+          className="underline decoration-accent/35 decoration-2 underline-offset-4 hover:decoration-accent"
           to={`/universities/${encodeURIComponent(university.slug)}`}
         >{university.full_name}</Link>
       </h3>
-      <p className="mt-2 text-sm text-ink/60">
+      <p className="mt-2 text-sm text-text-secondary">
         {[university.city, university.region].filter(Boolean).join(' · ') || 'Местоположение уточняется'}
       </p>
     </header>
     <ResultClass item={item} />
     <MatchReasons reasons={item.match_reasons} />
     <div className="flex flex-wrap gap-2 text-xs font-semibold">
-      <span className="rounded-full bg-mint px-3 py-1.5">{apiValueLabel(university.ownership_type)}</span>
+      <span className="rounded-full bg-accent-soft px-3 py-1.5">{apiValueLabel(university.ownership_type)}</span>
       {university.categories.map((category) => <span
-        className="rounded-full border border-moss/15 px-3 py-1.5"
+        className="rounded-full border border-accent/15 px-3 py-1.5"
         key={category.code}
       >{category.label_ru}</span>)}
     </div>
-    <div className="rounded-2xl bg-cream/70 p-4 text-sm leading-6">
+    <div className="rounded-2xl bg-background/70 p-4 text-sm leading-6">
       {university.program_count > 0
         ? `Импортировано программ: ${university.program_count}; вариантов обучения: ${university.offering_count}.`
         : 'Программы этого вуза ещё не импортированы платформой.'}
     </div>
-    {item.coverage_notes.length > 0 && <ul className="grid gap-2 text-sm leading-6 text-ink/65">
+    {item.coverage_notes.length > 0 && <ul className="grid gap-2 text-sm leading-6 text-text-secondary">
       {item.coverage_notes.map((note) => <li key={note}>{note}</li>)}
     </ul>}
-    <div className="mt-auto border-t border-ink/10 pt-4">
+    <div className="mt-auto border-t border-text-primary/10 pt-4">
       <SaveControl kind="university" label={university.full_name} universitySlug={university.slug} />
     </div>
   </article>
@@ -248,14 +248,14 @@ function PaginationControl({
   if (totalPages <= 1) return null
   return <nav aria-label="Страницы рекомендаций" className="mt-8 flex items-center justify-center gap-3">
     <button
-      className="inline-flex items-center gap-1 rounded-xl border border-ink/15 bg-white px-4 py-2 font-bold disabled:opacity-45"
+      className="inline-flex items-center gap-1 rounded-xl border border-text-primary/15 bg-white px-4 py-2 font-bold disabled:opacity-45"
       disabled={page <= 1}
       onClick={() => onPage(page - 1)}
       type="button"
     ><ArrowLeft aria-hidden="true" size={17} />Назад</button>
     <span className="text-sm font-semibold">Страница {page} из {totalPages}</span>
     <button
-      className="inline-flex items-center gap-1 rounded-xl border border-ink/15 bg-white px-4 py-2 font-bold disabled:opacity-45"
+      className="inline-flex items-center gap-1 rounded-xl border border-text-primary/15 bg-white px-4 py-2 font-bold disabled:opacity-45"
       disabled={page >= totalPages}
       onClick={() => onPage(page + 1)}
       type="button"
@@ -388,14 +388,14 @@ export function RecommendationsPage() {
     ? Math.max(data.programs.pagination.total_pages, data.universities.pagination.total_pages)
     : 0
 
-  return <div className="min-w-0 bg-[linear-gradient(180deg,#f8f7f1_0%,#f2f0e7_100%)]">
-    <div className="mx-auto max-w-7xl px-5 py-10 lg:px-8 lg:py-14">
+  return <div className="page-shell">
+    <div className="page-container py-10 lg:py-14">
       <header className="max-w-4xl">
         <div className="eyebrow">Честный подбор по импортированным данным</div>
-        <h1 className="mt-3 break-words text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+        <h1 className="page-heading">
           Подбор вариантов поступления
         </h1>
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-ink/65">
+        <p className="mt-5 max-w-3xl text-lg leading-8 text-text-secondary">
           Статус поступления показывается только там, где у платформы есть свежие реальные данные
           мониторинга. Совпадение с параметрами не гарантирует поступление.
         </p>
@@ -406,10 +406,10 @@ export function RecommendationsPage() {
           <LoaderCircle aria-hidden="true" className="animate-spin" size={19} />Загружаем параметры…
         </span>
       </div>}
-      {metaRequest.status === 'error' && <div className="panel mt-8 border-red-200 p-6" role="alert">
+      {metaRequest.status === 'error' && <div className="panel mt-8 border-danger/30 p-6" role="alert">
         <p className="font-bold">Не удалось загрузить параметры каталога.</p>
         <button
-          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white"
+          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-bold text-white"
           onClick={() => {
             setMetaRequest({ data: null, status: 'loading' })
             setMetaRetry((value) => value + 1)
@@ -419,11 +419,15 @@ export function RecommendationsPage() {
       </div>}
 
       {meta && <form aria-label="Параметры подбора" className="panel mt-8 p-5 sm:p-7" onSubmit={apply}>
-        <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <label className="grid gap-2 text-sm font-bold text-ink/75" htmlFor="recommendation-score">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-[-0.02em]">Ваши параметры</h2>
+          <p className="mt-1 text-sm leading-6 text-text-secondary">Ввод пользователя отделён от результатов; расчёт не является гарантией поступления.</p>
+        </div>
+        <div className="mt-5 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <label className="grid gap-2 text-sm font-bold text-text-secondary" htmlFor="recommendation-score">
             Балл
             <input
-              className="min-w-0 rounded-xl border border-ink/15 bg-white px-3 py-2.5 font-normal text-ink"
+              className="field-control font-normal"
               id="recommendation-score"
               inputMode="numeric"
               max={500}
@@ -468,13 +472,13 @@ export function RecommendationsPage() {
             <option value="false">Не реализован на платформе</option>
           </SelectControl>
         </div>
-        {formError && <p className="mt-4 font-semibold text-red-700" role="alert">{formError}</p>}
+        {formError && <p className="mt-4 font-semibold text-danger" role="alert">{formError}</p>}
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-xl bg-moss px-5 py-3 font-bold text-white" type="submit">
+          <button className="button-primary" type="submit">
             <SearchCheck aria-hidden="true" size={18} />Подобрать варианты
           </button>
           <button
-            className="rounded-xl border border-ink/15 bg-white px-5 py-3 font-bold"
+            className="button-secondary"
             onClick={() => {
               setDraftState(null)
               setSearchParams(serializeRecommendationQuery(DEFAULT_RECOMMENDATION_QUERY))
@@ -482,7 +486,7 @@ export function RecommendationsPage() {
             type="button"
           >Очистить</button>
           <button
-            className="inline-flex items-center gap-2 rounded-xl border border-moss/25 bg-white px-5 py-3 font-bold text-moss disabled:opacity-50"
+            className="button-secondary text-accent disabled:opacity-50"
             disabled={scoreSaveState === 'saving' || draft.score === ''}
             onClick={saveScore}
             type="button"
@@ -502,8 +506,8 @@ export function RecommendationsPage() {
         aria-labelledby="recommendation-start-title"
         className="panel mt-8 p-7"
       >
-        <h2 className="text-2xl font-extrabold" id="recommendation-start-title">Укажите важные параметры</h2>
-        <p className="mt-3 max-w-3xl leading-7 text-ink/65">
+        <h2 className="text-2xl font-semibold" id="recommendation-start-title">Укажите важные параметры</h2>
+        <p className="mt-3 max-w-3xl leading-7 text-text-secondary">
           Можно начать без балла: тогда подбор покажет совпадения каталога, но не будет рассчитывать
           статус поступления.
         </p>
@@ -514,33 +518,33 @@ export function RecommendationsPage() {
           <LoaderCircle aria-hidden="true" className="animate-spin" size={20} />Подбираем варианты…
         </span>
       </div>}
-      {backgroundLoading && <div aria-live="polite" className="mt-6 font-semibold text-moss" role="status">
+      {backgroundLoading && <div aria-live="polite" className="mt-6 font-semibold text-accent" role="status">
         Обновляем результаты по новым параметрам…
       </div>}
-      {currentResults?.status === 'error' && <div className="panel mt-8 border-red-200 p-7" role="alert">
-        <p className="text-xl font-extrabold">Не удалось загрузить рекомендации</p>
-        <p className="mt-2 text-ink/65">Это ошибка запроса, а не отсутствие подходящих вариантов.</p>
+      {currentResults?.status === 'error' && <div className="panel mt-8 border-danger/30 p-7" role="alert">
+        <p className="text-xl font-semibold">Не удалось загрузить рекомендации</p>
+        <p className="mt-2 text-text-secondary">Это ошибка запроса, а не отсутствие подходящих вариантов.</p>
         <button
-          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-moss px-4 py-2.5 font-bold text-white"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-bold text-white"
           onClick={() => setResultsRetry((value) => value + 1)}
           type="button"
         ><RefreshCw aria-hidden="true" size={17} />Повторить запрос</button>
       </div>}
 
       {noMatches && <section aria-labelledby="recommendation-empty-title" className="panel mt-8 p-7">
-        <h2 className="text-2xl font-extrabold" id="recommendation-empty-title">Совпадений не найдено</h2>
-        <p className="mt-3 text-ink/65">Попробуйте изменить один или несколько параметров.</p>
+        <h2 className="text-2xl font-semibold" id="recommendation-empty-title">Совпадений не найдено</h2>
+        <p className="mt-3 text-text-secondary">Попробуйте изменить один или несколько параметров.</p>
       </section>}
 
       {data && !noMatches && <div className={backgroundLoading ? 'opacity-60' : ''} aria-busy={backgroundLoading}>
-        <aside className="mt-8 rounded-2xl border border-ink/10 bg-white/70 p-5 text-sm leading-6 text-ink/65">
+        <aside className="surface-sunken mt-8 p-5 text-sm leading-6 text-text-secondary">
           {data.coverage.note} Результаты описывают только импортированное покрытие платформы.
         </aside>
         <section aria-labelledby="recommended-programs-title" className="mt-10 min-w-0">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-3xl font-extrabold" id="recommended-programs-title">Программы</h2>
-              <p className="mt-2 text-ink/60">Найдено: {data.programs.pagination.total_items}</p>
+              <h2 className="text-3xl font-semibold" id="recommended-programs-title">Программы</h2>
+              <p className="mt-2 text-text-secondary">Найдено: {data.programs.pagination.total_items}</p>
             </div>
           </div>
           {data.programs.items.length > 0
@@ -554,8 +558,8 @@ export function RecommendationsPage() {
             : <p className="panel mt-5 p-6 font-semibold">На этой странице программ нет.</p>}
         </section>
         <section aria-labelledby="recommended-universities-title" className="mt-12 min-w-0">
-          <h2 className="text-3xl font-extrabold" id="recommended-universities-title">Университеты</h2>
-          <p className="mt-2 text-ink/60">Найдено: {data.universities.pagination.total_items}</p>
+          <h2 className="text-3xl font-semibold" id="recommended-universities-title">Университеты</h2>
+          <p className="mt-2 text-text-secondary">Найдено: {data.universities.pagination.total_items}</p>
           {data.universities.items.length > 0
             ? <div className="mt-5 grid min-w-0 gap-5 lg:grid-cols-2">
               {data.universities.items.map((item) => <UniversityCard item={item} key={item.university.id} />)}
