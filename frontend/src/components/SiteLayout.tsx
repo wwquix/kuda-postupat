@@ -1,38 +1,78 @@
+import { Menu, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 
+const navigationItems = [
+  { label: 'Главная', to: '/', end: true },
+  { label: 'Вузы', to: '/universities', end: false },
+  { label: 'Сравнение', to: '/compare', end: false },
+  { label: 'Подбор вариантов', to: '/recommendations', end: false },
+  { label: 'Мой список', to: '/my-list', end: false },
+  { label: 'Монитор поступления', to: '/monitor', end: false },
+] as const
+
 const navigationClass = ({ isActive }: { isActive: boolean }) => [
-  'rounded-xl px-3 py-2 text-sm font-semibold transition',
-  isActive ? 'bg-mint text-moss' : 'text-ink/70 hover:bg-ink/5 hover:text-ink',
+  'site-nav-link',
+  isActive ? 'site-nav-link--active' : '',
 ].join(' ')
 
 export function SiteLayout() {
-  return <div className="flex min-h-screen min-w-0 flex-col bg-cream text-ink">
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMobileOpen(false)
+      menuButtonRef.current?.focus()
+    }
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [mobileOpen])
+
+  return <div className="flex min-h-screen min-w-0 flex-col bg-background text-text-primary">
     <a className="skip-link" href="#main-content">Перейти к содержимому</a>
-    <header className="border-b border-ink/10 bg-white/95">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-        <Link aria-label="Куда поступать — главная" className="flex w-fit items-center rounded-xl" to="/">
-          <span>
-            <span className="block text-base font-extrabold tracking-tight">Куда поступать</span>
-            <span className="block text-xs text-ink/55">Данные для абитуриентов Беларуси</span>
-          </span>
-        </Link>
-        <nav aria-label="Основная навигация" className="flex flex-wrap items-center gap-1">
-          <NavLink className={navigationClass} end to="/">Главная</NavLink>
-          <NavLink className={navigationClass} to="/universities">Вузы</NavLink>
-          <NavLink className={navigationClass} to="/compare">Сравнение</NavLink>
-          <NavLink className={navigationClass} to="/recommendations">Подбор вариантов</NavLink>
-          <NavLink className={navigationClass} to="/my-list">Мой список</NavLink>
-          <NavLink className={navigationClass} to="/monitor">Монитор поступления</NavLink>
-        </nav>
+    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-5 sm:pt-4">
+      <div className="glass-surface--compact mx-auto max-w-7xl px-3 py-2.5 sm:px-4">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <Link aria-label="Куда поступать — главная" className="pressable flex min-h-11 min-w-0 items-center gap-3 rounded-xl px-1.5" onClick={() => setMobileOpen(false)} to="/">
+            <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-semibold text-white shadow-glass-compact">К</span>
+            <span className="min-w-0">
+              <span className="block truncate text-[15px] font-semibold tracking-[-0.015em]">Куда поступать</span>
+              <span className="hidden text-xs leading-4 text-text-secondary sm:block">Данные для абитуриентов Беларуси</span>
+            </span>
+          </Link>
+
+          <nav aria-label="Основная навигация" className="hidden items-center gap-0.5 lg:flex">
+            {navigationItems.map((item) => <NavLink className={navigationClass} end={item.end} key={item.to} to={item.to}>{item.label}</NavLink>)}
+          </nav>
+
+          <button
+            aria-controls="mobile-site-navigation"
+            aria-expanded={mobileOpen}
+            aria-label={mobileOpen ? 'Закрыть основную навигацию' : 'Открыть основную навигацию'}
+            className="pressable grid size-11 shrink-0 place-items-center rounded-xl border border-border/70 bg-elevated/90 text-text-primary lg:hidden"
+            onClick={() => setMobileOpen((open) => !open)}
+            ref={menuButtonRef}
+            type="button"
+          >
+            {mobileOpen ? <X aria-hidden="true" size={20} /> : <Menu aria-hidden="true" size={20} />}
+          </button>
+        </div>
+
+        {mobileOpen && <nav aria-label="Мобильная основная навигация" className="mobile-site-nav mt-2 grid gap-1 border-t border-border/60 pt-2 lg:hidden" id="mobile-site-navigation">
+          {navigationItems.map((item) => <NavLink className={navigationClass} end={item.end} key={item.to} onClick={() => setMobileOpen(false)} to={item.to}>{item.label}</NavLink>)}
+        </nav>}
       </div>
     </header>
     <main className="min-w-0 flex-1" id="main-content" tabIndex={-1}>
       <Outlet />
     </main>
-    <footer className="border-t border-ink/10 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-6 text-sm text-ink/60 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-        <span className="font-semibold text-ink/75">Куда поступать</span>
-        <span>Проверяйте итоговые решения на официальных ресурсах вузов.</span>
+    <footer className="border-t border-border/70 bg-elevated/95">
+      <div className="page-container flex flex-col gap-2 py-7 text-sm text-text-secondary sm:flex-row sm:items-center sm:justify-between">
+        <span className="font-semibold text-text-primary">Куда поступать</span>
+        <span className="max-w-2xl sm:text-right">Проверяйте итоговые решения на официальных ресурсах вузов.</span>
       </div>
     </footer>
   </div>

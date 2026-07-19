@@ -119,7 +119,7 @@
 
 ## 10. Frontend shell and homepage
 
-- **Status:** M-MVP-PUBLIC-MONITOR-01 complete: публичный `/monitor` стал полностью read-only, показывает отдельные состояния автоматического сборщика и давности данных БГЭУ, а при отсутствии снимка предлагает только безопасный GET retry. Telegram UI теперь следует `telegram_enabled`: при выключенном feature form и challenge не создаются. Защищённый operator refresh и scheduler не менялись. M-COMPARE-01 из раздела 8 также завершён.
+- **Status:** M-MVP-PUBLIC-MONITOR-01 and M-APPLE-LIQUID-GLASS-FOUNDATION-01 complete. Публичный `/monitor` остаётся полностью read-only с отдельными состояниями автоматического сборщика и давности данных БГЭУ. Глобальная оболочка и HomePage используют новую нейтральную Liquid Glass design foundation; детальные layouts внутренних страниц пока сохранены. Следующий отдельный milestone — `M-APPLE-LIQUID-GLASS-PAGES-01`. Telegram UI, защищённый operator refresh и scheduler не менялись. M-COMPARE-01 из раздела 8 также завершён.
 
 - **Goal:** introduce routed application shell and honest data-coverage homepage while preserving the existing monitor.
 - **In scope:** router/layout/navigation, typed API layer/query state, `/`, `/monitor`, route states, provenance components, responsive foundation.

@@ -1,11 +1,17 @@
+/// <reference types="node" />
+
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import App from './App'
 import type { CollectorStatus, HealthStatus, PublicConfig, Snapshot } from './types'
+
+const liquidGlassStyles = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
 
 vi.mock('recharts', () => {
   const ChartStub = ({ children }: { children?: ReactNode }) => <div>{children}</div>
@@ -168,6 +174,15 @@ describe('frontend shell routing', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/catalog/meta', undefined)
   })
 
+  it('keeps the homepage loading state and both primary destinations intact', async () => {
+    fetchMock.mockImplementationOnce(() => new Promise<Response>(() => undefined))
+    renderRoute('/')
+
+    expect(screen.getByRole('status')).toHaveTextContent('Уточняем актуальное покрытие каталога')
+    expect(screen.getByRole('link', { name: /Открыть монитор БГЭУ/ })).toHaveAttribute('href', '/monitor')
+    expect(screen.getByRole('link', { name: 'Перейти к каталогу вузов' })).toHaveAttribute('href', '/universities')
+  })
+
   it('renders the existing monitor dashboard at /monitor using only mocked API calls', async () => {
     const { container } = renderRoute('/monitor')
 
@@ -277,6 +292,34 @@ describe('frontend shell routing', () => {
     expect(homeLink).not.toHaveAttribute('aria-current')
   })
 
+  it('preserves every global navigation destination', () => {
+    renderRoute('/')
+    const navigation = screen.getByRole('navigation', { name: 'Основная навигация' })
+
+    expect(within(navigation).getByRole('link', { name: 'Главная' })).toHaveAttribute('href', '/')
+    expect(within(navigation).getByRole('link', { name: 'Вузы' })).toHaveAttribute('href', '/universities')
+    expect(within(navigation).getByRole('link', { name: 'Сравнение' })).toHaveAttribute('href', '/compare')
+    expect(within(navigation).getByRole('link', { name: 'Подбор вариантов' })).toHaveAttribute('href', '/recommendations')
+    expect(within(navigation).getByRole('link', { name: 'Мой список' })).toHaveAttribute('href', '/my-list')
+    expect(within(navigation).getByRole('link', { name: 'Монитор поступления' })).toHaveAttribute('href', '/monitor')
+  })
+
+  it('opens and closes mobile navigation by keyboard and restores focus on Escape', async () => {
+    const user = userEvent.setup()
+    renderRoute('/')
+    const menuButton = screen.getByRole('button', { name: 'Открыть основную навигацию' })
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    menuButton.focus()
+    await user.keyboard('{Enter}')
+    expect(screen.getByRole('button', { name: 'Закрыть основную навигацию' })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('navigation', { name: 'Мобильная основная навигация' })).toBeInTheDocument()
+
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('navigation', { name: 'Мобильная основная навигация' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Открыть основную навигацию' })).toHaveFocus()
+  })
+
   it('renders a safe 404 page with accessible navigation for an unknown route', () => {
     const { container } = renderRoute('/unknown-route')
 
@@ -301,7 +344,10 @@ describe('frontend shell routing', () => {
 
     await waitFor(() => expect(document.title).toBe('Куда поступать · Данные для абитуриентов Беларуси'))
     await user.tab()
-    expect(screen.getByRole('link', { name: 'Перейти к содержимому' })).toHaveFocus()
+    const skipLink = screen.getByRole('link', { name: 'Перейти к содержимому' })
+    expect(skipLink).toHaveFocus()
+    expect(skipLink).toHaveAttribute('href', '#main-content')
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content')
   })
 
   it('keeps routes and links inside a configured deployment base path', async () => {
@@ -310,5 +356,19 @@ describe('frontend shell routing', () => {
     await screen.findByRole('heading', { level: 2, name: 'Экономическая информатика' })
     expect(screen.getByRole('link', { name: 'Главная' })).toHaveAttribute('href', '/bseu')
     expect(screen.getByRole('link', { name: 'Монитор поступления' })).toHaveAttribute('href', '/bseu/monitor')
+  })
+
+  it('defines readable glass fallbacks and independent reduced-effect modes', () => {
+    expect(liquidGlassStyles).not.toContain('fonts.googleapis.com')
+    expect(liquidGlassStyles).toContain('@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px)))')
+    expect(liquidGlassStyles).toContain('-webkit-backdrop-filter: blur(18px) saturate(150%)')
+    expect(liquidGlassStyles).toContain('backdrop-filter: blur(26px) saturate(155%)')
+    expect(liquidGlassStyles).toContain('@media (prefers-reduced-motion: reduce)')
+    expect(liquidGlassStyles).toContain('@media (prefers-reduced-transparency: reduce)')
+    expect(liquidGlassStyles).toContain('@media (prefers-contrast: more)')
+    expect(liquidGlassStyles).toMatch(/\.glass-surface--compact[\s\S]*bg-elevated\/\[0\.96\]/)
+    expect(liquidGlassStyles).toMatch(/\.pressable:active \{ transform: scale\(0\.98\); \}/)
+    expect(liquidGlassStyles).toContain('min-height: 100vh')
+    expect(liquidGlassStyles).toContain('overflow-x: clip')
   })
 })
