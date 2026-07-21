@@ -1,4 +1,5 @@
 # Монитор вступительной кампании БГЭУ
+<img width="1903" height="735" alt="image" src="https://github.com/user-attachments/assets/9ead7596-4869-4ad3-8464-a51325fd38e7" />
 
 Сервис получает текущие сведения о поданных документах БГЭУ, хранит историю изменений в SQLite, рассчитывает оценочный текущий порог и показывает dashboard. Публичный `/recommendations` подбирает University и импортированные Program по явным параметрам, не выдавая catalog match за вероятность поступления. Анонимный пользователь может сохранить Program, включить наблюдение и читать персональный feed изменений в `/my-list`. Связать один Telegram chat можно только когда Telegram включён в публичной конфигурации; иначе интерфейс честно сообщает, что уведомления появятся позже. Существующая owner-mode отправка Telegram остаётся отдельной.
 
@@ -19,8 +20,10 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 Главная страница: `http://127.0.0.1:5173/`
 
 Каталог вузов: `http://127.0.0.1:5173/universities`
+<img width="1906" height="941" alt="image" src="https://github.com/user-attachments/assets/827b1a35-ac60-49ce-bf4b-1cc806219cad" />
 
 Подбор вариантов: `http://127.0.0.1:5173/recommendations`
+<img width="1900" height="940" alt="image" src="https://github.com/user-attachments/assets/337ec36f-ef62-420e-a535-8cdc5e267d17" />
 
 Страница вуза: `http://127.0.0.1:5173/universities/bseu`
 
@@ -29,6 +32,7 @@ Set-Location 'C:\Users\Yura\Documents\Codex\2026-07-12\files-mentioned-by-the-us
 Анонимный список поступления и наблюдения: `http://127.0.0.1:5173/my-list`
 
 Монитор поступления БГЭУ: `http://127.0.0.1:5173/monitor`
+<img width="1896" height="941" alt="image" src="https://github.com/user-attachments/assets/611f43a5-f17b-4573-bec9-df2300f61875" />
 
 Публичный монитор работает только на чтение: показывает состояние автоматического
 сборщика и выполняет безопасные GET-повторы. Он не запрашивает
