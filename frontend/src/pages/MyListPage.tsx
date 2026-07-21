@@ -51,10 +51,12 @@ function TelegramNotifications() {
     try {
       const challenge = await profile.createTelegramLinkChallenge()
       if (openAfterCreation) {
-        window.open(challenge.deep_link, '_blank', 'noopener,noreferrer')
+        const receivedUrl = challenge.deep_link.trim()
+        if (!receivedUrl) throw new Error('Telegram link is missing')
+        window.location.assign(receivedUrl)
       }
     } catch {
-      setError('Не удалось подготовить подключение. Попробуйте ещё раз.')
+      setError('Не удалось создать ссылку Telegram. Попробуйте ещё раз.')
     } finally {
       setOperation(null)
     }
@@ -176,7 +178,7 @@ function TelegramNotifications() {
               disabled={operation !== null}
               onClick={() => void createChallenge(true)}
               type="button"
-            >{operation === 'challenge' ? 'Готовим ссылку…' : 'Открыть Telegram'}</button>}
+            >{operation === 'challenge' ? 'Создаём ссылку…' : 'Открыть Telegram'}</button>}
           <button
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-accent/25 bg-white px-4 py-2.5 font-bold text-accent disabled:cursor-wait disabled:opacity-60"
             disabled={operation !== null}
